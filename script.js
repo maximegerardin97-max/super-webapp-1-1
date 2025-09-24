@@ -15,6 +15,8 @@ class DesignRatingApp {
         this.supabaseUrl = cfg.SUPABASE_URL || '';
         this.supabaseKey = cfg.SUPABASE_ANON || '';
         this.chatUrl = cfg.CHAT_URL || '';
+        this.supabase = null;
+        this.userSession = null;
         this.uploadedImages = [];
         this.isProcessing = false;
         
@@ -38,6 +40,7 @@ class DesignRatingApp {
         this.setupDarkModeSupport(); // Setup dark mode support
         this.setupLargeImageDisplay(); // Setup large image display
         this.setupChatStates(); // Setup chat states
+        this.setupAuth(); // Setup Supabase auth
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -56,6 +59,68 @@ class DesignRatingApp {
                 }
             }).catch(console.error);
         });
+    }
+
+    setupAuth() {
+        if (!window.supabase || !this.supabaseUrl || !this.supabaseKey) {
+            console.warn('Supabase auth not configured');
+            return;
+        }
+        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        const emailInput = document.getElementById('authEmail');
+        const signInBtn = document.getElementById('signInBtn');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const authStatus = document.getElementById('authStatus');
+        const updateUi = (session) => {
+            const user = session && session.user ? session.user : null;
+            if (user) {
+                signOutBtn.style.display = '';
+                signInBtn.style.display = 'none';
+                if (emailInput) emailInput.style.display = 'none';
+                authStatus.textContent = user.email || 'Signed in';
+            } else {
+                signOutBtn.style.display = 'none';
+                signInBtn.style.display = '';
+                if (emailInput) emailInput.style.display = '';
+                authStatus.textContent = '';
+            }
+        };
+        this.supabase.auth.getSession().then(({ data }) => {
+            this.userSession = data.session || null;
+            updateUi(this.userSession);
+        });
+        this.supabase.auth.onAuthStateChange((_event, session) => {
+            this.userSession = session || null;
+            updateUi(this.userSession);
+        });
+        if (signInBtn) {
+            signInBtn.addEventListener('click', async () => {
+                const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
+                if (!email) return;
+                try {
+                    const { error } = await this.supabase.auth.signInWithOtp({ email });
+                    if (error) throw error;
+                    alert('Magic link sent. Check your email.');
+                } catch (e) {
+                    console.error(e);
+                    alert('Sign-in failed: ' + e.message);
+                }
+            });
+        }
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', async () => {
+                await this.supabase.auth.signOut();
+            });
+        }
+        // Handle magic link callback if present
+        const hash = window.location.hash || '';
+        if (hash.includes('access_token') && hash.includes('type=recovery') === false) {
+            // Supabase JS v2 will handle session from URL by default; ensure UI updates after initial getSession
+            this.supabase.auth.getSession().then(({ data }) => {
+                this.userSession = data.session || null;
+                updateUi(this.userSession);
+            });
+        }
     }
 
     setupDarkModeSupport() {
@@ -386,10 +451,11 @@ class DesignRatingApp {
     // Get image URL for command image from backend
     async fetchCommandImages(imageNames) {
         try {
+            const authHeader = await this.getAuthHeader();
             const resp = await fetch(`${this.supabaseUrl}/functions/v1/inspirations`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${this.supabaseKey}`,
+                    ...authHeader,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
@@ -959,12 +1025,12 @@ class DesignRatingApp {
             message,
             history: Array.isArray(history) ? history : []
         };
+        const authHeader = await this.getAuthHeader();
         const resp = await fetch(this.chatUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.supabaseKey}`,
-                'apikey': this.supabaseKey,
+                ...authHeader,
             },
             body: JSON.stringify(body)
         });
@@ -1003,6 +1069,24 @@ class DesignRatingApp {
         // Safety finalization
         if (onDone) onDone(fullText);
         return fullText;
+    }
+
+    async getAuthHeader() {
+        // Prefer logged-in user JWT; fallback to anon key for public endpoints
+        try {
+            if (this.supabase) {
+                const { data } = await this.supabase.auth.getSession();
+                const token = data && data.session ? data.session.access_token : null;
+                if (token) {
+                    return { 'Authorization': `Bearer ${token}` };
+                }
+            }
+        } catch (_) {}
+        // Fallback to anon if available
+        if (this.supabaseKey) {
+            return { 'Authorization': `Bearer ${this.supabaseKey}` };
+        }
+        return {};
     }
     
     // Conversation context management methods
@@ -2326,10 +2410,11 @@ Product: E-commerce App | Industry: Retail | Platform: Web
             console.debug('[INSPIRATIONS REQUEST]', { app, flow });
 
             // Simple call to backend - it handles all mapping now
+            const authHeader = await this.getAuthHeader();
             const resp = await fetch(`${this.supabaseUrl}/functions/v1/inspirations`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${this.supabaseKey}`,
+                    ...authHeader,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ recommendation: { app, flow } })

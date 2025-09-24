@@ -5,6 +5,7 @@
   "scripts": {
     "start": "open index.html",
     "dev": "python3 -m http.server 8000",
+    "serve": "npx http-server -p 8000 -c-1 .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["canvas", "image", "drag-drop", "shadcn", "ui", "ai", "dust"],
