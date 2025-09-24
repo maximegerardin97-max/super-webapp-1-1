@@ -241,11 +241,14 @@ class DesignRatingApp {
             }
         });
 
-        // Restore to initial (hide large image and show inspirations if present)
+        // Restore to initial: show user's original design again (do not delete)
         if (restoreInitialView) {
             restoreInitialView.addEventListener('click', () => {
-                // Collapse large image view
-                this.removeLargeImage();
+                // If we have a stored user design, bring it back
+                if (this.userDesignImageData && this.userDesignImageData.dataUrl) {
+                    this.displayLargeImage(this.userDesignImageData.dataUrl, this.userDesignImageData.filename || 'Design');
+                    this.uploadedImageData = { ...this.userDesignImageData };
+                }
                 // Ensure inspirations section is visible but minimized (user can expand)
                 const section = document.querySelector('.command-images-section');
                 if (section) {
@@ -267,6 +270,8 @@ class DesignRatingApp {
                 dataUrl: imageDataUrl,
                 filename: file.name
             };
+            // Persist user's design for restore
+            this.userDesignImageData = { ...this.uploadedImageData };
             
             // Automatically move to step 1 when image is uploaded
             this.goToStep(1);
