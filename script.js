@@ -64,6 +64,8 @@ class DesignRatingApp {
     setupAuth() {
         if (!window.supabase || !this.supabaseUrl || !this.supabaseKey) {
             console.warn('Supabase auth not configured');
+            const authStatus = document.getElementById('authStatus');
+            if (authStatus) authStatus.textContent = 'Auth unavailable: SDK not loaded or config missing';
             return;
         }
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
