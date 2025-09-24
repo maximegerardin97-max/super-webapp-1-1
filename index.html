@@ -12,8 +12,16 @@
     SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2x2dmRuenJmY2ZmdWR3b2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MjE4MDAsImV4cCI6MjA3MzA5NzgwMH0.2-e8Scn26fqsR11h-g4avH8MWybwLTtcf3fCN9qAgVw'
     };
     </script>
-    <!-- Optional local override; ignored if missing -->
-    <script src="env.local.js" defer></script>
+    <!-- Optional local override; guard 404 on Pages -->
+    <script>
+    (function(){
+      var s = document.createElement('script');
+      s.src = 'env.local.js';
+      s.defer = true;
+      s.onerror = function(){ console.info('env.local.js not found (ok on Pages)'); };
+      document.currentScript.parentNode.insertBefore(s, document.currentScript.nextSibling);
+    })();
+    </script>
     <!-- Supabase client for auth (Browser UMD build) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 </head>

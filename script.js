@@ -401,8 +401,8 @@ class DesignRatingApp {
     }
 
     // Create Arguments card HTML
-    createArgumentsCard(arguments) {
-        const argumentsList = arguments.map(arg => `
+    createArgumentsCard(argsList) {
+        const argumentsList = argsList.map(arg => `
             <div class="argument-item ${arg.isPositive ? 'positive' : 'negative'}">
                 <div class="argument-indicator">${arg.isPositive ? '🟢' : '🔴'}</div>
                 <div class="argument-text">${arg.text}</div>
