@@ -1070,7 +1070,7 @@ body {
   width: fit-content;
   height: fit-content;
   min-width: 300px;
-  max-width: 600px;
+  max-width: none;
   min-height: 400px;
   max-height: 80vh;
   background: var(--bg-secondary);
