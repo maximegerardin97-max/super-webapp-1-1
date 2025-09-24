@@ -384,13 +384,16 @@ class DesignRatingApp {
 
     // Create Solutions card HTML
     createSolutionsCard(solutions) {
-        const solutionsList = solutions.map((solution, index) => `
-            <div class="solution-item">
-                <div class="solution-number">${index + 1}</div>
-                <div class="solution-text">${solution}</div>
-            <button class="solution-more-btn" data-solution-index="${index}">More</button>
-            </div>
-        `).join('');
+        const solutionsList = solutions.map((solution, index) => {
+            const safe = solution.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `
+                <div class="solution-item">
+                    <div class="solution-number">${index + 1}</div>
+                    <div class="solution-text">${safe}</div>
+                    <button class="solution-more-btn" data-solution-index="${index}">More</button>
+                </div>
+            `;
+        }).join('');
 
         return `
             <div class="solutions-card">
@@ -452,14 +455,17 @@ class DesignRatingApp {
         // Fetch real images via edge using inferred app/flow
         const flowName = this.inferFlowFromImages ? this.inferFlowFromImages(imageNames, appName) : '';
         console.debug('[INSPIRATIONS START]', { appName, flowName, imageNames });
-        const realImages = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
+        const fetched = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
+        // Normalize to flat images list if needed
+        const realImages = this.normalizeRealImages ? this.normalizeRealImages(fetched) : fetched;
         console.debug('[INSPIRATIONS RESULT images]', realImages);
         
-        // Prepare the command images (but don't display them yet)
+        // Prepare and immediately show images
         this.prepareCommandImages(appName, imageNames, realImages);
+        this.displayCommandImages(appName, imageNames, realImages, true);
         
-        // Show the regular message without COMMAND text
-        const cleanMessage = message.replace(/COMMAND:\s*send\s+[^.]*\.?\s*/i, '').trim();
+        // Keep the COMMAND line in the message
+        const cleanMessage = message;
         const chatResultsContent = document.getElementById('chatResultsContent');
         
         // Create message element with show images tag (no inline JS)
@@ -467,9 +473,9 @@ class DesignRatingApp {
         messageDiv.className = 'chat-message assistant-message';
         messageDiv.innerHTML = `
             <div class="message-content">${cleanMessage}</div>
-            <button class="show-images-tag" type="button" data-app="${encodeURIComponent(appName)}">
+            <button class="show-images-tag active" type="button" data-app="${encodeURIComponent(appName)}">
                 <span class="show-images-tag-icon">📱</span>
-                <span>Show ${appName} screens</span>
+                <span>Hide ${appName} screens</span>
             </button>
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
@@ -483,6 +489,12 @@ class DesignRatingApp {
             btn.addEventListener('click', () => {
                 const app = decodeURIComponent(btn.getAttribute('data-app') || '');
                 this.toggleCommandImages(app);
+                // Toggle label
+                const isActive = btn.classList.toggle('active');
+                const label = btn.querySelector('span:nth-child(2)');
+                if (label) {
+                    label.textContent = isActive ? `Hide ${app} screens` : `Show ${app} screens`;
+                }
             });
         }
 
