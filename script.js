@@ -90,10 +90,12 @@ class DesignRatingApp {
         this.supabase.auth.getSession().then(({ data }) => {
             this.userSession = data.session || null;
             updateUi(this.userSession);
+            if (this.userSession) { this.ensureProfile().catch(()=>{}); }
         });
         this.supabase.auth.onAuthStateChange((_event, session) => {
             this.userSession = session || null;
             updateUi(this.userSession);
+            if (this.userSession) { this.ensureProfile().catch(()=>{}); }
         });
         if (signInBtn) {
             signInBtn.addEventListener('click', async () => {
@@ -962,12 +964,15 @@ class DesignRatingApp {
             let response = '';
             // Add user turn to memory prior to call
             this.appendHistory(userTextFull, null);
+            let conversationId = null;
+            try { conversationId = await this.ensureConversation(); } catch (e) { console.warn('conversation create failed', e); }
             await this.sendChat({
                 provider: this.currentProvider,
                 model: this.currentModel,
                 systemPrompt: this.currentSystemPrompt,
                 message: msgPayload,
                 history: this.getLastHistory(20),
+                conversationId,
                 onDelta: (delta, full) => {
                     response = full;
                 },
@@ -1065,14 +1070,15 @@ class DesignRatingApp {
         return this.chatMemory.slice(-limit);
     }
 
-    async sendChat({ provider, model, systemPrompt, message, history, onDelta, onDone }) {
+    async sendChat({ provider, model, systemPrompt, message, history, onDelta, onDone, conversationId }) {
         if (!this.chatUrl || !this.supabaseKey) throw new Error('Chat not configured');
         const body = {
             provider,
             model,
             systemPrompt,
             message,
-            history: Array.isArray(history) ? history : []
+            history: Array.isArray(history) ? history : [],
+            conversation_id: conversationId || this.currentConversationId || null
         };
         const authHeader = await this.getAuthHeader();
         // Diagnostics
@@ -1172,6 +1178,54 @@ class DesignRatingApp {
             return { 'Authorization': `Bearer ${this.supabaseKey}` };
         }
         return {};
+    }
+
+    async getCurrentUser() {
+        if (!this.supabase) return null;
+        const { data } = await this.supabase.auth.getUser();
+        return data && data.user ? data.user : null;
+    }
+
+    async ensureProfile() {
+        try {
+            const user = await this.getCurrentUser();
+            if (!user) return;
+            const authHeader = await this.getAuthHeader();
+            const resp = await fetch(`${this.chatUrl}/ensure_profile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeader,
+                    ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {})
+                },
+                body: JSON.stringify({ user_id: user.id, email: user.email, action: 'ensure_profile' })
+            });
+            if (!resp.ok) {
+                try { console.warn('ensure_profile failed', await resp.text()); } catch {}
+            }
+        } catch (_) {}
+    }
+
+    async ensureConversation() {
+        if (this.currentConversationId) return this.currentConversationId;
+        const authHeader = await this.getAuthHeader();
+        const resp = await fetch(`${this.chatUrl}/conversations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeader,
+                ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {})
+            }
+        });
+        if (!resp.ok) {
+            let details = '';
+            try { details = await resp.text(); } catch {}
+            throw new Error(`Create conversation HTTP ${resp.status}${details ? `: ${details}` : ''}`);
+        }
+        const data = await resp.json();
+        const id = data && data.conversation && data.conversation.id ? data.conversation.id : null;
+        if (id) this.currentConversationId = id;
+        return id;
     }
     
     // Conversation context management methods
