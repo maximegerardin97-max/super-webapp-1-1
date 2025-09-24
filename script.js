@@ -449,8 +449,9 @@ class DesignRatingApp {
         const imageNames = commandMatch[1].split(',').map(name => name.trim());
         const appName = this.extractAppNameFromImages(imageNames);
         
-        // Fetch real images from backend
-        const realImages = await this.fetchCommandImages(imageNames);
+        // Fetch real images via edge using inferred app/flow
+        const flowName = this.inferFlowFromImages ? this.inferFlowFromImages(imageNames, appName) : '';
+        const realImages = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
         
         // Prepare the command images (but don't display them yet)
         this.prepareCommandImages(appName, imageNames, realImages);
@@ -490,7 +491,18 @@ class DesignRatingApp {
         return parts[0] || 'App';
     }
 
-    // Get image URL for command image from backend
+    // Infer flow name from first image name by stripping app and trailing counters
+    inferFlowFromImages(imageNames, appName) {
+        if (!Array.isArray(imageNames) || imageNames.length === 0) return '';
+        const first = String(imageNames[0] || '');
+        let rest = first.startsWith(appName) ? first.slice(appName.length).trim() : first;
+        rest = rest.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+        const parts = rest.split(' ').filter(Boolean);
+        while (parts.length > 0 && /^(\d+|\d+\.[a-zA-Z0-9]+)$/.test(parts[parts.length - 1])) parts.pop();
+        return parts.join(' ').trim();
+    }
+
+    // Get image URL for command image from backend (legacy fallback)
     async fetchCommandImages(imageNames) {
         try {
             const authHeader = await this.getAuthHeader();
@@ -514,6 +526,30 @@ class DesignRatingApp {
             return data.data || [];
         } catch (error) {
             console.error('Error fetching command images:', error);
+            return [];
+        }
+    }
+
+    // New: fetch images by explicit app/flow
+    async fetchCommandImagesByAppFlow(appName, flowName) {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const resp = await fetch(`${this.chatUrl}/inspirations`, {
+                method: 'POST',
+                headers: {
+                    ...authHeader,
+                    ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ recommendation: { app: appName, flow: flowName } })
+            });
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+            }
+            const data = await resp.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Error fetching command images (by app/flow):', error);
             return [];
         }
     }
