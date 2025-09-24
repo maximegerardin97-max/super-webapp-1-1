@@ -136,9 +136,9 @@ body {
 /* Command Images Section */
 .command-images-section {
   flex: 0 0 auto;
-  width: fit-content;
-  min-width: 260px;
-  max-width: 420px;
+  width: 292px; /* fixed rail */
+  min-width: 292px;
+  max-width: 292px;
   display: none; /* Hidden by default */
 }
 
@@ -219,10 +219,9 @@ body {
 /* Images Grid */
 .app-images-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: 1fr; /* one per row */
   gap: 12px;
-  width: 100%;
-  max-width: 360px;
+  width: 292px;
 }
 
 .app-image-item {
@@ -1176,19 +1175,13 @@ body {
 
 .image-actions {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 12px;
+  right: 12px;
   display: flex;
   gap: 8px;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.large-image-content:hover .image-actions {
   opacity: 1;
   visibility: visible;
+  transition: all 0.2s ease;
 }
 
 .image-actions .image-action-btn {
