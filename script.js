@@ -496,6 +496,7 @@ class DesignRatingApp {
                 method: 'POST',
                 headers: {
                     ...authHeader,
+                    ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
@@ -1072,11 +1073,14 @@ class DesignRatingApp {
             headers: {
                 'Content-Type': 'application/json',
                 ...authHeader,
+                ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
             },
             body: JSON.stringify(body)
         });
         if (!resp.ok || !resp.body) {
-            throw new Error(`Chat HTTP ${resp.status}`);
+            let details = '';
+            try { details = await resp.text(); } catch {}
+            throw new Error(`Chat HTTP ${resp.status}${details ? `: ${details}` : ''}`);
         }
         const reader = resp.body.getReader();
         const decoder = new TextDecoder('utf-8');
@@ -2456,6 +2460,7 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                 method: 'POST',
                 headers: {
                     ...authHeader,
+                    ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ recommendation: { app, flow } })
