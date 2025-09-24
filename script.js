@@ -1092,14 +1092,25 @@ class DesignRatingApp {
                 if (!m) continue;
                 try {
                     const evt = JSON.parse(m[1]);
-                    if (evt.type === 'content') {
-                        const delta = evt.delta || evt.content || '';
+                    const isDone = evt.type === 'done' || evt.done === true || evt.event === 'done';
+                    if (isDone) {
+                        if (onDone) onDone(fullText);
+                        continue;
+                    }
+                    // Accept multiple delta shapes
+                    const delta = (evt.delta !== undefined ? evt.delta : (evt.content !== undefined ? evt.content : evt.text)) || '';
+                    if (typeof delta === 'string') {
                         if (delta) {
                             fullText += delta;
                             if (onDelta) onDelta(delta, fullText);
                         }
-                    } else if (evt.type === 'done') {
-                        if (onDone) onDone(fullText);
+                    } else if (delta && Array.isArray(delta)) {
+                        // Some providers stream arrays of segments
+                        const chunk = delta.join('');
+                        if (chunk) {
+                            fullText += chunk;
+                            if (onDelta) onDelta(chunk, fullText);
+                        }
                     }
                 } catch (e) {
                     // ignore JSON parse errors for keepalive lines
