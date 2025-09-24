@@ -451,7 +451,9 @@ class DesignRatingApp {
         
         // Fetch real images via edge using inferred app/flow
         const flowName = this.inferFlowFromImages ? this.inferFlowFromImages(imageNames, appName) : '';
+        console.debug('[INSPIRATIONS START]', { appName, flowName, imageNames });
         const realImages = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
+        console.debug('[INSPIRATIONS RESULT images]', realImages);
         
         // Prepare the command images (but don't display them yet)
         this.prepareCommandImages(appName, imageNames, realImages);
@@ -528,6 +530,10 @@ class DesignRatingApp {
     async fetchCommandImages(imageNames) {
         try {
             const authHeader = await this.getAuthHeader();
+            const payload = { 
+                recommendation: { app: (imageNames[0]||'').split(' ')[0]||'', flow: (imageNames[0]||'').split(' ').slice(1).join(' ')||'' }
+            };
+            console.debug('[INSPIRATIONS REQUEST fallback]', { url: `${this.chatUrl}/inspirations`, payload });
             const resp = await fetch(`${this.chatUrl}/inspirations`, {
                 method: 'POST',
                 headers: {
@@ -535,9 +541,7 @@ class DesignRatingApp {
                     ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    recommendation: { app: (imageNames[0]||'').split(' ')[0]||'', flow: (imageNames[0]||'').split(' ').slice(1).join(' ')||'' }
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!resp.ok) {
@@ -556,6 +560,8 @@ class DesignRatingApp {
     async fetchCommandImagesByAppFlow(appName, flowName) {
         try {
             const authHeader = await this.getAuthHeader();
+            const payload = { recommendation: { app: appName, flow: flowName } };
+            console.debug('[INSPIRATIONS REQUEST]', { url: `${this.chatUrl}/inspirations`, payload });
             const resp = await fetch(`${this.chatUrl}/inspirations`, {
                 method: 'POST',
                 headers: {
@@ -563,12 +569,15 @@ class DesignRatingApp {
                     ...(this.supabaseKey ? { 'apikey': this.supabaseKey } : {}),
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ recommendation: { app: appName, flow: flowName } })
+                body: JSON.stringify(payload)
             });
             if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+                const errText = await resp.text();
+                console.error('[INSPIRATIONS ERROR]', resp.status, errText);
+                throw new Error(`HTTP ${resp.status}: ${errText}`);
             }
             const data = await resp.json();
+            console.debug('[INSPIRATIONS RESPONSE]', data);
             return data.data || [];
         } catch (error) {
             console.error('Error fetching command images (by app/flow):', error);
