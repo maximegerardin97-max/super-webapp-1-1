@@ -178,6 +178,7 @@ class DesignRatingApp {
         const largeImage = document.getElementById('largeImage');
         const removeLargeImage = document.getElementById('removeLargeImage');
         const addToChatLarge = document.getElementById('addToChatLarge');
+        const restoreInitialView = document.getElementById('restoreInitialView');
 
         // Click to upload (bind to multiple elements for robustness)
         if (largeImagePlaceholder) {
@@ -239,6 +240,20 @@ class DesignRatingApp {
                 this.addImageToMainChat(imageSrc, 'Uploaded design');
             }
         });
+
+        // Restore to initial (hide large image and show inspirations if present)
+        if (restoreInitialView) {
+            restoreInitialView.addEventListener('click', () => {
+                // Collapse large image view
+                this.removeLargeImage();
+                // Ensure inspirations section is visible but minimized (user can expand)
+                const section = document.querySelector('.command-images-section');
+                if (section) {
+                    section.classList.add('minimized');
+                    section.classList.remove('visible');
+                }
+            });
+        }
     }
 
     handleLargeImageUpload(file) {
@@ -636,28 +651,11 @@ class DesignRatingApp {
         const showTag = document.querySelector('.show-images-tag');
         
         if (commandSection) {
-            const isVisible = commandSection.classList.contains('visible');
-            
-            if (isVisible) {
-                // Hide images
-                commandSection.classList.remove('visible');
-                if (showTag) {
-                    showTag.classList.remove('active');
-                    showTag.innerHTML = `
-                        <span class="show-images-tag-icon">📱</span>
-                        <span>Show ${appName} screens</span>
-                    `;
-                }
-            } else {
-                // Show images
-                commandSection.classList.add('visible');
-                if (showTag) {
-                    showTag.classList.add('active');
-                    showTag.innerHTML = `
-                        <span class="show-images-tag-icon">📱</span>
-                        <span>Hide ${appName} screens</span>
-                    `;
-                }
+            const minimized = commandSection.classList.toggle('minimized');
+            if (showTag) {
+                showTag.classList.toggle('active', !minimized);
+                const label = showTag.querySelector('span:nth-child(2)');
+                if (label) label.textContent = minimized ? `Show ${appName} screens` : `Hide ${appName} screens`;
             }
         }
     }
