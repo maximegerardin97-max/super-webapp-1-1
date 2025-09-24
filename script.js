@@ -1089,10 +1089,32 @@ class DesignRatingApp {
             },
             body: JSON.stringify(body)
         });
-        if (!resp.ok || !resp.body) {
+        // Handle non-OK
+        if (!resp.ok) {
             let details = '';
             try { details = await resp.text(); } catch {}
             throw new Error(`Chat HTTP ${resp.status}${details ? `: ${details}` : ''}`);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        // If JSON, use non-streaming response
+        if (ct.includes('application/json')) {
+            try {
+                const json = await resp.json();
+                const text = json.response || json.content || json.message || '';
+                if (onDelta && text) onDelta(text, text);
+                if (onDone) onDone(text);
+                return text;
+            } catch (e) {
+                const raw = await resp.text().catch(() => '');
+                if (onDelta && raw) onDelta(raw, raw);
+                if (onDone) onDone(raw);
+                return raw;
+            }
+        }
+        // Otherwise, treat as SSE
+        if (!resp.body) {
+            if (onDone) onDone('');
+            return '';
         }
         const reader = resp.body.getReader();
         const decoder = new TextDecoder('utf-8');
@@ -1114,7 +1136,6 @@ class DesignRatingApp {
                         if (onDone) onDone(fullText);
                         continue;
                     }
-                    // Accept multiple delta shapes
                     const delta = (evt.delta !== undefined ? evt.delta : (evt.content !== undefined ? evt.content : evt.text)) || '';
                     if (typeof delta === 'string') {
                         if (delta) {
@@ -1122,19 +1143,15 @@ class DesignRatingApp {
                             if (onDelta) onDelta(delta, fullText);
                         }
                     } else if (delta && Array.isArray(delta)) {
-                        // Some providers stream arrays of segments
                         const chunk = delta.join('');
                         if (chunk) {
                             fullText += chunk;
                             if (onDelta) onDelta(chunk, fullText);
                         }
                     }
-                } catch (e) {
-                    // ignore JSON parse errors for keepalive lines
-                }
+                } catch (_) { }
             }
         }
-        // Safety finalization
         if (onDone) onDone(fullText);
         return fullText;
     }
