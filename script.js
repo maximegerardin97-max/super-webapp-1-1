@@ -494,7 +494,7 @@ class DesignRatingApp {
     async fetchCommandImages(imageNames) {
         try {
             const authHeader = await this.getAuthHeader();
-            const resp = await fetch(`${this.supabaseUrl}/functions/v1/inspirations`, {
+            const resp = await fetch(`${this.chatUrl}/inspirations`, {
                 method: 'POST',
                 headers: {
                     ...authHeader,
@@ -502,8 +502,7 @@ class DesignRatingApp {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    imageNames: imageNames,
-                    type: 'command_images'
+                    recommendation: { app: (imageNames[0]||'').split(' ')[0]||'', flow: (imageNames[0]||'').split(' ').slice(1).join(' ')||'' }
                 })
             });
 
@@ -521,8 +520,12 @@ class DesignRatingApp {
 
     // Get placeholder image URL as fallback
     getPlaceholderImageUrl(imageName) {
-        const displayText = imageName.split(' ').pop() || '?';
-        return `https://via.placeholder.com/120x213/e5e5e7/666?text=${encodeURIComponent(displayText)}`;
+        const text = (imageName || '?').slice(0, 18);
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='213'>
+  <rect width='100%' height='100%' fill='#e5e5e7'/>
+  <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='12' fill='#666'>${text}</text>
+</svg>`;
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     }
 
     // Prepare command images (create but keep hidden)
@@ -2550,7 +2553,7 @@ Product: E-commerce App | Industry: Retail | Platform: Web
 
             // Simple call to backend - it handles all mapping now
             const authHeader = await this.getAuthHeader();
-            const resp = await fetch(`${this.supabaseUrl}/functions/v1/inspirations`, {
+            const resp = await fetch(`${this.chatUrl}/inspirations`, {
                 method: 'POST',
                 headers: {
                     ...authHeader,
