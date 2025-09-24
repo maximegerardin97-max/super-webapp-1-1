@@ -1063,6 +1063,11 @@ class DesignRatingApp {
             history: Array.isArray(history) ? history : []
         };
         const authHeader = await this.getAuthHeader();
+        // Diagnostics
+        try {
+            const tokenPreview = (authHeader && authHeader.Authorization) ? String(authHeader.Authorization).slice(0, 24) + '…' : 'none';
+            console.debug('[CHAT REQUEST]', { url: this.chatUrl, hasAuth: !!authHeader.Authorization, tokenPreview, hasApikey: !!this.supabaseKey });
+        } catch {}
         const resp = await fetch(this.chatUrl, {
             method: 'POST',
             headers: {
