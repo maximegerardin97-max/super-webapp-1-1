@@ -96,14 +96,36 @@ class DesignRatingApp {
         if (signInBtn) {
             signInBtn.addEventListener('click', async () => {
                 const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
-                if (!email) return;
+                // Very basic email validation
+                const valid = /.+@.+\..+/.test(email);
+                if (!valid) {
+                    if (authStatus) authStatus.textContent = 'Enter a valid email address';
+                    return;
+                }
                 try {
-                    const { error } = await this.supabase.auth.signInWithOtp({ email });
+                    // UI: disable and show progress
+                    signInBtn.disabled = true;
+                    const originalText = signInBtn.textContent;
+                    signInBtn.textContent = 'Sending…';
+                    if (authStatus) authStatus.textContent = 'Sending magic link…';
+
+                    const { error } = await this.supabase.auth.signInWithOtp({
+                        email,
+                        options: {
+                            emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+                        }
+                    });
                     if (error) throw error;
-                    alert('Magic link sent. Check your email.');
+
+                    if (authStatus) authStatus.textContent = `Magic link sent to ${email}. Check your inbox.`;
+                    // restore button
+                    signInBtn.textContent = originalText;
+                    signInBtn.disabled = false;
                 } catch (e) {
                     console.error(e);
-                    alert('Sign-in failed: ' + e.message);
+                    if (authStatus) authStatus.textContent = 'Sign-in failed: ' + (e && e.message ? e.message : String(e));
+                    signInBtn.disabled = false;
+                    signInBtn.textContent = 'Sign in';
                 }
             });
         }
@@ -147,15 +169,31 @@ class DesignRatingApp {
         const largeImageDisplay = document.getElementById('largeImageDisplay');
         const largeImageUpload = document.getElementById('largeImageUpload');
         const largeImagePlaceholder = document.querySelector('.large-image-placeholder');
+        const largeUploadIcon = document.querySelector('.upload-icon-large');
         const largeImageContent = document.getElementById('largeImageContent');
         const largeImage = document.getElementById('largeImage');
         const removeLargeImage = document.getElementById('removeLargeImage');
         const addToChatLarge = document.getElementById('addToChatLarge');
 
-        // Click to upload
-        largeImagePlaceholder.addEventListener('click', () => {
-            largeImageUpload.click();
-        });
+        // Click to upload (bind to multiple elements for robustness)
+        if (largeImagePlaceholder) {
+            largeImagePlaceholder.addEventListener('click', () => largeImageUpload && largeImageUpload.click());
+        }
+        if (largeUploadIcon) {
+            largeUploadIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                largeImageUpload && largeImageUpload.click();
+            });
+        }
+        if (largeImageDisplay) {
+            largeImageDisplay.addEventListener('click', (e) => {
+                // Only trigger when no image is present
+                const hasImage = largeImageContent && !largeImageContent.classList.contains('hidden');
+                if (!hasImage) {
+                    largeImageUpload && largeImageUpload.click();
+                }
+            });
+        }
 
         // File input change
         largeImageUpload.addEventListener('change', (e) => {
@@ -830,14 +868,15 @@ class DesignRatingApp {
 
 
     sendMainChatMessage(customMessage = null) {
-        const mainChatInput = document.getElementById('mainChatInput');
-        const message = customMessage || mainChatInput.value.trim();
+        const rightPaneInput = document.getElementById('mainChatInput');
+        const floatingInput = document.getElementById('chatInput');
+        const candidate = customMessage || (floatingInput && floatingInput.value) || (rightPaneInput && rightPaneInput.value) || '';
+        const message = candidate.trim();
         if (message) {
             // Add message to chat results
             this.addMessageToChat(message, 'user');
-            if (!customMessage) {
-                mainChatInput.value = '';
-            }
+            if (!customMessage && floatingInput) floatingInput.value = '';
+            if (!customMessage && rightPaneInput) rightPaneInput.value = '';
             
             // Simulate AI response
             setTimeout(() => {
