@@ -940,17 +940,28 @@ class DesignRatingApp {
             
             // Prepare the message payload
             let msgPayload = message;
+            const imageTypeSel = this.getSelectedOption('chatStep1');
+            const productTypeSel = this.getSelectedOption('chatStep2');
+            const contextPrefix = [
+                imageTypeSel ? `Image type: ${imageTypeSel}` : '',
+                productTypeSel ? `Product type: ${productTypeSel}` : ''
+            ].filter(Boolean).join(', ');
+            const userTextFull = contextPrefix ? `${contextPrefix}. ${message}` : message;
             
             // Add image data if available
             if (this.uploadedImageData) {
                 msgPayload = [
-                    { type: 'text', text: message },
+                    { type: 'text', text: userTextFull },
                     { type: 'image_url', image_url: { url: this.uploadedImageData.dataUrl, detail: 'auto' } }
                 ];
+            } else {
+                msgPayload = userTextFull;
             }
             
             // Call the analysis API
             let response = '';
+            // Add user turn to memory prior to call
+            this.appendHistory(userTextFull, null);
             await this.sendChat({
                 provider: this.currentProvider,
                 model: this.currentModel,
@@ -973,6 +984,7 @@ class DesignRatingApp {
             // Display the response
             if (response) {
                 this.addMessageToChat(response, 'assistant');
+                this.appendHistory(null, response);
             } else {
                 this.addMessageToChat('Sorry, I couldn\'t process your request. Please try again.', 'assistant');
             }
