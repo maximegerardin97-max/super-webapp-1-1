@@ -476,8 +476,13 @@ class DesignRatingApp {
         const flowName = this.inferFlowFromImages ? this.inferFlowFromImages(imageNames, appName) : '';
         console.debug('[INSPIRATIONS START]', { appName, flowName, imageNames });
         const fetched = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
-        // Normalize to flat images list if needed
-        const realImages = this.normalizeRealImages ? this.normalizeRealImages(fetched) : fetched;
+        // Normalize to flat images list if needed (handle flows array)
+        let realImages = Array.isArray(fetched) ? fetched : [];
+        if (realImages.length > 0 && realImages[0] && realImages[0].screens) {
+            const flat = [];
+            realImages.forEach(flow => (flow.screens || []).forEach(s => flat.push({ imageUrl: s.imageUrl, screenName: s.screenName || s.imageName })));
+            realImages = flat;
+        }
         console.debug('[INSPIRATIONS RESULT images]', realImages);
         
         // Prepare and immediately show images
@@ -701,13 +706,11 @@ class DesignRatingApp {
         let imagesHtml = '';
         if (Array.isArray(realImages) && realImages.length > 0) {
             imagesHtml = realImages.map((img, idx) => {
-                const name = encodeURIComponent(img.screenName || `Screen ${idx+1}`);
-                const url = encodeURIComponent(img.imageUrl || '');
-                const safeName = decodeURIComponent(name);
-                const safeUrl = decodeURIComponent(url);
+                const name = img.screenName || `Screen ${idx+1}`;
+                const url = img.imageUrl || '';
                 return `
-                    <div class="app-image-item" data-image-name="${name}" data-image-url="${url}">
-                        <img src="${safeUrl}" alt="${safeName}">
+                    <div class="app-image-item" data-image-name="${encodeURIComponent(name)}" data-image-url="${encodeURIComponent(url)}">
+                        <img src="${url}" alt="${name}">
                     </div>
                 `;
             }).join('');
