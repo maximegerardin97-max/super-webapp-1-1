@@ -460,20 +460,29 @@ class DesignRatingApp {
         const cleanMessage = message.replace(/COMMAND:\s*send\s+[^.]*\.?\s*/i, '').trim();
         const chatResultsContent = document.getElementById('chatResultsContent');
         
-        // Create message element with show images tag
+        // Create message element with show images tag (no inline JS)
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message assistant-message';
         messageDiv.innerHTML = `
             <div class="message-content">${cleanMessage}</div>
-            <div class="show-images-tag" onclick="app.toggleCommandImages('${appName}')">
+            <button class="show-images-tag" type="button" data-app="${encodeURIComponent(appName)}">
                 <span class="show-images-tag-icon">📱</span>
                 <span>Show ${appName} screens</span>
-            </div>
+            </button>
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
-        
+
         chatResultsContent.appendChild(messageDiv);
         chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
+
+        // Bind click handler safely
+        const btn = messageDiv.querySelector('.show-images-tag');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const app = decodeURIComponent(btn.getAttribute('data-app') || '');
+                this.toggleCommandImages(app);
+            });
+        }
     }
 
     // Extract app name from image names
@@ -623,15 +632,13 @@ class DesignRatingApp {
         const commandSection = document.createElement('div');
         commandSection.className = `command-images-section${visible ? ' visible' : ''}`;
         
-        // Build images HTML using real images if available
-        const imagesHtml = imageNames.map((imageName, index) => {
+        // Build images HTML using real images if available (no inline JS)
+        const imagesHtml = imageNames.map((imageName) => {
             const realImage = realImages.find(img => img.screenName === imageName || img.imageName === imageName);
             const imageUrl = realImage ? realImage.imageUrl : this.getPlaceholderImageUrl(imageName);
-            
             return `
-                <div class="app-image-item" onclick="app.selectCommandImage('${imageName}', '${imageUrl}')">
-                    <img src="${imageUrl}" alt="${imageName}" data-image-name="${imageName}" 
-                         onerror="this.src='${this.getPlaceholderImageUrl(imageName)}'">
+                <div class="app-image-item" data-image-name="${encodeURIComponent(imageName)}" data-image-url="${encodeURIComponent(imageUrl)}">
+                    <img src="${imageUrl}" alt="${imageName}">
                 </div>
             `;
         }).join('');
@@ -668,6 +675,15 @@ class DesignRatingApp {
                 analysisArea.appendChild(commandSection);
             }
         }
+
+        // Delegate clicks to images
+        commandSection.addEventListener('click', (e) => {
+            const item = e.target.closest('.app-image-item');
+            if (!item) return;
+            const imageName = decodeURIComponent(item.getAttribute('data-image-name') || '');
+            const imageUrl = decodeURIComponent(item.getAttribute('data-image-url') || '');
+            this.selectCommandImage(imageName, imageUrl);
+        });
     }
 
     // Handle clicking on a command image
