@@ -388,7 +388,7 @@ class DesignRatingApp {
             <div class="solution-item">
                 <div class="solution-number">${index + 1}</div>
                 <div class="solution-text">${solution}</div>
-                <button class="solution-more-btn" onclick="app.showSolutionDetails(${index})">More</button>
+            <button class="solution-more-btn" data-solution-index="${index}">More</button>
             </div>
         `).join('');
 
@@ -413,7 +413,7 @@ class DesignRatingApp {
 
         return `
             <div class="arguments-card" id="argumentsCard">
-                <div class="arguments-card-header" onclick="app.toggleArgumentsCard()">
+                <div class="arguments-card-header">
                     <div class="arguments-card-title">Arguments</div>
                     <span class="arguments-card-toggle">▼</span>
                 </div>
@@ -483,6 +483,19 @@ class DesignRatingApp {
                 this.toggleCommandImages(app);
             });
         }
+
+        // Delegate other dynamic buttons
+        messageDiv.addEventListener('click', (e) => {
+            const moreBtn = e.target.closest('.solution-more-btn');
+            if (moreBtn) {
+                const idx = Number(moreBtn.getAttribute('data-solution-index') || '0');
+                this.showSolutionDetails(idx);
+            }
+            const argsHeader = e.target.closest('.arguments-card-header');
+            if (argsHeader) {
+                this.toggleArgumentsCard();
+            }
+        });
     }
 
     // Extract app name from image names
@@ -646,7 +659,7 @@ class DesignRatingApp {
         commandSection.innerHTML = `
             <div class="command-images-content">
                 <div class="app-container expanded">
-                    <div class="app-container-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <div class="app-container-header">
                         <div>
                             <h3 class="app-container-title">${appName}</h3>
                             <p class="app-container-subtitle">${imageNames.length} screens found</p>
@@ -674,6 +687,15 @@ class DesignRatingApp {
             } else {
                 analysisArea.appendChild(commandSection);
             }
+        }
+
+        // Toggle expand/collapse safely
+        const header = commandSection.querySelector('.app-container-header');
+        if (header) {
+            header.addEventListener('click', () => {
+                const container = header.closest('.app-container');
+                if (container) container.classList.toggle('expanded');
+            });
         }
 
         // Delegate clicks to images
@@ -1399,10 +1421,19 @@ class DesignRatingApp {
         tagElement.className = 'chat-tag';
         tagElement.innerHTML = `
             <span class="chat-tag-text">Sample tag for debugging</span>
-            <button class="chat-tag-remove" onclick="this.parentElement.remove()">×</button>
+            <button class="chat-tag-remove" data-action="remove-tag">×</button>
         `;
         
         mainChatTags.appendChild(tagElement);
+        // Bind removal
+        tagElement.addEventListener('click', (e) => {
+            const btn = e.target.closest('.chat-tag-remove');
+            if (!btn) return;
+            tagElement.remove();
+            if (btn.getAttribute('data-action') === 'remove-tag-update') {
+                this.updateChatStateAfterTagChange();
+            }
+        });
     }
     
     addImageToMainChat(imageUrl, filename) {
@@ -1414,7 +1445,7 @@ class DesignRatingApp {
         tagElement.className = 'chat-tag';
         tagElement.innerHTML = `
             <span class="chat-tag-text">📷 ${filename}</span>
-            <button class="chat-tag-remove" onclick="this.parentElement.remove(); app.updateChatStateAfterTagChange()">×</button>
+            <button class="chat-tag-remove" data-action="remove-tag-update">×</button>
         `;
         
         // Store image data in the tag for later use
@@ -2262,7 +2293,7 @@ class DesignRatingApp {
         
         return `
             <div class="${argumentClass}" data-argument-type="${argument.type}" data-argument-content="${this.escapeHtml(argument.content)}">
-                <div class="dust-argument__header" onclick="app.toggleArgument('${argumentId}')">
+                <div class="dust-argument__header" data-argument-id="${argumentId}">
                     <span class="dust-argument__emoji">${emoji}</span>
                     <h4 class="dust-argument__title">${argument.title}</h4>
                     <span class="dust-argument__expand-icon" id="expand-${argumentId}">▼</span>
@@ -2443,7 +2474,7 @@ class DesignRatingApp {
         
         return `
             <div class="emoji-toggle-list">
-                <div class="emoji-toggle-header" onclick="app.toggleEmojiList('${toggleId}')">
+                <div class="emoji-toggle-header" data-toggle-id="${toggleId}">
                     <span class="emoji-toggle-text">Detailed analysis</span>
                     <span class="emoji-toggle-count">(${emojiCount} items)</span>
                     <span class="emoji-toggle-icon" id="icon-${toggleId}">▼</span>
@@ -2821,10 +2852,20 @@ Product: E-commerce App | Industry: Retail | Platform: Web
         }).join('');
 
         inspContent.innerHTML = `
-          <div class="flow-group">
-            <div class="flow-title">${best.appName} — ${best.flowName}</div>
-            <div class="flows">${screensHtml}</div>
-          </div>`;
+                <div class="flow-group">
+                  <div class="flow-title">${best.appName} — ${best.flowName}</div>
+                  <div class="flows">${screensHtml}</div>
+                </div>`;
+        // Remove inline onerror: bind a fallback handler
+        inspContent.querySelectorAll('img').forEach((img) => {
+            img.addEventListener('error', () => {
+                try {
+                    const raw = img.getAttribute('src') || '';
+                    const encoded = encodeURI(raw);
+                    if (raw !== encoded) img.src = encoded;
+                } catch {}
+            });
+        });
     }
 
     showError(message, cardId = null) {
