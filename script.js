@@ -651,11 +651,28 @@ class DesignRatingApp {
         const showTag = document.querySelector('.show-images-tag');
         
         if (commandSection) {
-            const minimized = commandSection.classList.toggle('minimized');
+            // Ensure the section is mounted
+            commandSection.classList.add('visible');
+            const container = commandSection.querySelector('.app-container');
+            // If currently expanded, switch to minimized pill (like the toggle header)
+            const isExpanded = container && container.classList.contains('expanded');
+            if (isExpanded) {
+                container.classList.remove('expanded');
+                commandSection.classList.add('minimized');
+            } else {
+                // Expand back from minimized
+                commandSection.classList.remove('minimized');
+                if (container) container.classList.add('expanded');
+            }
             if (showTag) {
+                const minimized = commandSection.classList.contains('minimized');
                 showTag.classList.toggle('active', !minimized);
                 const label = showTag.querySelector('span:nth-child(2)');
                 if (label) label.textContent = minimized ? `Show ${appName} screens` : `Hide ${appName} screens`;
+            }
+            // Keep the pill in view when minimizing
+            if (commandSection.classList.contains('minimized')) {
+                try { commandSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch {}
             }
         }
     }
