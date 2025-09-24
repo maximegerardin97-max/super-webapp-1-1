@@ -578,7 +578,18 @@ class DesignRatingApp {
             }
             const data = await resp.json();
             console.debug('[INSPIRATIONS RESPONSE]', data);
-            return data.data || [];
+            // Normalize return shape (flows with screens or direct list)
+            if (Array.isArray(data.data)) {
+                const arr = data.data;
+                if (arr.length > 0 && arr[0].screens) {
+                    // flows
+                    const flat = [];
+                    arr.forEach(flow => (flow.screens || []).forEach(s => flat.push({ imageUrl: s.imageUrl, screenName: s.screenName || s.imageName })));
+                    return flat;
+                }
+                return arr;
+            }
+            return [];
         } catch (error) {
             console.error('Error fetching command images (by app/flow):', error);
             return [];
@@ -654,16 +665,30 @@ class DesignRatingApp {
         const commandSection = document.createElement('div');
         commandSection.className = `command-images-section${visible ? ' visible' : ''}`;
         
-        // Build images HTML using real images if available (no inline JS)
-        const imagesHtml = imageNames.map((imageName) => {
-            const realImage = realImages.find(img => img.screenName === imageName || img.imageName === imageName);
-            const imageUrl = realImage ? realImage.imageUrl : this.getPlaceholderImageUrl(imageName);
-            return `
-                <div class="app-image-item" data-image-name="${encodeURIComponent(imageName)}" data-image-url="${encodeURIComponent(imageUrl)}">
-                    <img src="${imageUrl}" alt="${imageName}">
-                </div>
-            `;
-        }).join('');
+        // Build images HTML: prefer realImages array from edge; fallback to placeholders
+        let imagesHtml = '';
+        if (Array.isArray(realImages) && realImages.length > 0) {
+            imagesHtml = realImages.map((img, idx) => {
+                const name = encodeURIComponent(img.screenName || `Screen ${idx+1}`);
+                const url = encodeURIComponent(img.imageUrl || '');
+                const safeName = decodeURIComponent(name);
+                const safeUrl = decodeURIComponent(url);
+                return `
+                    <div class="app-image-item" data-image-name="${name}" data-image-url="${url}">
+                        <img src="${safeUrl}" alt="${safeName}">
+                    </div>
+                `;
+            }).join('');
+        } else {
+            imagesHtml = imageNames.map((imageName) => {
+                const imageUrl = this.getPlaceholderImageUrl(imageName);
+                return `
+                    <div class="app-image-item" data-image-name="${encodeURIComponent(imageName)}" data-image-url="${encodeURIComponent(imageUrl)}">
+                        <img src="${imageUrl}" alt="${imageName}">
+                    </div>
+                `;
+            }).join('');
+        }
         
         commandSection.innerHTML = `
             <div class="command-images-content">
@@ -671,7 +696,7 @@ class DesignRatingApp {
                     <div class="app-container-header">
                         <div>
                             <h3 class="app-container-title">${appName}</h3>
-                            <p class="app-container-subtitle">${imageNames.length} screens found</p>
+                            <p class="app-container-subtitle">${(realImages && realImages.length) || imageNames.length} screens found</p>
                         </div>
                         <span class="app-container-toggle">▼</span>
                     </div>
