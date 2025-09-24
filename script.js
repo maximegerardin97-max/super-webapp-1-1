@@ -880,11 +880,6 @@ class DesignRatingApp {
             this.addMessageToChat(message, 'user');
             if (!customMessage && floatingInput) floatingInput.value = '';
             if (!customMessage && rightPaneInput) rightPaneInput.value = '';
-            
-            // Simulate AI response
-            setTimeout(() => {
-                this.addMessageToChat('I received your message: "' + message + '"', 'assistant');
-            }, 1000);
         }
     }
 
