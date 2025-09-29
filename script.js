@@ -449,6 +449,185 @@ class DesignRatingApp {
         `;
     }
 
+    // Parse the requested Screen Analysis card layout from free text
+    parseScreenAnalysis(message) {
+        const result = {
+            hasScreenAnalysis: false,
+            header: '',
+            productMeta: '',
+            cards: [],
+            recommendation: '',
+            commandLine: '',
+            showDesignsLabel: 'Show designs'
+        };
+
+        // Extract COMMAND line if present to preserve and for designs toggle
+        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+        if (commandMatch) {
+            result.commandLine = commandMatch[0];
+        }
+
+        // Pull product/industry/platform line (e.g., "Product: ... | Industry: ... | Platform: ...")
+        const metaMatch = message.match(/Product:\s*[^\n]+/i);
+        if (metaMatch) {
+            result.productMeta = metaMatch[0].trim();
+            result.hasScreenAnalysis = true;
+        }
+
+        // Parse numbered cards: lines like "1. title:" then justification beneath OR
+        // "Card X:" blocks like in the user example
+        const lines = message.split('\n');
+        let i = 0;
+        while (i < lines.length) {
+            const line = lines[i].trim();
+            // Match "Card N:" form
+            let cardTitle = '';
+            let titleMatch = line.match(/^Card\s*\d+\s*:\s*$/i);
+            if (titleMatch) {
+                // Next line should be title: Something
+                const next = (lines[i+1]||'').trim();
+                const tMatch = next.match(/^title:\s*(.+)/i);
+                if (tMatch) {
+                    cardTitle = tMatch[1].trim().replace(/\.$/, '');
+                    i += 2;
+                } else {
+                    i++;
+                    continue;
+                }
+                // Next lines: justification
+                let justification = '';
+                const jMatch = (lines[i]||'').trim().match(/^(Then\s+inside\s+a\s+collapsible\s+section,\s*show\s+justification:|justification:)\s*(.+)/i);
+                if (jMatch) {
+                    justification = jMatch[2].trim();
+                    i++;
+                }
+                result.cards.push({ title: cardTitle, justification });
+                result.hasScreenAnalysis = true;
+                continue;
+            }
+
+            // Match numbered bullet lines "1. Title" and later a justification line
+            const numbered = line.match(/^\d+\.\s*(.+)/);
+            if (numbered) {
+                cardTitle = numbered[1].trim().replace(/\.$/, '');
+                // Find justification on subsequent lines until blank or next number
+                let justification = '';
+                let j = i + 1;
+                while (j < lines.length) {
+                    const l = lines[j].trim();
+                    if (l === '' || /^\d+\./.test(l) || /^Card\s*\d+\s*:/i.test(l)) break;
+                    const jMatch2 = l.match(/^(Then\s+inside.*justification:|justification:)\s*(.+)/i);
+                    if (jMatch2) { justification = jMatch2[2].trim(); }
+                    j++;
+                }
+                result.cards.push({ title: cardTitle, justification });
+                result.hasScreenAnalysis = true;
+                i = j;
+                continue;
+            }
+
+            // Recommendation card
+            const recStart = line.match(/^Recommandation\s*card:|Recommendation\s*card:/i);
+            if (recStart) {
+                // Expect a title line and then a collapsible with recommendation
+                let recTitle = 'Recommendation';
+                let rec = '';
+                const tLine = (lines[i+1]||'').trim();
+                const tM = tLine.match(/^title:\s*(.+)/i);
+                if (tM) { recTitle = tM[1].trim(); }
+                const rLine = (lines[i+2]||'').trim();
+                const rM = rLine.match(/recommendation:\s*(.+)/i);
+                if (rM) { rec = rM[1].trim(); }
+                result.recommendation = JSON.stringify({ title: recTitle, text: rec });
+                result.hasScreenAnalysis = true;
+                i += 3;
+                continue;
+            }
+
+            i++;
+        }
+
+        return result;
+    }
+
+    // Render the Screen Analysis layout inside the chat box
+    displayScreenAnalysis(data, chatResultsContent) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message assistant-message';
+
+        // Build cards
+        const cardsHtml = data.cards.map((c, idx) => {
+            const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
+            const safeJustif = this.escapeHtml(c.justification || '');
+            const sectionId = `sa-card-${Date.now()}-${idx}`;
+            return `
+                <div class="dust-card dust-card--general" data-card-type="screen-analysis">
+                    <div class="dust-card__header">
+                        <h3 class="dust-card__title">${idx+1}. ${safeTitle}</h3>
+                    </div>
+                    <div class="dust-card__content">
+                        <details id="${sectionId}" class="sa-collapsible">
+                            <summary>Justification</summary>
+                            <div class="dust-card__text">${safeJustif}</div>
+                        </details>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Recommendation card
+        let recommendationHtml = '';
+        if (data.recommendation) {
+            try {
+                const rec = JSON.parse(data.recommendation);
+                const rTitle = this.escapeHtml(rec.title || 'Recommendation');
+                const rText = this.escapeHtml(rec.text || '');
+                recommendationHtml = `
+                <div class="dust-card dust-card--solution2" data-card-type="recommendation">
+                    <div class="dust-card__header">
+                        <h3 class="dust-card__title">${rTitle}</h3>
+                    </div>
+                    <div class="dust-card__content">
+                        <details class="sa-collapsible">
+                            <summary>Details</summary>
+                            <div class="dust-card__text">${rText}</div>
+                        </details>
+                    </div>
+                </div>`;
+            } catch {}
+        }
+
+        // Product meta line and show/hide designs button
+        const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
+        const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
+        const commandLine = data.commandLine ? `<div class="message-content">${this.escapeHtml(data.commandLine)}</div>` : '';
+
+        messageDiv.innerHTML = `
+            ${metaLine}
+            ${cardsHtml}
+            ${recommendationHtml}
+            ${commandLine}
+            ${showDesignsBtn}
+            <div class="message-time">${new Date().toLocaleTimeString()}</div>
+        `;
+
+        chatResultsContent.appendChild(messageDiv);
+        chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
+
+        // Bind show/hide designs toggle to existing analysis images section
+        const btn = messageDiv.querySelector('.show-images-tag');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                // Toggle analysis section
+                const app = (this.currentCommandImages && this.currentCommandImages.appName) || 'App';
+                this.toggleCommandImages(app);
+                const isActive = btn.classList.toggle('active');
+                const label = btn.querySelector('span:nth-child(2)');
+                if (label) label.textContent = isActive ? 'Hide designs' : 'Show designs';
+            });
+        }
+    }
+
     // Toggle Arguments card visibility
     toggleArgumentsCard() {
         const card = document.getElementById('argumentsCard');
@@ -1044,6 +1223,19 @@ class DesignRatingApp {
         const placeholder = chatResultsContent.querySelector('.placeholder-text');
         if (placeholder) {
             placeholder.remove();
+        }
+
+        // Screen-analysis card format (cards with collapsible justifications)
+        if (sender === 'assistant') {
+            const screenAnalysis = this.parseScreenAnalysis(message);
+            if (screenAnalysis.hasScreenAnalysis) {
+                this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
+                // Optionally also handle COMMAND to mount images toggle
+                if (this.containsCommandFormula(message)) {
+                    this.processCommandMessage(message);
+                }
+                return null;
+            }
         }
 
         // Check for COMMAND formula and process it
