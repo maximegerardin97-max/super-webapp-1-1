@@ -1856,9 +1856,15 @@ class DesignRatingApp {
             floatingChat.style.display = 'none';
         });
         
-        // Initialize chat in initial state and show conversation list
+        // Initialize chat in initial state and show conversation list after auth resolves
         this.setChatState('initial-state');
-        this.renderConversationList();
+        try {
+            if (this.supabase) {
+                this.supabase.auth.getSession().then(() => this.renderConversationList()).catch(() => this.renderConversationList());
+            } else {
+                this.renderConversationList();
+            }
+        } catch (_) { this.renderConversationList(); }
         
     }
 
@@ -1867,10 +1873,11 @@ class DesignRatingApp {
             const authHeader = await this.getAuthHeader();
             const user = await this.getCurrentUser();
             if (!user) return [];
-            const resp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at,design_url&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`, {
-                headers: { 'apikey': this.supabaseKey, ...authHeader }
+            const url = `${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at,design_url&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`;
+            const resp = await fetch(url, {
+                headers: { 'apikey': this.supabaseKey, 'Accept': 'application/json', ...authHeader }
             });
-            if (!resp.ok) return [];
+            if (!resp.ok) { console.warn('fetchConversations 400+', resp.status, await resp.text().catch(()=>'')); return [];} 
             return await resp.json();
         } catch (_) { return []; }
     }
@@ -1878,10 +1885,11 @@ class DesignRatingApp {
     async fetchMessages(conversationId) {
         try {
             const authHeader = await this.getAuthHeader();
-            const resp = await fetch(`${this.supabaseUrl}/rest/v1/messages?select=role,content,created_at&conversation_id=eq.${encodeURIComponent(conversationId)}&order=created_at.asc`, {
-                headers: { 'apikey': this.supabaseKey, ...authHeader }
+            const url = `${this.supabaseUrl}/rest/v1/messages?select=role,content,created_at&conversation_id=eq.${encodeURIComponent(conversationId)}&order=created_at.asc`;
+            const resp = await fetch(url, {
+                headers: { 'apikey': this.supabaseKey, 'Accept': 'application/json', ...authHeader }
             });
-            if (!resp.ok) return [];
+            if (!resp.ok) { console.warn('fetchMessages 400+', resp.status, await resp.text().catch(()=>'')); return [];}
             return await resp.json();
         } catch (_) { return []; }
     }
