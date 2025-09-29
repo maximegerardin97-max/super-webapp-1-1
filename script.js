@@ -23,6 +23,8 @@ class DesignRatingApp {
         // Conversation context management
         this.conversationHistory = new Map(); // cardId -> conversation history
         this.currentConversationId = null; // Current active conversation
+        this.conversationsList = [];
+        this.userDesignsByConversation = new Map();
         this.mainChatHistory = []; // Centralized main chat history
         this.chatMemory = []; // last 10 turns (20 messages)
 
@@ -1854,14 +1856,85 @@ class DesignRatingApp {
             floatingChat.style.display = 'none';
         });
         
-        // Initialize chat in initial state
+        // Initialize chat in initial state and show conversation list
         this.setChatState('initial-state');
+        this.renderConversationList();
         
-        // Show message history by default if there are any messages
-        if (this.mainChatHistory.length > 0) {
-            this.showMainChatHistory();
+    }
+
+    async fetchConversationsForUser() {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const user = await this.getCurrentUser();
+            if (!user) return [];
+            const resp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at,design_url&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`, {
+                headers: { 'apikey': this.supabaseKey, ...authHeader }
+            });
+            if (!resp.ok) return [];
+            return await resp.json();
+        } catch (_) { return []; }
+    }
+
+    async fetchMessages(conversationId) {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const resp = await fetch(`${this.supabaseUrl}/rest/v1/messages?select=role,content,created_at&conversation_id=eq.${encodeURIComponent(conversationId)}&order=created_at.asc`, {
+                headers: { 'apikey': this.supabaseKey, ...authHeader }
+            });
+            if (!resp.ok) return [];
+            return await resp.json();
+        } catch (_) { return []; }
+    }
+
+    async renderConversationList() {
+        const chatResultsArea = document.getElementById('chatResultsArea');
+        const chatResultsContent = document.getElementById('chatResultsContent');
+        chatResultsArea.classList.add('show');
+        this.setChatState('expanded-state');
+        chatResultsContent.innerHTML = `<div class="message-content">Conversations</div>`;
+        const list = await this.fetchConversationsForUser();
+        this.conversationsList = Array.isArray(list) ? list : [];
+        const items = this.conversationsList.map(c => `
+            <div class="improvement-card" data-role="open-conv" data-id="${c.id}">
+                <div class="improvement-header">
+                    <div class="improvement-title">${this.escapeHtml(c.title || 'Conversation')}</div>
+                </div>
+            </div>
+        `).join('');
+        chatResultsContent.innerHTML = `
+            <div class="cards-stack">${items}</div>
+        `;
+        chatResultsContent.addEventListener('click', async (e) => {
+            const item = e.target.closest('[data-role="open-conv"]');
+            if (!item) return;
+            const id = item.getAttribute('data-id');
+            await this.openConversation(id);
+        }, { once: true });
+    }
+
+    async openConversation(conversationId) {
+        this.currentConversationId = conversationId;
+        const chatResultsContent = document.getElementById('chatResultsContent');
+        const messages = await this.fetchMessages(conversationId);
+        // Render back header
+        const header = `
+            <div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>
+        `;
+        const bubbles = (messages||[]).map(m => `
+            <div class="chat-message ${m.role === 'user' ? 'user-message' : 'assistant-message'}">
+                <div class="message-content">${this.escapeHtml(m.content||'')}</div>
+            </div>
+        `).join('');
+        chatResultsContent.innerHTML = header + bubbles;
+        // Back handler
+        const backBtn = document.getElementById('backToList');
+        if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
+        // Load design for conversation if stored
+        const conv = (this.conversationsList||[]).find(c => String(c.id) === String(conversationId));
+        const designUrl = conv && conv.design_url ? conv.design_url : null;
+        if (designUrl) {
+            this.displayLargeImage(designUrl, 'Conversation Design');
         }
-        
     }
     
     setChatState(state) {
