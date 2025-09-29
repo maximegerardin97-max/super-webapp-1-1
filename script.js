@@ -571,7 +571,10 @@ class DesignRatingApp {
                         <div class="improvement-card" data-index="${idx}">
                             <div class="improvement-header">
                                 <div class="improvement-title">${safeTitle}</div>
-                                <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
+                                <div class="improvement-actions">
+                                    <button class="go-deeper-btn" type="button" data-role="go-deeper">Go deeper</button>
+                                    <button class="improvement-chevron" type="button">▾</button>
+                                </div>
                             </div>
                             <div class="improvement-body">${safeJustif}</div>
                         </div>
@@ -591,7 +594,10 @@ class DesignRatingApp {
                 <div class="improvement-card" data-card-type="recommendation">
                     <div class="improvement-header">
                         <div class="improvement-title">${rTitle}</div>
-                        <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
+                        <div class="improvement-actions">
+                            <button class="go-deeper-btn" type="button" data-role="go-deeper">Go deeper</button>
+                            <button class="improvement-chevron" type="button">▾</button>
+                        </div>
                     </div>
                     <div class="improvement-body">${rText}</div>
                 </div>`;
@@ -639,12 +645,24 @@ class DesignRatingApp {
             });
         }
 
-        // Wire up expand/collapse buttons
+        // Wire up expand/collapse and go deeper
         messageDiv.addEventListener('click', (e) => {
             const chevron = e.target.closest('.improvement-chevron');
             if (chevron) {
                 const card = chevron.closest('.improvement-card');
                 if (card) card.classList.toggle('expanded');
+            }
+            const goDeeper = e.target.closest('[data-role="go-deeper"]');
+            if (goDeeper) {
+                const card = goDeeper.closest('.improvement-card');
+                if (card) {
+                    const titleEl = card.querySelector('.improvement-title');
+                    const bodyEl = card.querySelector('.improvement-body');
+                    const title = titleEl ? titleEl.textContent.trim() : '';
+                    const body = bodyEl ? bodyEl.textContent.trim() : '';
+                    const prompt = `${title}\n\n${body}\n\nTell me more about this.`;
+                    this.sendMainChatMessage(prompt);
+                }
             }
         });
     }
