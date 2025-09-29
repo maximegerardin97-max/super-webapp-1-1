@@ -536,6 +536,28 @@ class DesignRatingApp {
             if (title) result.cards.push({ title, justification: just });
         }
 
+        // Tertiary pass: Markdown-style sections using ### as card titles and '-' bullets as details
+        if (result.cards.length === 0) {
+            const mdLines = message.split('\n').map(l => l.trim()).filter(Boolean);
+            let currentMdCard = null;
+            let currentMdBody = [];
+            const flushMdCard = () => {
+                if (currentMdCard) {
+                    const body = stripAll(currentMdBody.join('\n').trim());
+                    result.cards.push({ title: stripAll(currentMdCard), justification: body });
+                }
+                currentMdCard = null; currentMdBody = [];
+            };
+            for (const line of mdLines) {
+                const h = line.match(/^###\s*([^:]+)\s*:?/i);
+                if (h) { flushMdCard(); currentMdCard = h[1]; continue; }
+                if (/^-\s+/.test(line)) { currentMdBody.push(line.replace(/^-\s+/, '• ')); continue; }
+                // accumulate paragraph text under current section
+                if (currentMdCard) { currentMdBody.push(line); }
+            }
+            flushMdCard();
+        }
+
         if (!result.recommendation) {
             const recInline = message.match(/Recommendation\s*:\s*([^\n]+)/i);
             if (recInline) result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recInline[1]) });
