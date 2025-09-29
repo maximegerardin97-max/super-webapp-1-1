@@ -601,9 +601,10 @@ class DesignRatingApp {
         // Product meta line and show/hide designs button
         const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
-        const commandLine = data.commandLine ? `<div class="message-content">${this.escapeHtml(data.commandLine)}</div>` : '';
+        // Hide COMMAND line from UI but keep detection handled above
+        const commandLine = '';
         const punchlineCard = data.punchline ? `
-            <div class="improvement-card" data-card-type="punchline">
+            <div class="improvement-card improvement-card--recap" data-card-type="punchline">
                 <div class="improvement-header">
                     <div class="improvement-title">1-line recap</div>
                     <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>

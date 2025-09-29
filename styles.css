@@ -379,7 +379,7 @@ body {
 
 /* Solutions Card */
 /* Neutral Improvements cards (like screenshot) */
-.improvements-list { display: flex; flex-direction: column; gap: 10px; }
+.improvements-list { display: flex; flex-direction: column; gap: 8px; }
 
 .improvement-card {
   background: var(--bg-secondary);
@@ -390,6 +390,12 @@ body {
   width: 100%;
 }
 
+/* 1-line recap (green) */
+.improvement-card--recap {
+  border-color: var(--accent-secondary);
+  background: rgba(48, 209, 88, 0.10);
+}
+
 .improvement-header {
   display: flex;
   align-items: center;
@@ -398,7 +404,7 @@ body {
 }
 
 .improvement-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -411,7 +417,7 @@ body {
 }
 .improvement-chevron:hover { background: var(--bg-hover); }
 
-.improvement-body { display: none; padding: 0 14px 14px 14px; color: var(--text-tertiary); font-size: 14px; line-height: 1.5; }
+.improvement-body { display: none; padding: 0 14px 14px 14px; color: var(--text-tertiary); font-size: 13px; line-height: 1.5; }
 .improvement-card.expanded .improvement-body { display: block; }
 
 .improvement-card .muted { color: var(--text-quaternary); }
@@ -973,12 +979,7 @@ body {
 }
 
 /* Chat Messages */
-.chat-message {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
+.chat-message { margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
 
 .user-message {
   align-items: flex-end;
@@ -988,13 +989,7 @@ body {
   align-items: flex-start;
 }
 
-.message-content {
-  max-width: 80%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
+.message-content { max-width: 100%; width: 100%; padding: 12px 14px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
 
 .user-message .message-content {
   background: var(--accent-primary);
@@ -1002,12 +997,7 @@ body {
   border-bottom-right-radius: 0.25rem;
 }
 
-.assistant-message .message-content {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-  border-bottom-left-radius: 0.25rem;
-}
+.assistant-message .message-content { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-primary); border-bottom-left-radius: 6px; }
 
 .message-time {
   font-size: 0.75rem;
