@@ -1326,6 +1326,8 @@ class DesignRatingApp {
                 if (this.containsCommandFormula(message)) {
                     this.processCommandImagesFromMessage(message, true);
                 }
+                // Set up event listeners for the new cards
+                this.setupCardEventListeners(chatResultsContent);
                 return null;
             }
         }
