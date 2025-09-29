@@ -1902,16 +1902,23 @@ class DesignRatingApp {
         chatResultsContent.innerHTML = `<div class="message-content">Conversations</div><div class="message-content" id="convLoading">Loading conversations…</div>`;
         const list = await this.fetchConversationsForUser();
         this.conversationsList = Array.isArray(list) ? list : [];
-        const items = this.conversationsList.map(c => `
-            <div class="improvement-card" data-role="open-conv" data-id="${c.id}">
-                <div class="improvement-header">
-                    <div class="improvement-title">${this.escapeHtml(c.title || 'Conversation')}</div>
-                </div>
-            </div>
-        `).join('');
+        // Group by date (YYYY-MM-DD)
+        const byDate = {};
+        for (const c of this.conversationsList) {
+            const d = new Date(c.created_at);
+            const key = isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleDateString();
+            if (!byDate[key]) byDate[key] = [];
+            byDate[key].push(c);
+        }
+        const sections = Object.keys(byDate).map(dateKey => {
+            const itemsHtml = byDate[dateKey].map(c => `
+                <div class=\"improvement-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"improvement-header\">\n                        <div class=\"improvement-title\">${this.escapeHtml(c.title || 'Conversation')}</div>\n                    </div>\n                </div>
+            `).join('');
+            return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
+        }).join('');
         chatResultsContent.innerHTML = `
             <div class="message-content">Conversations</div>
-            <div class="cards-stack">${items || '<div class=\"message-content\">No conversations yet.</div>'}</div>
+            <div class="cards-stack">${sections || '<div class=\"message-content\">No conversations yet.</div>'}</div>
         `;
         chatResultsContent.addEventListener('click', async (e) => {
             const item = e.target.closest('[data-role="open-conv"]');
@@ -1926,12 +1933,12 @@ class DesignRatingApp {
         const chatResultsContent = document.getElementById('chatResultsContent');
         chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
-        const header = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
-        const bubbles = (messages||[]).map(m => `
-            <div class="chat-message ${m.role === 'user' ? 'user-message' : 'assistant-message'}">
-                <div class="message-content">${this.escapeHtml(m.content||'')}</div>
-            </div>
-        `).join('');
+        const header = `<div class=\"message-content\"><button id=\"backToList\" class=\"go-deeper-btn\" type=\"button\">◀ Back</button></div>`;
+        const bubbles = (messages||[]).map(m => {
+            const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
+            const content = (typeof m.content === 'string') ? m.content : (m.content && m.content.text) ? m.content.text : JSON.stringify(m.content||'');
+            return `\n            <div class=\"chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}\">\n                <div class=\"message-content\">${this.escapeHtml(content)}</div>\n            </div>`;
+        }).join('');
         chatResultsContent.innerHTML = header + bubbles;
         // Back handler
         const backBtn = document.getElementById('backToList');
