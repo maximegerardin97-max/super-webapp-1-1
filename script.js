@@ -561,24 +561,25 @@ class DesignRatingApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message assistant-message';
 
-        // Build Solutions card UI (green) with collapsible justifications
-        const solutionsItems = data.cards.map((c, idx) => {
-            const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
-            const safeJustif = this.escapeHtml(c.justification || '');
-            return `
-                <div class="solution-item" data-index="${idx}">
-                    <div class="solution-number">${idx + 1}</div>
-                    <div class="solution-text">${safeTitle}</div>
-                    <button class="solution-more-btn" type="button">More</button>
-                    <div class="solution-justification">${safeJustif}</div>
-                </div>
-            `;
-        }).join('');
-
+        // Build neutral improvements cards like the screenshot
         const cardsHtml = data.cards.length > 0 ? `
-            <div class="solutions-card">
-                <div class="solutions-card-title">Solutions</div>
-                <div class="solutions-list">${solutionsItems}</div>
+            <div class="improvements-list">
+                ${data.cards.map((c, idx) => {
+                    const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
+                    const safeJustif = this.escapeHtml(c.justification || '');
+                    return `
+                        <div class="improvement-card" data-index="${idx}">
+                            <div class="improvement-header">
+                                <div class="improvement-title">${safeTitle}</div>
+                                <div class="improvement-actions">
+                                    <button class="improvement-plus" type="button">+</button>
+                                    <button class="improvement-chevron" type="button">▾</button>
+                                </div>
+                            </div>
+                            <div class="improvement-body">${safeJustif}</div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         ` : '';
 
@@ -636,15 +637,12 @@ class DesignRatingApp {
             });
         }
 
-        // Wire up collapsible More buttons
+        // Wire up expand/collapse buttons
         messageDiv.addEventListener('click', (e) => {
-            const more = e.target.closest('.solution-more-btn');
-            if (more) {
-                const item = more.closest('.solution-item');
-                if (item) {
-                    item.classList.toggle('expanded');
-                    more.classList.toggle('active');
-                }
+            const chevron = e.target.closest('.improvement-chevron');
+            if (chevron) {
+                const card = chevron.closest('.improvement-card');
+                if (card) card.classList.toggle('expanded');
             }
         });
     }
@@ -664,7 +662,7 @@ class DesignRatingApp {
     }
 
     // Mount images from a COMMAND line without adding an extra bubble
-    async processCommandImagesFromMessage(message) {
+    async processCommandImagesFromMessage(message, makeVisible = false) {
         try {
             const commandMatch = message.match(/COMMAND:\s*send\s+(.+)/i);
             if (!commandMatch) return;
@@ -679,8 +677,8 @@ class DesignRatingApp {
                 realImages = flat;
             }
             this.prepareCommandImages(appName, imageNames, realImages);
-            // Do not auto-show here; the toggle button will expand/minimize
-            this.displayCommandImages(appName, imageNames, realImages, false);
+            // Ensure images are visible by default when requested
+            this.displayCommandImages(appName, imageNames, realImages, !!makeVisible);
         } catch (e) {
             console.warn('processCommandImagesFromMessage failed', e);
         }
@@ -1276,7 +1274,7 @@ class DesignRatingApp {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
                 // If a COMMAND is present, mount images silently (no extra bubble)
                 if (this.containsCommandFormula(message)) {
-                    this.processCommandImagesFromMessage(message);
+                    this.processCommandImagesFromMessage(message, true);
                 }
                 return null;
             }
