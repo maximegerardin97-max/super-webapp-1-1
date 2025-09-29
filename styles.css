@@ -428,6 +428,26 @@ body {
   line-height: 1.4;
 }
 
+.solution-justification {
+  display: none;
+  margin-top: 8px;
+  margin-left: 40px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.solution-item.expanded .solution-justification {
+  display: block;
+}
+
+.solution-more-btn.active {
+  background: #5a5a5a;
+}
+
 .solution-more-btn {
   background: #4a4a4a;
   color: white;

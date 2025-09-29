@@ -474,55 +474,34 @@ class DesignRatingApp {
             result.hasScreenAnalysis = true;
         }
 
-        // Parse numbered cards: lines like "1. title:" then justification beneath OR
-        // "Card X:" blocks like in the user example
+        // Parse numbered cards and split Title: Justification; strip emojis
         const lines = message.split('\n');
         let i = 0;
         while (i < lines.length) {
             const line = lines[i].trim();
-            // Match "Card N:" form
             let cardTitle = '';
-            let titleMatch = line.match(/^Card\s*\d+\s*:\s*$/i);
-            if (titleMatch) {
-                // Next line should be title: Something
-                const next = (lines[i+1]||'').trim();
-                const tMatch = next.match(/^title:\s*(.+)/i);
-                if (tMatch) {
-                    cardTitle = tMatch[1].trim().replace(/\.$/, '');
-                    i += 2;
-                } else {
-                    i++;
-                    continue;
-                }
-                // Next lines: justification
-                let justification = '';
-                const jMatch = (lines[i]||'').trim().match(/^(Then\s+inside\s+a\s+collapsible\s+section,\s*show\s+justification:|justification:)\s*(.+)/i);
-                if (jMatch) {
-                    justification = jMatch[2].trim();
-                    i++;
-                }
-                result.cards.push({ title: cardTitle, justification });
-                result.hasScreenAnalysis = true;
-                continue;
-            }
-
-            // Match numbered bullet lines "1. Title" and later a justification line
             const numbered = line.match(/^\d+\.\s*(.+)/);
             if (numbered) {
-                cardTitle = numbered[1].trim().replace(/\.$/, '');
-                // Find justification on subsequent lines until blank or next number
-                let justification = '';
-                let j = i + 1;
-                while (j < lines.length) {
-                    const l = lines[j].trim();
-                    if (l === '' || /^\d+\./.test(l) || /^Card\s*\d+\s*:/i.test(l)) break;
-                    const jMatch2 = l.match(/^(Then\s+inside.*justification:|justification:)\s*(.+)/i);
-                    if (jMatch2) { justification = jMatch2[2].trim(); }
-                    j++;
+                const body = numbered[1];
+                const parts = body.split(':');
+                cardTitle = (parts[0] || '').trim();
+                let justification = (parts.slice(1).join(':') || '').trim();
+                if (!justification) {
+                    let j = i + 1;
+                    while (j < lines.length) {
+                        const l = lines[j].trim();
+                        if (l === '' || /^\d+\./.test(l)) break;
+                        const jMatch2 = l.match(/(Then\s+inside.*justification:|justification:|reason:|because:)\s*(.+)/i);
+                        if (jMatch2) { justification = jMatch2[2].trim(); break; }
+                        j++;
+                    }
+                    i = j;
+                } else {
+                    i++;
                 }
-                result.cards.push({ title: cardTitle, justification });
+                const strip = (s) => (s || '').replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '').trim();
+                result.cards.push({ title: strip(cardTitle).replace(/\.$/, ''), justification: strip(justification) });
                 result.hasScreenAnalysis = true;
-                i = j;
                 continue;
             }
 
@@ -555,25 +534,26 @@ class DesignRatingApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message assistant-message';
 
-        // Build cards
-        const cardsHtml = data.cards.map((c, idx) => {
+        // Build Solutions card UI (green) with collapsible justifications
+        const solutionsItems = data.cards.map((c, idx) => {
             const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
             const safeJustif = this.escapeHtml(c.justification || '');
-            const sectionId = `sa-card-${Date.now()}-${idx}`;
             return `
-                <div class="dust-card dust-card--general" data-card-type="screen-analysis">
-                    <div class="dust-card__header">
-                        <h3 class="dust-card__title">${idx+1}. ${safeTitle}</h3>
-                    </div>
-                    <div class="dust-card__content">
-                        <details id="${sectionId}" class="sa-collapsible">
-                            <summary>Justification</summary>
-                            <div class="dust-card__text">${safeJustif}</div>
-                        </details>
-                    </div>
+                <div class="solution-item" data-index="${idx}">
+                    <div class="solution-number">${idx + 1}</div>
+                    <div class="solution-text">${safeTitle}</div>
+                    <button class="solution-more-btn" type="button">More</button>
+                    <div class="solution-justification">${safeJustif}</div>
                 </div>
             `;
         }).join('');
+
+        const cardsHtml = data.cards.length > 0 ? `
+            <div class="solutions-card">
+                <div class="solutions-card-title">Solutions</div>
+                <div class="solutions-list">${solutionsItems}</div>
+            </div>
+        ` : '';
 
         // Recommendation card
         let recommendationHtml = '';
@@ -600,7 +580,7 @@ class DesignRatingApp {
         // Product meta line and show/hide designs button
         const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
-        const commandLine = data.commandLine ? `<div class="message-content">${this.escapeHtml(data.commandLine)}</div>` : '';
+        const commandLine = '';
 
         messageDiv.innerHTML = `
             ${metaLine}
@@ -626,6 +606,18 @@ class DesignRatingApp {
                 if (label) label.textContent = isActive ? 'Hide designs' : 'Show designs';
             });
         }
+
+        // Wire up collapsible More buttons
+        messageDiv.addEventListener('click', (e) => {
+            const more = e.target.closest('.solution-more-btn');
+            if (more) {
+                const item = more.closest('.solution-item');
+                if (item) {
+                    item.classList.toggle('expanded');
+                    more.classList.toggle('active');
+                }
+            }
+        });
     }
 
     // Toggle Arguments card visibility
@@ -640,6 +632,29 @@ class DesignRatingApp {
     showSolutionDetails(index) {
         console.log(`Showing details for solution ${index + 1}`);
         // TODO: Implement detailed solution view
+    }
+
+    // Mount images from a COMMAND line without adding an extra bubble
+    async processCommandImagesFromMessage(message) {
+        try {
+            const commandMatch = message.match(/COMMAND:\s*send\s+(.+)/i);
+            if (!commandMatch) return;
+            const imageNames = commandMatch[1].split(',').map(s => s.trim());
+            const appName = this.extractAppNameFromImages(imageNames);
+            const flowName = this.inferFlowFromImages ? this.inferFlowFromImages(imageNames, appName) : '';
+            const fetched = await (this.fetchCommandImagesByAppFlow ? this.fetchCommandImagesByAppFlow(appName, flowName) : this.fetchCommandImages(imageNames));
+            let realImages = Array.isArray(fetched) ? fetched : [];
+            if (realImages.length > 0 && realImages[0] && realImages[0].screens) {
+                const flat = [];
+                realImages.forEach(flow => (flow.screens || []).forEach(s => flat.push({ imageUrl: s.imageUrl, screenName: s.screenName || s.imageName })));
+                realImages = flat;
+            }
+            this.prepareCommandImages(appName, imageNames, realImages);
+            // Do not auto-show here; the toggle button will expand/minimize
+            this.displayCommandImages(appName, imageNames, realImages, false);
+        } catch (e) {
+            console.warn('processCommandImagesFromMessage failed', e);
+        }
     }
 
     // Process COMMAND message and display images in analysis area
@@ -1230,9 +1245,9 @@ class DesignRatingApp {
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
-                // Optionally also handle COMMAND to mount images toggle
+                // If a COMMAND is present, mount images silently (no extra bubble)
                 if (this.containsCommandFormula(message)) {
-                    this.processCommandMessage(message);
+                    this.processCommandImagesFromMessage(message);
                 }
                 return null;
             }
