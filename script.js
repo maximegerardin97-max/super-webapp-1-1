@@ -1936,7 +1936,15 @@ class DesignRatingApp {
         const header = `<div class=\"message-content\"><button id=\"backToList\" class=\"go-deeper-btn\" type=\"button\">◀ Back</button></div>`;
         const bubbles = (messages||[]).map(m => {
             const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
-            const content = (typeof m.content === 'string') ? m.content : (m.content && m.content.text) ? m.content.text : JSON.stringify(m.content||'');
+            let content = (typeof m.content === 'string') ? m.content : (m.content && m.content.text) ? m.content.text : '';
+            // Detect image URLs and render minimized tag + restore left image
+            const urlMatch = content && content.match(/https?:[^\s]+\.(png|jpe?g|gif|webp)/i);
+            if (urlMatch) {
+                const url = urlMatch[0];
+                this.addImageToMainChat(url, 'Uploaded design');
+                this.displayLargeImage(url, 'Conversation Design');
+                content = content.replace(url, '').trim();
+            }
             return `\n            <div class=\"chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}\">\n                <div class=\"message-content\">${this.escapeHtml(content)}</div>\n            </div>`;
         }).join('');
         chatResultsContent.innerHTML = header + bubbles;

@@ -393,10 +393,7 @@ body {
 }
 
 /* 1-line recap (green) */
-.improvement-card--recap {
-  border-color: var(--accent-secondary);
-  background: rgba(48, 209, 88, 0.10);
-}
+.improvement-card--recap { border-color: var(--accent-secondary); background: #ffffff; }
 
 .improvement-header {
   display: flex;
