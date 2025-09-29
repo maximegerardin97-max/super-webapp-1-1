@@ -1934,7 +1934,7 @@ class DesignRatingApp {
         chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
         let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
-        const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp))/ig;
+        const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp)|data:image\/[^;]+;base64,[^\s]+)/ig;
         const extractText = (val) => {
             if (val == null) return '';
             if (typeof val === 'string') {
