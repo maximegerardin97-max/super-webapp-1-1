@@ -255,10 +255,11 @@ class DesignRatingApp {
                     // No user design known; clear the image area to placeholder
                     this.removeLargeImage();
                 }
-                // Remove inspirations section entirely so the user's screen is the only one visible
+                // Keep inspirations container but minimize it; do not delete
                 const section = document.querySelector('.command-images-section');
-                if (section && section.parentNode) {
-                    section.parentNode.removeChild(section);
+                if (section) {
+                    section.classList.add('visible');
+                    section.classList.add('minimized');
                 }
             });
         }
@@ -541,26 +542,26 @@ class DesignRatingApp {
             if (title) result.cards.push({ title, justification: just });
         }
 
-        // Tertiary pass: Markdown-style sections using ### as card titles and '-' bullets as details
+        // Tertiary pass: Markdown-style sections using ### anywhere as card titles and '-' bullets as details
         if (result.cards.length === 0) {
-            const mdLines = message.split('\n').map(l => l.trim()).filter(Boolean);
-            let currentMdCard = null;
-            let currentMdBody = [];
-            const flushMdCard = () => {
-                if (currentMdCard) {
-                    const body = stripAll(currentMdBody.join('\n').trim());
-                    result.cards.push({ title: stripAll(currentMdCard), justification: body });
-                }
-                currentMdCard = null; currentMdBody = [];
-            };
-            for (const line of mdLines) {
-                const h = line.match(/^###\s*([^:]+)\s*:?/i);
-                if (h) { flushMdCard(); currentMdCard = h[1]; continue; }
-                if (/^-\s+/.test(line)) { currentMdBody.push(line.replace(/^-\s+/, '• ')); continue; }
-                // accumulate paragraph text under current section
-                if (currentMdCard) { currentMdBody.push(line); }
+            // Find all headings regardless of line starts
+            const headingRegex = /###\s*([^:#\n]+)\s*:?/gi;
+            const indices = [];
+            let m;
+            while ((m = headingRegex.exec(message)) !== null) {
+                indices.push({ title: stripAll(m[1]), start: m.index, end: headingRegex.lastIndex });
             }
-            flushMdCard();
+            if (indices.length > 0) {
+                for (let i = 0; i < indices.length; i++) {
+                    const start = indices[i].end;
+                    const end = i < indices.length - 1 ? indices[i+1].start : message.length;
+                    const sectionText = stripAll(message.slice(start, end));
+                    // Convert inline bullets "- " into list lines
+                    const bullets = sectionText.split(/\n|(?=-\s+)/).map(s => s.trim()).filter(Boolean);
+                    const body = bullets.map(b => b.replace(/^[-•]\s*/, '• ')).join('\n');
+                    result.cards.push({ title: indices[i].title, justification: body });
+                }
+            }
         }
 
         if (!result.recommendation) {
@@ -632,7 +633,7 @@ class DesignRatingApp {
         }
 
         // Product meta line and show/hide designs button
-        const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
+        const metaLine = data.productMeta ? `<div class="message-content">${this.escapeHtml(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
