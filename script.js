@@ -244,16 +244,21 @@ class DesignRatingApp {
         // Restore to initial: show user's original design again (do not delete)
         if (restoreInitialView) {
             restoreInitialView.addEventListener('click', () => {
-                // If we have a stored user design, bring it back
+                // Prefer restoring the user's uploaded design if available
                 if (this.userDesignImageData && this.userDesignImageData.dataUrl) {
                     this.displayLargeImage(this.userDesignImageData.dataUrl, this.userDesignImageData.filename || 'Design');
                     this.uploadedImageData = { ...this.userDesignImageData };
+                } else if (this.uploadedImageData && this.uploadedImageData.dataUrl) {
+                    // Fallback to the last uploaded image
+                    this.displayLargeImage(this.uploadedImageData.dataUrl, this.uploadedImageData.filename || 'Design');
+                } else {
+                    // No user design known; clear the image area to placeholder
+                    this.removeLargeImage();
                 }
-                // Ensure inspirations section is visible but minimized (user can expand)
+                // Remove inspirations section entirely so the user's screen is the only one visible
                 const section = document.querySelector('.command-images-section');
-                if (section) {
-                    section.classList.add('minimized');
-                    section.classList.remove('visible');
+                if (section && section.parentNode) {
+                    section.parentNode.removeChild(section);
                 }
             });
         }
