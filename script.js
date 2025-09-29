@@ -2017,12 +2017,13 @@ class DesignRatingApp {
     }
     
     setupCardEventListeners(container) {
-        // Remove any existing event listeners by cloning the container
-        const newContainer = container.cloneNode(true);
-        container.parentNode.replaceChild(newContainer, container);
+        // Check if event listeners are already set up to avoid duplicates
+        if (container.hasAttribute('data-card-listeners-setup')) {
+            return container;
+        }
         
-        // Wire up expand/collapse and go deeper for cards
-        newContainer.addEventListener('click', (e) => {
+        // Use event delegation on the container to handle all card interactions
+        container.addEventListener('click', (e) => {
             const chevron = e.target.closest('.improvement-chevron');
             if (chevron) {
                 const card = chevron.closest('.improvement-card');
@@ -2042,7 +2043,10 @@ class DesignRatingApp {
             }
         });
         
-        return newContainer;
+        // Mark that event listeners are set up
+        container.setAttribute('data-card-listeners-setup', 'true');
+        
+        return container;
     }
     
     setChatState(state) {
