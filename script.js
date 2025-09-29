@@ -458,6 +458,7 @@ class DesignRatingApp {
             cards: [],
             recommendation: '',
             commandLine: '',
+            punchline: '',
             showDesignsLabel: 'Show designs'
         };
 
@@ -525,6 +526,27 @@ class DesignRatingApp {
             i++;
         }
 
+        // Secondary pass: extract inline Solutions, Recommendation, Flows/COMMAND, Punchline from one-paragraph replies
+        const stripAll = (s) => (s || '').replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '').trim();
+        const solRegex = /Solution\s*(\d+)\s*:\s*([^\-\n]+?)(?:\s*-\s*([^\n]+?))(?:[\u2705\u2714\ufe0f]|\.|\n|$)/gi;
+        let mm;
+        while ((mm = solRegex.exec(message)) !== null) {
+            const title = stripAll(mm[2] || '');
+            const just = stripAll(mm[3] || '');
+            if (title) result.cards.push({ title, justification: just });
+        }
+
+        if (!result.recommendation) {
+            const recInline = message.match(/Recommendation\s*:\s*([^\n]+)/i);
+            if (recInline) result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recInline[1]) });
+        }
+
+        const flowsCmd = message.match(/👉[^\n]*COMMAND:[^\n]+/i) || message.match(/COMMAND:\s*send\s+[^\n]+/i);
+        if (flowsCmd) result.commandLine = stripAll(flowsCmd[0]);
+
+        const punch = message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
+        if (punch) result.punchline = stripAll(punch[1]);
+
         // Only treat as screen analysis if we actually parsed cards or a recommendation
         if ((result.cards && result.cards.length > 0) || (result.recommendation && result.recommendation.length > 0)) {
             result.hasScreenAnalysis = true;
@@ -585,13 +607,15 @@ class DesignRatingApp {
         // Product meta line and show/hide designs button
         const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
-        const commandLine = '';
+        const commandLine = data.commandLine ? `<div class="message-content">${this.escapeHtml(data.commandLine)}</div>` : '';
+        const punchline = data.punchline ? `<div class="message-content"><strong>Punchline:</strong> ${this.escapeHtml(data.punchline)}</div>` : '';
 
         messageDiv.innerHTML = `
             ${metaLine}
             ${cardsHtml}
             ${recommendationHtml}
             ${commandLine}
+            ${punchline}
             ${showDesignsBtn}
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
