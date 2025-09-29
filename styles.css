@@ -379,7 +379,7 @@ body {
 
 /* Solutions Card */
 /* Neutral Improvements cards (like screenshot) */
-.improvements-list { display: flex; flex-direction: column; gap: 12px; }
+.improvements-list { display: flex; flex-direction: column; gap: 10px; }
 
 .improvement-card {
   background: var(--bg-secondary);
@@ -387,31 +387,31 @@ body {
   border-radius: 20px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
+  width: 100%;
 }
 
 .improvement-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px;
+  padding: 12px 14px;
 }
 
 .improvement-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
-.improvement-actions { display: flex; align-items: center; gap: 12px; }
-.improvement-plus,
+.improvement-actions { display: flex; align-items: center; gap: 8px; }
 .improvement-chevron {
-  width: 36px; height: 36px; border-radius: 18px; border: 1px solid var(--border-primary);
+  width: 28px; height: 28px; border-radius: 14px; border: 1px solid var(--border-primary);
   background: var(--bg-tertiary); color: var(--text-primary); display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: all 0.2s ease;
 }
-.improvement-plus:hover, .improvement-chevron:hover { background: var(--bg-hover); }
+.improvement-chevron:hover { background: var(--bg-hover); }
 
-.improvement-body { display: none; padding: 0 16px 16px 16px; color: var(--text-tertiary); font-size: 16px; line-height: 1.5; }
+.improvement-body { display: none; padding: 0 14px 14px 14px; color: var(--text-tertiary); font-size: 14px; line-height: 1.5; }
 .improvement-card.expanded .improvement-body { display: block; }
 
 .improvement-card .muted { color: var(--text-quaternary); }

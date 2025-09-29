@@ -571,10 +571,7 @@ class DesignRatingApp {
                         <div class="improvement-card" data-index="${idx}">
                             <div class="improvement-header">
                                 <div class="improvement-title">${safeTitle}</div>
-                                <div class="improvement-actions">
-                                    <button class="improvement-plus" type="button">+</button>
-                                    <button class="improvement-chevron" type="button">▾</button>
-                                </div>
+                                <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
                             </div>
                             <div class="improvement-body">${safeJustif}</div>
                         </div>
@@ -583,7 +580,7 @@ class DesignRatingApp {
             </div>
         ` : '';
 
-        // Recommendation card
+        // Recommendation card (same design)
         let recommendationHtml = '';
         if (data.recommendation) {
             try {
@@ -591,16 +588,12 @@ class DesignRatingApp {
                 const rTitle = this.escapeHtml(rec.title || 'Recommendation');
                 const rText = this.escapeHtml(rec.text || '');
                 recommendationHtml = `
-                <div class="dust-card dust-card--solution2" data-card-type="recommendation">
-                    <div class="dust-card__header">
-                        <h3 class="dust-card__title">${rTitle}</h3>
+                <div class="improvement-card" data-card-type="recommendation">
+                    <div class="improvement-header">
+                        <div class="improvement-title">${rTitle}</div>
+                        <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
                     </div>
-                    <div class="dust-card__content">
-                        <details class="sa-collapsible">
-                            <summary>Details</summary>
-                            <div class="dust-card__text">${rText}</div>
-                        </details>
-                    </div>
+                    <div class="improvement-body">${rText}</div>
                 </div>`;
             } catch {}
         }
@@ -609,14 +602,22 @@ class DesignRatingApp {
         const metaLine = data.productMeta ? `<div class="message-content">${this.formatContent(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         const commandLine = data.commandLine ? `<div class="message-content">${this.escapeHtml(data.commandLine)}</div>` : '';
-        const punchline = data.punchline ? `<div class="message-content"><strong>Punchline:</strong> ${this.escapeHtml(data.punchline)}</div>` : '';
+        const punchlineCard = data.punchline ? `
+            <div class="improvement-card" data-card-type="punchline">
+                <div class="improvement-header">
+                    <div class="improvement-title">1-line recap</div>
+                    <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
+                </div>
+                <div class="improvement-body">${this.escapeHtml(data.punchline)}</div>
+            </div>
+        ` : '';
 
         messageDiv.innerHTML = `
             ${metaLine}
             ${cardsHtml}
             ${recommendationHtml}
             ${commandLine}
-            ${punchline}
+            ${punchlineCard}
             ${showDesignsBtn}
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
