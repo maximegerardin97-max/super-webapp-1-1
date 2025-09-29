@@ -1935,19 +1935,39 @@ class DesignRatingApp {
         const messages = await this.fetchMessages(conversationId);
         let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
         const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp))/ig;
-        const normalizeText = (val) => {
-            if (typeof val === 'string') return val;
-            if (!val) return '';
-            // Common shapes: { text }, { content: [...] }, [ ... ]
-            if (val.text && typeof val.text === 'string') return val.text;
-            if (Array.isArray(val)) return val.map(normalizeText).join('\n');
-            if (Array.isArray(val.content)) return val.content.map(normalizeText).join('\n');
-            try { return String(val); } catch { return ''; }
+        const extractText = (val) => {
+            if (val == null) return '';
+            if (typeof val === 'string') {
+                const s = val.trim();
+                if ((s.startsWith('{') || s.startsWith('['))) {
+                    try { return extractText(JSON.parse(s)); } catch { return s; }
+                }
+                return s;
+            }
+            if (Array.isArray(val)) return val.map(extractText).filter(Boolean).join('\n');
+            if (typeof val === 'object') {
+                const keys = ['text','content','message','value','delta'];
+                let acc = '';
+                for (const k of keys) {
+                    if (val[k] !== undefined) {
+                        const part = extractText(val[k]);
+                        if (part) acc += (acc ? '\n' : '') + part;
+                    }
+                }
+                if (!acc) {
+                    for (const k in val) {
+                        const part = extractText(val[k]);
+                        if (part) acc += (acc ? '\n' : '') + part;
+                    }
+                }
+                return acc;
+            }
+            return '';
         };
 
         (messages || []).forEach((m) => {
             const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
-            let content = normalizeText(m.content);
+            let content = extractText(m.content);
             // Collect all image urls, show them, and strip from text
             const urls = [];
             let match;
