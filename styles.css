@@ -379,7 +379,9 @@ body {
 
 /* Solutions Card */
 /* Neutral Improvements cards (like screenshot) */
-.improvements-list { display: flex; flex-direction: column; gap: 8px; }
+.improvements-list { display: flex; flex-direction: column; gap: 2px; }
+
+.cards-stack { display: flex; flex-direction: column; gap: 2px; width: 100%; }
 
 .improvement-card {
   background: var(--bg-secondary);
@@ -404,7 +406,7 @@ body {
 }
 
 .improvement-title {
-  font-size: 15px;
+  font-size: 13px; /* match product meta message */
   font-weight: 500;
   color: var(--text-primary);
 }

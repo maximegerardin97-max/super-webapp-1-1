@@ -563,7 +563,7 @@ class DesignRatingApp {
 
         // Build neutral improvements cards like the screenshot
         const cardsHtml = data.cards.length > 0 ? `
-            <div class="improvements-list">
+            <div class="cards-stack">
                 ${data.cards.map((c, idx) => {
                     const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
                     const safeJustif = this.escapeHtml(c.justification || '');
