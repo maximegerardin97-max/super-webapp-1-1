@@ -2002,7 +2002,7 @@ class DesignRatingApp {
         chatResultsContent.innerHTML = html;
         
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
-        this.setupCardEventListeners(chatResultsContent);
+        const updatedContainer = this.setupCardEventListeners(chatResultsContent);
         
         // Back handler
         const backBtn = document.getElementById('backToList');
@@ -2011,8 +2011,12 @@ class DesignRatingApp {
     }
     
     setupCardEventListeners(container) {
+        // Remove any existing event listeners by cloning the container
+        const newContainer = container.cloneNode(true);
+        container.parentNode.replaceChild(newContainer, container);
+        
         // Wire up expand/collapse and go deeper for cards
-        container.addEventListener('click', (e) => {
+        newContainer.addEventListener('click', (e) => {
             const chevron = e.target.closest('.improvement-chevron');
             if (chevron) {
                 const card = chevron.closest('.improvement-card');
@@ -2031,6 +2035,8 @@ class DesignRatingApp {
                 }
             }
         });
+        
+        return newContainer;
     }
     
     setChatState(state) {
