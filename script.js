@@ -1934,33 +1934,34 @@ class DesignRatingApp {
         chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
         let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
-        const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp))/i;
+        const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp))/ig;
+        const normalizeText = (val) => {
+            if (typeof val === 'string') return val;
+            if (!val) return '';
+            // Common shapes: { text }, { content: [...] }, [ ... ]
+            if (val.text && typeof val.text === 'string') return val.text;
+            if (Array.isArray(val)) return val.map(normalizeText).join('\n');
+            if (Array.isArray(val.content)) return val.content.map(normalizeText).join('\n');
+            try { return String(val); } catch { return ''; }
+        };
+
         (messages || []).forEach((m) => {
             const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
-            let content = (typeof m.content === 'string') ? m.content : (m.content && m.content.text) ? m.content.text : '';
-            // Handle image URL: show image in left container and add minimized tag; strip from text
-            const urlMatch = content && content.match(urlRegex);
-            if (urlMatch) {
-                const url = urlMatch[0];
+            let content = normalizeText(m.content);
+            // Collect all image urls, show them, and strip from text
+            const urls = [];
+            let match;
+            const copy = content || '';
+            urlRegex.lastIndex = 0;
+            while ((match = urlRegex.exec(copy)) !== null) { urls.push(match[0]); }
+            urls.forEach((url) => {
                 try { this.addImageToMainChat(url, 'Uploaded design'); } catch {}
                 try { this.displayLargeImage(url, 'Conversation Design'); } catch {}
-                content = content.replace(url, '').trim();
-            }
-            if (role !== 'user') {
-                // Assistant messages: try to render as cards like current logic
-                const parsed = this.parseDustOutput(content);
-                if (parsed.cards && parsed.cards.length > 0) {
-                    html += this.renderStructuredCards(parsed.cards);
-                } else {
-                    html += `\n            <div class="chat-message assistant-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
-                }
-                // If message contains COMMAND, call inspirations and keep designs visible
-                if (this.containsCommandFormula(content)) {
-                    this.processCommandImagesFromMessage(content, true);
-                }
-            } else {
-                html += `\n            <div class="chat-message user-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
-            }
+                content = content.replace(url, '');
+            });
+            content = (content || '').trim();
+            if (!content) return;
+            html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
         });
         chatResultsContent.innerHTML = html;
         // Back handler
