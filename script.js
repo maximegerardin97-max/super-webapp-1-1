@@ -1975,9 +1975,9 @@ class DesignRatingApp {
             urlRegex.lastIndex = 0;
             while ((match = urlRegex.exec(copy)) !== null) { urls.push(match[0]); }
             urls.forEach((url) => {
-                try { this.addImageToMainChat(url, 'Uploaded design'); } catch {}
-                try { this.displayLargeImage(url, 'Conversation Design'); } catch {}
-                content = content.replace(url, '');
+                try { this.addImageToMainChat(url, 'User design'); } catch {}
+                try { this.displayLargeImage(url, 'User design'); } catch {}
+                content = content.replace(url, '[User design]');
             });
             content = (content || '').trim();
             if (!content) return;
