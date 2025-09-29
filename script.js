@@ -1933,30 +1933,40 @@ class DesignRatingApp {
         const chatResultsContent = document.getElementById('chatResultsContent');
         chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
-        const header = `<div class=\"message-content\"><button id=\"backToList\" class=\"go-deeper-btn\" type=\"button\">◀ Back</button></div>`;
-        const bubbles = (messages||[]).map(m => {
+        let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
+        const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp))/i;
+        (messages || []).forEach((m) => {
             const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
             let content = (typeof m.content === 'string') ? m.content : (m.content && m.content.text) ? m.content.text : '';
-            // Detect image URLs and render minimized tag + restore left image
-            const urlMatch = content && content.match(/https?:[^\s]+\.(png|jpe?g|gif|webp)/i);
+            // Handle image URL: show image in left container and add minimized tag; strip from text
+            const urlMatch = content && content.match(urlRegex);
             if (urlMatch) {
                 const url = urlMatch[0];
-                this.addImageToMainChat(url, 'Uploaded design');
-                this.displayLargeImage(url, 'Conversation Design');
+                try { this.addImageToMainChat(url, 'Uploaded design'); } catch {}
+                try { this.displayLargeImage(url, 'Conversation Design'); } catch {}
                 content = content.replace(url, '').trim();
             }
-            return `\n            <div class=\"chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}\">\n                <div class=\"message-content\">${this.escapeHtml(content)}</div>\n            </div>`;
-        }).join('');
-        chatResultsContent.innerHTML = header + bubbles;
+            if (role !== 'user') {
+                // Assistant messages: try to render as cards like current logic
+                const parsed = this.parseDustOutput(content);
+                if (parsed.cards && parsed.cards.length > 0) {
+                    html += this.renderStructuredCards(parsed.cards);
+                } else {
+                    html += `\n            <div class="chat-message assistant-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+                }
+                // If message contains COMMAND, call inspirations and keep designs visible
+                if (this.containsCommandFormula(content)) {
+                    this.processCommandImagesFromMessage(content, true);
+                }
+            } else {
+                html += `\n            <div class="chat-message user-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+            }
+        });
+        chatResultsContent.innerHTML = html;
         // Back handler
         const backBtn = document.getElementById('backToList');
         if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
-        // Load design for conversation if stored
-        const conv = (this.conversationsList||[]).find(c => String(c.id) === String(conversationId));
-        const designUrl = conv && conv.design_url ? conv.design_url : null;
-        if (designUrl) {
-            this.displayLargeImage(designUrl, 'Conversation Design');
-        }
+        // No extra design fetch here; image urls in messages will have restored the image already
     }
     
     setChatState(state) {
