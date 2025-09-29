@@ -471,7 +471,6 @@ class DesignRatingApp {
         const metaMatch = message.match(/Product:\s*[^\n]+/i);
         if (metaMatch) {
             result.productMeta = metaMatch[0].trim();
-            result.hasScreenAnalysis = true;
         }
 
         // Parse numbered cards and split Title: Justification; strip emojis
@@ -526,6 +525,12 @@ class DesignRatingApp {
             i++;
         }
 
+        // Only treat as screen analysis if we actually parsed cards or a recommendation
+        if ((result.cards && result.cards.length > 0) || (result.recommendation && result.recommendation.length > 0)) {
+            result.hasScreenAnalysis = true;
+        } else {
+            result.hasScreenAnalysis = false;
+        }
         return result;
     }
 
