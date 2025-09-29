@@ -384,8 +384,8 @@ body {
 .cards-stack { display: flex; flex-direction: column; gap: 2px; width: 100%; }
 
 .improvement-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-secondary);
+  background: #ffffff; /* force pure white like the mock */
+  border: 1px solid #e5e5e7; /* subtle light border */
   border-radius: 20px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
@@ -405,11 +405,7 @@ body {
   padding: 12px 14px;
 }
 
-.improvement-title {
-  font-size: 13px; /* match product meta message */
-  font-weight: 500;
-  color: var(--text-primary);
-}
+.improvement-title { font-size: 13px; font-weight: 500; color: #000000; }
 
 .improvement-actions { display: flex; align-items: center; gap: 8px; }
 .improvement-chevron {
@@ -419,7 +415,7 @@ body {
 }
 .improvement-chevron:hover { background: var(--bg-hover); }
 
-.improvement-body { display: none; padding: 0 14px 14px 14px; color: var(--text-tertiary); font-size: 13px; line-height: 1.5; }
+.improvement-body { display: none; padding: 0 14px 14px 14px; color: #333333; font-size: 13px; line-height: 1.5; }
 .improvement-card.expanded .improvement-body { display: block; }
 
 .improvement-card .muted { color: var(--text-quaternary); }
