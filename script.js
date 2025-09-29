@@ -1980,6 +1980,10 @@ class DesignRatingApp {
                 content = content.replace(url, '[User design]');
             });
             content = (content || '').trim();
+            // If assistant message contains COMMAND formula, process inspirations for old conversations
+            if (role === 'assistant' && this.containsCommandFormula(content)) {
+                try { this.processCommandImagesFromMessage(content, true); } catch {}
+            }
             if (!content) return;
             
             if (role === 'assistant') {
