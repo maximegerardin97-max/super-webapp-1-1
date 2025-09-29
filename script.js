@@ -1873,7 +1873,7 @@ class DesignRatingApp {
             const authHeader = await this.getAuthHeader();
             const user = await this.getCurrentUser();
             if (!user) return [];
-            const url = `${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at,design_url&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`;
+            const url = `${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`;
             const resp = await fetch(url, {
                 headers: { 'apikey': this.supabaseKey, 'Accept': 'application/json', ...authHeader }
             });
@@ -1899,7 +1899,7 @@ class DesignRatingApp {
         const chatResultsContent = document.getElementById('chatResultsContent');
         chatResultsArea.classList.add('show');
         this.setChatState('expanded-state');
-        chatResultsContent.innerHTML = `<div class="message-content">Conversations</div>`;
+        chatResultsContent.innerHTML = `<div class="message-content">Conversations</div><div class="message-content" id="convLoading">Loading conversations…</div>`;
         const list = await this.fetchConversationsForUser();
         this.conversationsList = Array.isArray(list) ? list : [];
         const items = this.conversationsList.map(c => `
@@ -1910,7 +1910,8 @@ class DesignRatingApp {
             </div>
         `).join('');
         chatResultsContent.innerHTML = `
-            <div class="cards-stack">${items}</div>
+            <div class="message-content">Conversations</div>
+            <div class="cards-stack">${items || '<div class=\"message-content\">No conversations yet.</div>'}</div>
         `;
         chatResultsContent.addEventListener('click', async (e) => {
             const item = e.target.closest('[data-role="open-conv"]');
@@ -1923,11 +1924,9 @@ class DesignRatingApp {
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
         const chatResultsContent = document.getElementById('chatResultsContent');
+        chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
-        // Render back header
-        const header = `
-            <div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>
-        `;
+        const header = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
         const bubbles = (messages||[]).map(m => `
             <div class="chat-message ${m.role === 'user' ? 'user-message' : 'assistant-message'}">
                 <div class="message-content">${this.escapeHtml(m.content||'')}</div>
