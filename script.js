@@ -1981,13 +1981,56 @@ class DesignRatingApp {
             });
             content = (content || '').trim();
             if (!content) return;
-            html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+            
+            if (role === 'assistant') {
+                // Try to parse as screen analysis for cards
+                const screenAnalysis = this.parseScreenAnalysis(content);
+                if (screenAnalysis.hasScreenAnalysis) {
+                    // Create a temporary div to render cards
+                    const tempDiv = document.createElement('div');
+                    this.displayScreenAnalysis(screenAnalysis, tempDiv);
+                    html += tempDiv.innerHTML;
+                } else {
+                    // Fallback to regular message
+                    html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+                }
+            } else {
+                // User messages stay as regular bubbles
+                html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+            }
         });
         chatResultsContent.innerHTML = html;
+        
+        // Set up event listeners for cards (Go deeper buttons and chevron toggles)
+        this.setupCardEventListeners(chatResultsContent);
+        
         // Back handler
         const backBtn = document.getElementById('backToList');
         if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
         // No extra design fetch here; image urls in messages will have restored the image already
+    }
+    
+    setupCardEventListeners(container) {
+        // Wire up expand/collapse and go deeper for cards
+        container.addEventListener('click', (e) => {
+            const chevron = e.target.closest('.improvement-chevron');
+            if (chevron) {
+                const card = chevron.closest('.improvement-card');
+                if (card) card.classList.toggle('expanded');
+            }
+            const goDeeper = e.target.closest('[data-role="go-deeper"]');
+            if (goDeeper) {
+                const card = goDeeper.closest('.improvement-card');
+                if (card) {
+                    const titleEl = card.querySelector('.improvement-title');
+                    const bodyEl = card.querySelector('.improvement-body');
+                    const title = titleEl ? titleEl.textContent.trim() : '';
+                    const body = bodyEl ? bodyEl.textContent.trim() : '';
+                    const prompt = `${title}\n\n${body}\n\nTell me more about this.`;
+                    this.sendMainChatMessage(prompt);
+                }
+            }
+        });
     }
     
     setChatState(state) {
