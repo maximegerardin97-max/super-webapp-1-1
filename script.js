@@ -547,6 +547,26 @@ class DesignRatingApp {
             i++;
         }
 
+        // Pass for checkmark-style solutions (design rating format): "✅ Title: justification"
+        if (result.cards.length === 0) {
+            for (const ln of lines) {
+                const m = ln.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+                if (m) {
+                    const title = m[1];
+                    const just = m[2];
+                    result.cards.push({ title: stripAll(title), justification: stripAll(just) });
+                }
+            }
+        }
+
+        // Handle inline recommendation prefixed with sparkle (✨ Recommendation: ...)
+        if (!result.recommendation) {
+            const recSparkle = message.match(/✨\s*Recommendation\s*:\s*([^\n]+)/i);
+            if (recSparkle) {
+                result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recSparkle[1]) });
+            }
+        }
+
         // Secondary pass A: explicit "Screen N: Title" sections (common for flows)
         if (result.cards.length === 0) {
             const scrLines = message.split('\n');
