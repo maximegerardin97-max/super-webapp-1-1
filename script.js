@@ -482,18 +482,38 @@ class DesignRatingApp {
             result.productMeta = metaMatch[0].trim();
         }
 
-        // Parse numbered cards and split Title: Justification; strip emojis
+        // Helpers
+        const stripAll = (s) => (s || '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/[_`~]/g, '')
+            .replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '')
+            .trim();
+
+        // Parse numbered cards and split Title: Justification; supports markdown bold in title
         const lines = message.split('\n');
         let i = 0;
+        let firstNumberLineIndex = -1;
         while (i < lines.length) {
             const line = lines[i].trim();
             let cardTitle = '';
             const numbered = line.match(/^\d+\.\s*(.+)/);
             if (numbered) {
+                if (firstNumberLineIndex === -1) firstNumberLineIndex = i;
                 const body = numbered[1];
-                const parts = body.split(':');
-                cardTitle = (parts[0] || '').trim();
-                let justification = (parts.slice(1).join(':') || '').trim();
+                const mdMatch = body.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);
+                const simpleMatch = body.match(/^([^:]+):\s*(.+)$/);
+                let justification = '';
+                if (mdMatch) {
+                    cardTitle = mdMatch[1];
+                    justification = mdMatch[2];
+                } else if (simpleMatch) {
+                    cardTitle = simpleMatch[1];
+                    justification = simpleMatch[2];
+                } else {
+                    const parts = body.split(':');
+                    cardTitle = (parts[0] || '').trim();
+                    justification = (parts.slice(1).join(':') || '').trim();
+                }
                 if (!justification) {
                     let j = i + 1;
                     while (j < lines.length) {
@@ -507,8 +527,7 @@ class DesignRatingApp {
                 } else {
                     i++;
                 }
-                const strip = (s) => (s || '').replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '').trim();
-                result.cards.push({ title: strip(cardTitle).replace(/\.$/, ''), justification: strip(justification) });
+                result.cards.push({ title: stripAll(cardTitle).replace(/\.$/, ''), justification: stripAll(justification) });
                 result.hasScreenAnalysis = true;
                 continue;
             }
@@ -535,7 +554,6 @@ class DesignRatingApp {
         }
 
         // Secondary pass: extract inline Solutions, Recommendation, Flows/COMMAND, Punchline from one-paragraph replies
-        const stripAll = (s) => (s || '').replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '').trim();
         const solRegex = /Solution\s*(\d+)\s*:\s*([^\-\n]+?)(?:\s*-\s*([^\n]+?))(?:[\u2705\u2714\ufe0f]|\.|\n|$)/gi;
         let mm;
         while ((mm = solRegex.exec(message)) !== null) {
@@ -568,14 +586,26 @@ class DesignRatingApp {
 
         if (!result.recommendation) {
             const recInline = message.match(/Recommendation\s*:\s*([^\n]+)/i);
-            if (recInline) result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recInline[1]) });
+            if (recInline) {
+                result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recInline[1]) });
+            } else {
+                const overallMatch = message.match(/^\s*Overall[,\s]+([\s\S]+?)(?:\n\n|$)/im);
+                if (overallMatch) {
+                    result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(overallMatch[1]) });
+                }
+            }
         }
 
         const flowsCmd = message.match(/👉[^\n]*COMMAND:[^\n]+/i) || message.match(/COMMAND:\s*send\s+[^\n]+/i);
         if (flowsCmd) result.commandLine = stripAll(flowsCmd[0]);
 
-        const punch = message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
+        const punch = message.match(/^(?:\*\*)\s*([^*\n][^\n]+?)\s*(?:\*\*)\s*$/m) || message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
         if (punch) result.punchline = stripAll(punch[1]);
+
+        // Intro paragraph before first numbered item
+        if (!result.header && firstNumberLineIndex > 0) {
+            result.header = stripAll(lines.slice(0, firstNumberLineIndex).join('\n'));
+        }
 
         // Only treat as screen analysis if we actually parsed cards or a recommendation
         if ((result.cards && result.cards.length > 0) || (result.recommendation && result.recommendation.length > 0)) {
@@ -634,8 +664,9 @@ class DesignRatingApp {
             } catch {}
         }
 
-        // Product meta line and show/hide designs button
-        const metaLine = data.productMeta ? `<div class="message-content">${this.escapeHtml(data.productMeta)}</div>` : '';
+        // Intro/header and product meta line
+        const headerLine = data.header ? `<div class=\"message-content\">${this.escapeHtml(data.header)}</div>` : '';
+        const metaLine = data.productMeta ? `<div class=\"message-content\">${this.escapeHtml(data.productMeta)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
@@ -650,6 +681,7 @@ class DesignRatingApp {
         ` : '';
 
         messageDiv.innerHTML = `
+            ${headerLine}
             ${metaLine}
             ${cardsHtml}
             ${recommendationHtml}
