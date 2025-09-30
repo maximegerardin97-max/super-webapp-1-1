@@ -559,6 +559,10 @@ class DesignRatingApp {
             for (const ln of lines) {
                 const m = ln.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
                 if (m) {
+                    // If experiments are present in the message, skip separate Test cards; they will be grouped under Experiments
+                    if (/^\s*(test)\s*\d+/i.test(m[1]) && /experiments\s*\(/i.test(message)) {
+                        continue;
+                    }
                     const title = m[1];
                     const just = m[2];
                     result.cards.push({ title: stripAll(title), justification: stripAll(just) });
@@ -603,6 +607,8 @@ class DesignRatingApp {
             for (let li = 0; li < genLines.length; li++) {
                 const ln = genLines[li].trim();
                 if (/^[A-Za-z][A-Za-z0-9 &()/%-]*:\s*$/i.test(ln) || /^[A-Za-z][A-Za-z0-9 &()/%-]*:\s+.+$/.test(ln)) {
+                    // Skip individual Test N: labels so they remain inside Experiments body
+                    if (/^Test\s*\d+\s*:/i.test(ln)) continue;
                     // Heading-like line ending with ':' or with inline value
                     labelIdxs.push(li);
                 }
