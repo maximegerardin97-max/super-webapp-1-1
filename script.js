@@ -486,6 +486,7 @@ class DesignRatingApp {
         const stripAll = (s) => (s || '')
             .replace(/\*\*(.*?)\*\*/g, '$1')
             .replace(/[_`~]/g, '')
+            // Keep numbers and punctuation; only strip emojis
             .replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '')
             .trim();
 
@@ -585,6 +586,37 @@ class DesignRatingApp {
                     const title = head.replace(/^Screen\s*\d+\s*:\s*/i, '').trim();
                     const body = stripAll(scrLines.slice(start + 1, end).join('\n'));
                     result.cards.push({ title: `Screen ${k+1}: ${stripAll(title)}`, justification: body });
+                }
+            }
+        }
+
+        // Secondary pass A.2: Generic labeled sections like "Current signal:", "Diagnosis:", "Metric focus:" etc.
+        if (result.cards.length === 0) {
+            const genLines = message.split('\n');
+            const labelIdxs = [];
+            for (let li = 0; li < genLines.length; li++) {
+                const ln = genLines[li].trim();
+                if (/^[A-Za-z][A-Za-z0-9 &()/%-]*:\s*$/i.test(ln) || /^[A-Za-z][A-Za-z0-9 &()/%-]*:\s+.+$/.test(ln)) {
+                    // Heading-like line ending with ':' or with inline value
+                    labelIdxs.push(li);
+                }
+            }
+            // Merge contiguous duplicates and build cards
+            for (let k = 0; k < labelIdxs.length; k++) {
+                const start = labelIdxs[k];
+                const end = k < labelIdxs.length - 1 ? labelIdxs[k+1] : genLines.length;
+                let head = genLines[start].trim();
+                let title = head.replace(/:.*$/, '').trim();
+                // Inline value on the same line
+                let inline = '';
+                const inlineMatch = head.match(/:\s*(.+)$/);
+                if (inlineMatch) inline = inlineMatch[1];
+                const body = stripAll([inline, ...genLines.slice(start + 1, end)].join('\n'));
+                if (title && body) {
+                    // Avoid capturing Recommendation and Punchline here (handled later)
+                    if (!/^recommendation$/i.test(title) && !/^punchline$/i.test(title)) {
+                        result.cards.push({ title: stripAll(title), justification: body });
+                    }
                 }
             }
         }
