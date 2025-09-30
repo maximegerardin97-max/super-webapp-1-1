@@ -547,7 +547,29 @@ class DesignRatingApp {
             i++;
         }
 
-        // Secondary pass: extract inline Solutions, Recommendation, Flows/COMMAND, Punchline from one-paragraph replies
+        // Secondary pass A: explicit "Screen N: Title" sections (common for flows)
+        if (result.cards.length === 0) {
+            const scrLines = message.split('\n');
+            const screenIndices = [];
+            for (let si = 0; si < scrLines.length; si++) {
+                const ln = scrLines[si].trim();
+                if (/^Screen\s*\d+\s*:/i.test(ln)) {
+                    screenIndices.push(si);
+                }
+            }
+            if (screenIndices.length > 0) {
+                for (let k = 0; k < screenIndices.length; k++) {
+                    const start = screenIndices[k];
+                    const end = k < screenIndices.length - 1 ? screenIndices[k+1] : scrLines.length;
+                    const head = scrLines[start].trim();
+                    const title = head.replace(/^Screen\s*\d+\s*:\s*/i, '').trim();
+                    const body = stripAll(scrLines.slice(start + 1, end).join('\n'));
+                    result.cards.push({ title: `Screen ${k+1}: ${stripAll(title)}`, justification: body });
+                }
+            }
+        }
+
+        // Secondary pass B: extract inline Solutions, Recommendation, Flows/COMMAND, Punchline from one-paragraph replies
         const solRegex = /Solution\s*(\d+)\s*:\s*([^\-\n]+?)(?:\s*-\s*([^\n]+?))(?:[\u2705\u2714\ufe0f]|\.|\n|$)/gi;
         let mm;
         while ((mm = solRegex.exec(message)) !== null) {
@@ -593,7 +615,7 @@ class DesignRatingApp {
         const flowsCmd = message.match(/👉[^\n]*COMMAND:[^\n]+/i) || message.match(/COMMAND:\s*send\s+[^\n]+/i);
         if (flowsCmd) result.commandLine = stripAll(flowsCmd[0]);
 
-        const punch = message.match(/^(?:\*\*)\s*([^*\n][^\n]+?)\s*(?:\*\*)\s*$/m) || message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
+        const punch = message.match(/\*\*([^*][^\n]+?)\*\*(?![\s\S]*\*\*)/m) || message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
         if (punch) result.punchline = stripAll(punch[1]);
 
         // Intro paragraph before first numbered item
