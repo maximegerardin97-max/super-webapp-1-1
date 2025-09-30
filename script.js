@@ -700,9 +700,14 @@ class DesignRatingApp {
             } catch {}
         }
 
-        // Intro/header and product meta line
-        const headerLine = data.header ? `<div class=\"message-content\">${this.escapeHtml(data.header)}</div>` : '';
-        const metaLine = data.productMeta ? `<div class=\"message-content\">${this.escapeHtml(data.productMeta)}</div>` : '';
+        // Intro/header and product meta line (dedupe if identical)
+        let _headerText = data.header ? String(data.header).trim() : '';
+        let _metaText = data.productMeta ? String(data.productMeta).trim() : '';
+        if (_headerText && _metaText && _headerText.toLowerCase() === _metaText.toLowerCase()) {
+            _headerText = '';
+        }
+        const headerLine = _headerText ? `<div class=\"message-content\">${this.escapeHtml(_headerText)}</div>` : '';
+        const metaLine = _metaText ? `<div class=\"message-content\">${this.escapeHtml(_metaText)}</div>` : '';
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
