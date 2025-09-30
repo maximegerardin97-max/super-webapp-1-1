@@ -490,6 +490,12 @@ class DesignRatingApp {
             .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '')
             .trim();
 
+        // Ensure we always have a header (first non-empty line) if none was found later
+        if (!result.header) {
+            const firstNonEmpty = (message.split('\n').find(l => l.trim().length > 0) || '').trim();
+            if (firstNonEmpty) result.header = stripAll(firstNonEmpty);
+        }
+
         // Parse numbered cards and split Title: Justification; supports multiline bodies
         const lines = message.split('\n');
         let i = 0;
@@ -569,7 +575,7 @@ class DesignRatingApp {
         }
 
         // Secondary pass A: explicit "Screen N: Title" sections (common for flows)
-        if (result.cards.length === 0) {
+        {
             const scrLines = message.split('\n');
             const screenIndices = [];
             for (let si = 0; si < scrLines.length; si++) {
@@ -591,7 +597,7 @@ class DesignRatingApp {
         }
 
         // Secondary pass A.2: Generic labeled sections like "Current signal:", "Diagnosis:", "Metric focus:" etc.
-        if (result.cards.length === 0) {
+        {
             const genLines = message.split('\n');
             const labelIdxs = [];
             for (let li = 0; li < genLines.length; li++) {
