@@ -725,11 +725,6 @@ class DesignRatingApp {
 
         // Wire up expand/collapse and go deeper
         messageDiv.addEventListener('click', (e) => {
-            const chevron = e.target.closest('.improvement-chevron');
-            if (chevron) {
-                const card = chevron.closest('.improvement-card');
-                if (card) card.classList.toggle('expanded');
-            }
             const goDeeper = e.target.closest('[data-role="go-deeper"]');
             if (goDeeper) {
                 const card = goDeeper.closest('.improvement-card');
@@ -741,6 +736,14 @@ class DesignRatingApp {
                     const prompt = `${title}\n\n${body}\n\nTell me more about this.`;
                     this.sendMainChatMessage(prompt);
                 }
+                return;
+            }
+            // Toggle on chevron or clicking anywhere on header
+            const header = e.target.closest('.improvement-header');
+            const chevron = e.target.closest('.improvement-chevron');
+            if (header || chevron) {
+                const card = (header || chevron).closest('.improvement-card');
+                if (card) card.classList.toggle('expanded');
             }
         });
     }
