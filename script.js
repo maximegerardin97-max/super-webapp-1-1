@@ -486,8 +486,8 @@ class DesignRatingApp {
         const stripAll = (s) => (s || '')
             .replace(/\*\*(.*?)\*\*/g, '$1')
             .replace(/[_`~]/g, '')
-            // Keep numbers and punctuation; only strip emojis
-            .replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '')
+            // Keep numbers: remove only pictographic emoji and variation selectors
+            .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '')
             .trim();
 
         // Parse numbered cards and split Title: Justification; supports multiline bodies
