@@ -489,46 +489,40 @@ class DesignRatingApp {
             .replace(/[\p{Emoji_Presentation}\p{Emoji}\p{Extended_Pictographic}]/gu, '')
             .trim();
 
-        // Parse numbered cards and split Title: Justification; supports markdown bold in title
+        // Parse numbered cards and split Title: Justification; supports multiline bodies
         const lines = message.split('\n');
         let i = 0;
         let firstNumberLineIndex = -1;
         while (i < lines.length) {
             const line = lines[i].trim();
-            let cardTitle = '';
-            const numbered = line.match(/^\d+\.\s*(.+)/);
-            if (numbered) {
+            const numberedHead = line.match(/^\d+\.\s*(.+)/);
+            if (numberedHead) {
                 if (firstNumberLineIndex === -1) firstNumberLineIndex = i;
-                const body = numbered[1];
-                const mdMatch = body.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);
-                const simpleMatch = body.match(/^([^:]+):\s*(.+)$/);
-                let justification = '';
-                if (mdMatch) {
-                    cardTitle = mdMatch[1];
-                    justification = mdMatch[2];
-                } else if (simpleMatch) {
-                    cardTitle = simpleMatch[1];
-                    justification = simpleMatch[2];
-                } else {
-                    const parts = body.split(':');
-                    cardTitle = (parts[0] || '').trim();
-                    justification = (parts.slice(1).join(':') || '').trim();
+                const remainder = numberedHead[1];
+                // Try to extract title and first-line justification
+                let title = '';
+                let just = '';
+                const md = remainder.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);
+                const simple = remainder.match(/^([^:]+):\s*(.+)$/);
+                if (md) { title = md[1]; just = md[2]; }
+                else if (simple) { title = simple[1]; just = simple[2]; }
+                else { title = remainder; just = ''; }
+
+                // Accumulate following lines until next numbered item or blank-blank separation
+                let j = i + 1;
+                const bodyLines = [just].filter(Boolean);
+                while (j < lines.length) {
+                    const l = lines[j];
+                    if (/^\s*\d+\./.test(l)) break;
+                    // stop if we hit an Overall paragraph start (for recommendation)
+                    if (/^\s*Overall[\s,:]/i.test(l)) break;
+                    bodyLines.push(l.trim());
+                    j++;
                 }
-                if (!justification) {
-                    let j = i + 1;
-                    while (j < lines.length) {
-                        const l = lines[j].trim();
-                        if (l === '' || /^\d+\./.test(l)) break;
-                        const jMatch2 = l.match(/(Then\s+inside.*justification:|justification:|reason:|because:)\s*(.+)/i);
-                        if (jMatch2) { justification = jMatch2[2].trim(); break; }
-                        j++;
-                    }
-                    i = j;
-                } else {
-                    i++;
-                }
-                result.cards.push({ title: stripAll(cardTitle).replace(/\.$/, ''), justification: stripAll(justification) });
+                const body = stripAll(bodyLines.join(' ').replace(/\s+/g, ' ').trim());
+                result.cards.push({ title: stripAll(title).replace(/\.$/, ''), justification: body });
                 result.hasScreenAnalysis = true;
+                i = j;
                 continue;
             }
 
