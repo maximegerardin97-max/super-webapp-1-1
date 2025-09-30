@@ -1913,9 +1913,13 @@ class DesignRatingApp {
             byDate[key].push(c);
         }
         const sections = Object.keys(byDate).map(dateKey => {
-            const itemsHtml = byDate[dateKey].map(c => `
-                <div class=\"improvement-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"improvement-header\">\n                        <div class=\"improvement-title\">${this.escapeHtml(c.title || 'Conversation')}</div>\n                    </div>\n                </div>
-            `).join('');
+            const itemsHtml = byDate[dateKey].map(c => {
+                const created = new Date(c.created_at);
+                const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
+                const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
+                return `
+                <div class=\"improvement-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"improvement-header\">\n                        <div class=\"improvement-title\">${this.escapeHtml(title)}</div>\n                    </div>\n                </div>`;
+            }).join('');
             return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
         }).join('');
         chatResultsContent.innerHTML = `
