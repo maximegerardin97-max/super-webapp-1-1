@@ -735,6 +735,17 @@ class DesignRatingApp {
         chatResultsContent.appendChild(messageDiv);
         chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
 
+        // Ensure chevron buttons always toggle (direct binding in addition to delegation)
+        const chevButtons = messageDiv.querySelectorAll('.improvement-chevron');
+        chevButtons.forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = btn.closest('.improvement-card');
+                if (card) card.classList.toggle('expanded');
+            });
+        });
+
         // Bind show/hide designs toggle to existing analysis images section
         const btn = messageDiv.querySelector('.show-images-tag');
         if (btn) {
