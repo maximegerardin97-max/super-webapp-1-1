@@ -496,15 +496,46 @@ class DesignRatingApp {
             if (firstNonEmpty) result.header = stripAll(firstNonEmpty);
         }
 
-        // Parse numbered cards and split Title: Justification; supports multiline bodies
+        // Process message sequentially to preserve order
         const lines = message.split('\n');
         let i = 0;
-        let firstNumberLineIndex = -1;
+        
         while (i < lines.length) {
             const line = lines[i].trim();
+            
+            // Check for checkmark-style solutions (design rating format): "✅ Title: justification"
+            const checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+            if (checkmarkMatch) {
+                // If experiments are present in the message, skip separate Test cards; they will be grouped under Experiments
+                if (/^\s*(test)\s*\d+/i.test(checkmarkMatch[1]) && /experiments\s*\(/i.test(message)) {
+                    i++;
+                    continue;
+                }
+                const title = stripAll(checkmarkMatch[1]);
+                const just = stripAll(checkmarkMatch[2]);
+                result.cards.push({ title, justification: just });
+                result.hasScreenAnalysis = true;
+                i++;
+                continue;
+            }
+
+            // Check for generic labeled sections like "Product:", "Industry:", etc. (but not if already captured as productMeta)
+            const genericLabelMatch = line.match(/^([A-Za-z][A-Za-z0-9 &()/%-]*):\s*(.+)$/);
+            if (genericLabelMatch && !line.includes('Product:') && !line.includes('Industry:') && !line.includes('Platform:')) {
+                const title = stripAll(genericLabelMatch[1]);
+                const just = stripAll(genericLabelMatch[2]);
+                // Skip individual Test N: labels so they remain inside Experiments body
+                if (!/^Test\s*\d+$/i.test(title)) {
+                    result.cards.push({ title, justification: just });
+                    result.hasScreenAnalysis = true;
+                }
+                i++;
+                continue;
+            }
+
+            // Parse numbered cards and split Title: Justification; supports multiline bodies
             const numberedHead = line.match(/^\d+\.\s*(.+)/);
             if (numberedHead) {
-                if (firstNumberLineIndex === -1) firstNumberLineIndex = i;
                 const remainder = numberedHead[1];
                 // Try to extract title and first-line justification
                 let title = '';
@@ -554,22 +585,6 @@ class DesignRatingApp {
             i++;
         }
 
-        // Pass for checkmark-style solutions (design rating format): "✅ Title: justification"
-        if (result.cards.length === 0) {
-            for (const ln of lines) {
-                const m = ln.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
-                if (m) {
-                    // If experiments are present in the message, skip separate Test cards; they will be grouped under Experiments
-                    if (/^\s*(test)\s*\d+/i.test(m[1]) && /experiments\s*\(/i.test(message)) {
-                        continue;
-                    }
-                    const title = m[1];
-                    const just = m[2];
-                    result.cards.push({ title: stripAll(title), justification: stripAll(just) });
-                }
-            }
-        }
-
         // Handle inline recommendation prefixed with sparkle (✨ Recommendation: ...)
         if (!result.recommendation) {
             const recSparkle = message.match(/✨\s*Recommendation\s*:\s*([^\n]+)/i);
@@ -578,8 +593,8 @@ class DesignRatingApp {
             }
         }
 
-        // Secondary pass A: explicit "Screen N: Title" sections (common for flows)
-        {
+        // Secondary pass: explicit "Screen N: Title" sections (common for flows) - only if no cards found yet
+        if (result.cards.length === 0) {
             const scrLines = message.split('\n');
             const screenIndices = [];
             for (let si = 0; si < scrLines.length; si++) {
@@ -600,8 +615,8 @@ class DesignRatingApp {
             }
         }
 
-        // Secondary pass A.2: Generic labeled sections like "Current signal:", "Diagnosis:", "Metric focus:" etc.
-        {
+        // Secondary pass: Generic labeled sections like "Current signal:", "Diagnosis:", "Metric focus:" etc. - only if no cards found yet
+        if (result.cards.length === 0) {
             const genLines = message.split('\n');
             const labelIdxs = [];
             for (let li = 0; li < genLines.length; li++) {
