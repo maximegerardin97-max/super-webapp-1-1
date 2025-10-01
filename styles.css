@@ -351,7 +351,6 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Chat Results Area (integrated into chat-state) */
@@ -402,7 +401,6 @@ body {
   line-height: 1.4;
   word-wrap: break-word;
   position: relative;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .chat-message.user-message .message-content {
@@ -673,7 +671,6 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Chat State with conversation - grows taller */
@@ -930,7 +927,6 @@ body {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .option-tag:hover {
@@ -959,7 +955,6 @@ body {
   color: var(--text-primary);
   font-size: 0.9rem;
   outline: none;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .step-input-container input::placeholder {
@@ -1016,7 +1011,6 @@ body {
   font-size: 0.9rem;
   outline: none;
   padding-right: 2.5rem;
-  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .chat-input-wrapper input::placeholder {

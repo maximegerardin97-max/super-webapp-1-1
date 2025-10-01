@@ -698,7 +698,7 @@ class DesignRatingApp {
                     if (/^Recommendation:/i.test(nextLine)) break;
                     if (nextLine === '') {
                         j++;
-                continue;
+                        continue;
                     }
                     bodyLines.push(nextLine);
                     j++;
