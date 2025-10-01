@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Design Canvas - AI Assistant</title>
+    <link rel="icon" type="image/png" href="./assets/images/favicon/favicon-light.png" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/png" href="./assets/images/favicon/favicon-dark.png" media="(prefers-color-scheme: dark)">
     <link rel="stylesheet" href="styles.css">
     <script>
     window.AGENT_CFG = {
@@ -288,7 +290,9 @@
                 <!-- Auth State: Signed In -->
                 <div class="auth-state hidden" id="authStateSignedIn">
                     <span class="user-email" id="userEmailDisplay"></span>
-                    <button id="signOutBtn" class="auth-btn auth-btn-signout">Sign out</button>
+                    <button id="signOutBtn" class="auth-btn-icon" title="Sign out">
+                        <img src="./assets/images/icons/icon-logout.png" alt="Sign out" class="auth-icon-img" />
+                    </button>
                 </div>
             </div>
         </div>
