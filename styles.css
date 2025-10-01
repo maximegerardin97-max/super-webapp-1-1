@@ -1,5 +1,103 @@
 /* Clean Two-Card Layout */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* SF Pro Text Font Family */
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-RegularItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-SemiboldItalic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-HeavyItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('./assets/fonts/SF-Pro-Text-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
 
 /* CSS Custom Properties for Light/Dark Theme */
 :root {
@@ -95,7 +193,7 @@
 }
 
 body {
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   height: 100vh;
@@ -342,6 +440,29 @@ body {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+/* Slide-in from right animation for conversation history */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Animation class for conversation content */
+.conversation-slide-in {
+  animation: slideInFromRight 0.4s ease-out;
+  transform-origin: right center;
+}
+
+/* Ensure smooth transitions for conversation content */
+.chat-results-content {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
 /* Show Images Tag */
@@ -2618,7 +2739,188 @@ body { padding-bottom: 140px; }
   }
 }
 
-/* Training Data Link */
+/* User Account Component */
+.user-account-component {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-radius: 36px;
+  padding: 12px 16px;
+  box-shadow: 0 6px 20px var(--shadow-primary);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+/* Connection Status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-secondary);
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.5);
+  transition: all 0.3s ease;
+}
+
+.connection-status.error .status-dot {
+  background: #ff3b30;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+}
+
+.connection-status.disconnected .status-dot {
+  background: var(--text-quaternary);
+  box-shadow: none;
+}
+
+/* User Account Section */
+.user-account-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.user-account-section {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-state {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-email-input {
+  padding: 4px 4px;
+  border: none;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.auth-email-input:focus {
+  border-color: var(--accent-primary);
+  background: transparent;
+}
+
+.auth-email-input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--text-primary);
+  padding: 0 4px;
+  transition: color 0.3s ease;
+}
+
+.auth-btn {
+  border-radius: 18px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.auth-btn:hover {
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.auth-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  opacity: 0.5;
+}
+
+.auth-btn-icon:hover {
+  opacity: 1;
+  color: var(--accent-primary);
+}
+
+.auth-btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-icon-img {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+/* Training Data Button Container */
+.training-data-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  padding: 15px;
+  box-shadow: 0 6px 20px var(--shadow-primary);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+/* Training Data Button */
+.training-data-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.training-data-btn:hover {
+  opacity: 1;
+}
+
+.training-data-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Training Data Link (Legacy - keep for backwards compatibility) */
 .training-data-link {
   position: fixed;
   top: 20px;

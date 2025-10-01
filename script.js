@@ -66,27 +66,39 @@ class DesignRatingApp {
     setupAuth() {
         if (!window.supabase || !this.supabaseUrl || !this.supabaseKey) {
             console.warn('Supabase auth not configured');
-            const authStatus = document.getElementById('authStatus');
-            if (authStatus) authStatus.textContent = 'Auth unavailable: SDK not loaded or config missing';
             return;
         }
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
         const emailInput = document.getElementById('authEmail');
         const signInBtn = document.getElementById('signInBtn');
         const signOutBtn = document.getElementById('signOutBtn');
-        const authStatus = document.getElementById('authStatus');
+        const authStateSignedOut = document.getElementById('authStateSignedOut');
+        const authStateSignedIn = document.getElementById('authStateSignedIn');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const connectionStatus = document.getElementById('connectionStatus');
+        
         const updateUi = (session) => {
             const user = session && session.user ? session.user : null;
             if (user) {
-                signOutBtn.style.display = '';
-                signInBtn.style.display = 'none';
-                if (emailInput) emailInput.style.display = 'none';
-                authStatus.textContent = user.email || 'Signed in';
+                // Show signed in state
+                if (authStateSignedOut) authStateSignedOut.classList.add('hidden');
+                if (authStateSignedIn) authStateSignedIn.classList.remove('hidden');
+                if (userEmailDisplay) userEmailDisplay.textContent = user.email || 'Signed in';
+                // Update connection status to connected
+                if (connectionStatus) {
+                    connectionStatus.classList.remove('error', 'disconnected');
+                    connectionStatus.title = 'Connected';
+                }
             } else {
-                signOutBtn.style.display = 'none';
-                signInBtn.style.display = '';
-                if (emailInput) emailInput.style.display = '';
-                authStatus.textContent = '';
+                // Show signed out state
+                if (authStateSignedOut) authStateSignedOut.classList.remove('hidden');
+                if (authStateSignedIn) authStateSignedIn.classList.add('hidden');
+                // Update connection status to disconnected
+                if (connectionStatus) {
+                    connectionStatus.classList.add('disconnected');
+                    connectionStatus.classList.remove('error');
+                    connectionStatus.title = 'Not connected';
+                }
             }
         };
         this.supabase.auth.getSession().then(({ data }) => {
@@ -105,7 +117,7 @@ class DesignRatingApp {
                 // Very basic email validation
                 const valid = /.+@.+\..+/.test(email);
                 if (!valid) {
-                    if (authStatus) authStatus.textContent = 'Enter a valid email address';
+                    alert('Please enter a valid email address');
                     return;
                 }
                 try {
@@ -113,7 +125,6 @@ class DesignRatingApp {
                     signInBtn.disabled = true;
                     const originalText = signInBtn.textContent;
                     signInBtn.textContent = 'Sending…';
-                    if (authStatus) authStatus.textContent = 'Sending magic link…';
 
                     const { error } = await this.supabase.auth.signInWithOtp({
                         email,
@@ -123,13 +134,13 @@ class DesignRatingApp {
                     });
                     if (error) throw error;
 
-                    if (authStatus) authStatus.textContent = `Magic link sent to ${email}. Check your inbox.`;
+                    alert(`Magic link sent to ${email}. Check your inbox.`);
                     // restore button
                     signInBtn.textContent = originalText;
                     signInBtn.disabled = false;
                 } catch (e) {
                     console.error(e);
-                    if (authStatus) authStatus.textContent = 'Sign-in failed: ' + (e && e.message ? e.message : String(e));
+                    alert('Sign-in failed: ' + (e && e.message ? e.message : String(e)));
                     signInBtn.disabled = false;
                     signInBtn.textContent = 'Sign in';
                 }
@@ -148,6 +159,28 @@ class DesignRatingApp {
                 this.userSession = data.session || null;
                 updateUi(this.userSession);
             });
+        }
+    }
+
+    // Update connection status indicator
+    updateConnectionStatus(status = 'connected') {
+        const connectionStatus = document.getElementById('connectionStatus');
+        if (!connectionStatus) return;
+        
+        connectionStatus.classList.remove('error', 'disconnected');
+        
+        switch(status) {
+            case 'connected':
+                connectionStatus.title = 'Connected';
+                break;
+            case 'error':
+                connectionStatus.classList.add('error');
+                connectionStatus.title = 'Connection error';
+                break;
+            case 'disconnected':
+                connectionStatus.classList.add('disconnected');
+                connectionStatus.title = 'Not connected';
+                break;
         }
     }
 
@@ -2141,6 +2174,17 @@ class DesignRatingApp {
             }
         });
         chatResultsContent.innerHTML = html;
+        
+        // Apply slide-in animation to the conversation content
+        // Use requestAnimationFrame to ensure DOM is updated before animation
+        requestAnimationFrame(() => {
+            chatResultsContent.classList.add('conversation-slide-in');
+            
+            // Remove animation class after animation completes to allow re-animation on next entry
+            setTimeout(() => {
+                chatResultsContent.classList.remove('conversation-slide-in');
+            }, 400); // Match the animation duration (0.4s)
+        });
         
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);

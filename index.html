@@ -267,13 +267,38 @@
     <!-- Floating Selection Button -->
     <button class="selection-floating-btn" id="selectionFloatingBtn">Add to chat</button>
     
-    <!-- Training Data Link + Auth Controls -->
-    <a href="#" class="training-data-link" id="trainingDataLink">training data</a>
-    <div class="training-data-link" style="right: 140px; display: flex; gap: 6px; align-items: center;">
-        <input id="authEmail" type="email" placeholder="you@example.com" style="padding: 4px 8px; border: 1px solid var(--border-primary); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); width: 200px;" />
-        <button id="signInBtn" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-primary); background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer;">Sign in</button>
-        <button id="signOutBtn" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-primary); background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; display:none;">Sign out</button>
-        <span id="authStatus" style="font-size: 11px; color: var(--text-tertiary);"></span>
+    <div class="user-account-container">
+        <!-- User Account Component -->
+        <div class="user-account-component">
+            <!-- Connection Status Indicator -->
+            <div class="connection-status" id="connectionStatus" title="Connected">
+                <div class="status-dot"></div>
+            </div>
+            
+            <!-- User Account Section -->
+            <div class="user-account-section" id="userAccountSection">
+                <!-- Auth State: Not Signed In -->
+                <div class="auth-state" id="authStateSignedOut">
+                    <input id="authEmail" type="email" placeholder="enter@your.email" class="auth-email-input" />
+                    <button id="signInBtn" class="auth-btn-icon" title="Sign in">
+                        <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                    </button>
+                </div>
+                
+                <!-- Auth State: Signed In -->
+                <div class="auth-state hidden" id="authStateSignedIn">
+                    <span class="user-email" id="userEmailDisplay"></span>
+                    <button id="signOutBtn" class="auth-btn auth-btn-signout">Sign out</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Training Data Button Container -->
+        <div class="training-data-container">
+            <button class="training-data-btn" id="trainingDataLink" title="Training Data">
+                <img src="./assets/images/icons/icon-hash.png" alt="Training Data" class="auth-icon-img" />
+            </button>
+        </div>
     </div>
     
     <!-- Training Data Modal -->
