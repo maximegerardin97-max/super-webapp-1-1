@@ -219,10 +219,9 @@ body {
 .analysis-area {
   flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
   overflow-y: auto;
-  overflow-x: hidden;
 }
 
 /* Top row for image upload and command images */
