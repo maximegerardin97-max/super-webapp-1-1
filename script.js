@@ -367,6 +367,39 @@ class DesignRatingApp {
         
     }
 
+    resetCanvas() {
+        // Clear main large image
+        this.removeLargeImage();
+        
+        // Remove command images section
+        const commandSection = document.querySelector('.command-images-section');
+        if (commandSection) {
+            commandSection.remove();
+        }
+        
+        // Hide and clear inspirations card
+        const inspCard = document.getElementById('inspirationsCard');
+        const inspContent = document.getElementById('inspirationsContent');
+        if (inspCard) {
+            inspCard.style.display = 'none';
+        }
+        if (inspContent) {
+            inspContent.innerHTML = '<div class="placeholder-text">We\'ll suggest relevant flows here.</div>';
+        }
+        
+        // Clear uploaded image data
+        this.uploadedImageData = null;
+        this.uploadedImages = [];
+        
+        // Clear any chat image previews in the step
+        const chatImagePreview = document.querySelector('.chat-image-preview');
+        if (chatImagePreview) {
+            chatImagePreview.remove();
+        }
+        
+        console.log('Canvas reset to default state');
+    }
+
     // Check if message contains COMMAND formula
     containsCommandFormula(message) {
         return message.includes('COMMAND: send ');
@@ -698,7 +731,7 @@ class DesignRatingApp {
                     if (/^Recommendation:/i.test(nextLine)) break;
                     if (nextLine === '') {
                         j++;
-                        continue;
+                continue;
                     }
                     bodyLines.push(nextLine);
                     j++;
@@ -2301,6 +2334,9 @@ class DesignRatingApp {
     }
 
     async renderConversationList() {
+        // Reset canvas when going back to conversation list
+        this.resetCanvas();
+        
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         chatResultsArea.classList.add('show');
@@ -2339,6 +2375,9 @@ class DesignRatingApp {
     }
 
     async openConversation(conversationId) {
+        // Reset canvas when entering a conversation
+        this.resetCanvas();
+        
         this.currentConversationId = conversationId;
         const chatResultsContent = document.getElementById('chatResultsContent');
         chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
