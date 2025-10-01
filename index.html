@@ -79,16 +79,12 @@
                 <div class="chat-step active" id="chatStep0" data-step="0">
                     <div class="chat-input-container">
                         <button class="chat-image-btn" id="chatImageBtn" title="Upload image">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                            </svg>
+                            <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
                         </button>
                         <div class="chat-input-wrapper">
                             <input type="text" id="mainChatInput" placeholder="Ask anything" />
                             <button class="chat-send-btn" id="mainChatSendBtn">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7l5-5 5 5z"/>
-                                </svg>
+                                <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
                             </button>
                         </div>
                     </div>
@@ -288,7 +284,9 @@
                 <!-- Auth State: Signed In -->
                 <div class="auth-state hidden" id="authStateSignedIn">
                     <span class="user-email" id="userEmailDisplay"></span>
-                    <button id="signOutBtn" class="auth-btn auth-btn-signout">Sign out</button>
+                    <button id="signOutBtn" class="auth-btn auth-btn-signout">
+                        <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
+                    </button>
                 </div>
             </div>
         </div>

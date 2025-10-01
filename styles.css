@@ -506,15 +506,19 @@ body {
 
 .improvement-card {
   background: #ffffff; /* force pure white like the mock */
-  border: 1px solid #e5e5e7; /* subtle light border */
-  border-radius: 20px;
+  border: none; /* subtle light border */
+  border-radius: 16px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
   width: 100%;
+  pointer:cursor;
 }
 
 /* 1-line recap (green) */
-.improvement-card--recap { border-color: var(--accent-secondary); background: #ffffff; }
+.improvement-card--recap { 
+  border-color: var(--accent-secondary); 
+  background: #ffffff; 
+}
 
 .improvement-header {
   display: flex;
@@ -525,33 +529,68 @@ body {
   row-gap: 6px;
 }
 
-.improvement-title { font-size: 13px; font-weight: 500; color: #000000; flex: 1 1 auto; min-width: 120px; margin-right: 8px; }
-
-.improvement-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: 0 0 auto; }
-.improvement-chevron {
-  width: 28px; height: 28px; border-radius: 14px; border: 1px solid var(--border-primary);
-  background: var(--bg-tertiary); color: var(--text-primary); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.2s ease;
+.improvement-title { 
+  font-size: 14px; 
+  font-weight: 300; 
+  color: #000000; 
+  flex: 1 1 auto; 
+  min-width: 120px; 
+  margin-right: 8px; 
 }
-.improvement-chevron:hover { background: var(--bg-hover); }
+
+.improvement-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; margin-left: 
+  auto; 
+  flex: 0 0 auto; 
+}
+
+.improvement-chevron {
+  width: 20px; 
+  height: 20px; 
+  border-radius: 14px; 
+  border: none;
+  background: transparent; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer; 
+  transition: all 0.2s ease;
+}
+
+.improvement-chevron:hover {  
+}
 
 /* Go deeper button */
 .go-deeper-btn {
   padding: 4px 8px;
   font-size: 12px;
   border-radius: 14px;
-  border: 1px solid var(--border-primary);
+  border: none;
   background: var(--bg-tertiary);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.go-deeper-btn:hover { background: var(--bg-hover); }
+.go-deeper-btn:hover { 
+  background: var(--bg-hover); }
 
-.improvement-body { display: none; padding: 0 14px 14px 14px; color: #333333; font-size: 13px; line-height: 1.5; }
-.improvement-card.expanded .improvement-body { display: block; }
+.improvement-body { 
+  display: none; 
+  padding: 0 14px 14px 14px; 
+  color: #333333; 
+  font-size: 13px; 
+  line-height: 1.5; 
+}
 
-.improvement-card .muted { color: var(--text-quaternary); }
+.improvement-card.expanded .improvement-body { 
+  display: block; 
+}
+
+.improvement-card .muted { 
+  color: var(--text-quaternary); 
+}
 
 .solution-more-btn {
   background: #4a4a4a;
@@ -2833,19 +2872,14 @@ body { padding-bottom: 140px; }
 
 .auth-btn {
   border-radius: 18px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-tertiary);
+  border: none;
+  background: transparent;
   color: var(--text-primary);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-}
-
-.auth-btn:hover {
-  background: var(--bg-hover);
-  transform: translateY(-1px);
 }
 
 .auth-btn-icon {
@@ -2866,7 +2900,6 @@ body { padding-bottom: 140px; }
 
 .auth-btn-icon:hover {
   opacity: 1;
-  color: var(--accent-primary);
 }
 
 .auth-btn-icon:disabled {
@@ -2875,8 +2908,8 @@ body { padding-bottom: 140px; }
 }
 
 .auth-icon-img {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 
