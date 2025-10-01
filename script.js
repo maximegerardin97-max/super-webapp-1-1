@@ -637,12 +637,37 @@ class DesignRatingApp {
             foundStructure = true;
         }
 
-        // Look for Screen N: items
-        for (const line of lines) {
+        // Look for Screen N: items and collect their content
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
             const screenMatch = line.match(/^Screen\s*(\d+):\s*(.+)$/i);
             if (screenMatch) {
-                result.cards.push({ title: `Screen ${screenMatch[1]}`, justification: stripAll(screenMatch[2]) });
+                const screenNum = screenMatch[1];
+                const screenTitle = stripAll(screenMatch[2]);
+                
+                // Collect following lines until next Screen or end
+                let j = i + 1;
+                const bodyLines = [];
+                while (j < lines.length) {
+                    const nextLine = lines[j].trim();
+                    if (/^Screen\s*\d+:/i.test(nextLine)) break;
+                    if (/^References:/i.test(nextLine)) break;
+                    if (/^Recommendation:/i.test(nextLine)) break;
+                    if (nextLine === '') {
+                        j++;
+                        continue;
+                    }
+                    bodyLines.push(nextLine);
+                    j++;
+                }
+                
+                const body = stripAll(bodyLines.join('\n'));
+                result.cards.push({ 
+                    title: `Screen ${screenNum}: ${screenTitle}`, 
+                    justification: body 
+                });
                 foundStructure = true;
+                i = j - 1; // Continue from where we left off
             }
         }
 
