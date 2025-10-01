@@ -229,6 +229,7 @@ body {
   display: flex;
   gap: 20px;
   align-items: flex-start;
+  flex-direction: column;
 }
 
 /* Command Images Section */
@@ -316,8 +317,11 @@ body {
 
 /* Images Grid */
 .app-images-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* one per row */
+  display: flex;
+  flex-direction: row;
+  align-content: flex-start;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: 12px;
   width: 100%;
 }
@@ -564,7 +568,7 @@ body {
 
 /* Go deeper button */
 .go-deeper-btn {
-  padding: 4px 8px;
+  padding: 4px;
   font-size: 12px;
   border-radius: 14px;
   border: none;
@@ -2908,8 +2912,8 @@ body { padding-bottom: 140px; }
 }
 
 .auth-icon-img {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -2926,8 +2930,8 @@ body { padding-bottom: 140px; }
   transition: all 0.3s ease;
 }
 
-/* Training Data Button */
-.training-data-btn {
+/* Training Data Button to Rename IconButton-Wrapper */ 
+.IconButton-Wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2943,11 +2947,11 @@ body { padding-bottom: 140px; }
   padding: 0;
 }
 
-.training-data-btn:hover {
+.IconButton-Wrapper:hover {
   opacity: 1;
 }
 
-.training-data-icon {
+.IconButton-Wrapper-icon {
   display: flex;
   align-items: center;
   justify-content: center;
