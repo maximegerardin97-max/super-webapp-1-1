@@ -698,7 +698,7 @@ class DesignRatingApp {
                     if (/^Recommendation:/i.test(nextLine)) break;
                     if (nextLine === '') {
                         j++;
-                        continue;
+                continue;
                     }
                     bodyLines.push(nextLine);
                     j++;
@@ -2145,6 +2145,9 @@ class DesignRatingApp {
 
         // Training Data Modal
         this.initTrainingDataModal();
+        
+        // Chat Results Toggle
+        this.initChatResultsToggle();
     }
     
     setupDebugControls() {
@@ -2330,9 +2333,14 @@ class DesignRatingApp {
             }).join('');
             return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
         }).join('');
+        // Hide chat results area if no conversations
+        if (!sections) {
+            chatResultsArea.classList.remove('show');
+            return;
+        }
+        
         chatResultsContent.innerHTML = `
-            <div class="message-content">Conversations</div>
-            <div class="cards-stack">${sections || '<div class=\"message-content\">No conversations yet.</div>'}</div>
+            <div class="cards-stack">${sections}</div>
         `;
         chatResultsContent.addEventListener('click', async (e) => {
             const item = e.target.closest('[data-role="open-conv"]');
@@ -2517,8 +2525,13 @@ class DesignRatingApp {
     
     // Display centralized conversation summary in main chat
     showMainChatHistory() {
+        const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         if (!chatResultsContent || this.mainChatHistory.length === 0) {
+            // Hide chat results area if no history
+            if (chatResultsArea) {
+                chatResultsArea.classList.remove('show');
+            }
             return;
         }
         
@@ -2538,6 +2551,9 @@ class DesignRatingApp {
                 <div class="message-content">${this.formatContent(entry.response)}</div>
             </div>
         `).join('');
+        
+        // Show chat results area for history
+        chatResultsArea.classList.add('show');
         
         chatResultsContent.innerHTML = `
             <div class="chat-history-container">
@@ -3834,6 +3850,29 @@ Product: E-commerce App | Industry: Retail | Platform: Web
         } else {
             // Show error in the most recent card
             this.showResults(`Error: ${message}`, this.currentCardId);
+        }
+    }
+
+    initChatResultsToggle() {
+        const chatResultsToggle = document.getElementById('chatResultsToggle');
+        const chatResultsContent = document.getElementById('chatResultsContent');
+        
+        if (chatResultsToggle && chatResultsContent) {
+            chatResultsToggle.addEventListener('click', () => {
+                const isCollapsed = chatResultsContent.style.display === 'none';
+                
+                if (isCollapsed) {
+                    // Show content
+                    chatResultsContent.style.display = 'block';
+                    chatResultsToggle.classList.remove('collapsed');
+                    chatResultsToggle.title = 'Hide conversation';
+                } else {
+                    // Hide content
+                    chatResultsContent.style.display = 'none';
+                    chatResultsToggle.classList.add('collapsed');
+                    chatResultsToggle.title = 'Show conversation';
+                }
+            });
         }
     }
 

@@ -222,6 +222,8 @@ body {
   flex-direction: column;
   gap: 20px;
   overflow-y: auto;
+  padding-right: 400px;
+  padding-bottom: 400px;
 }
 
 /* Top row for image upload and command images */
@@ -343,7 +345,7 @@ body {
 }
 
 .app-image-item img {
-  width: 100%;
+  width: 250px;
   height: auto;
   object-fit: contain;
   display: block;
@@ -351,7 +353,6 @@ body {
 
 /* Chat Area (Right Side - Fixed) */
 .chat-area {
-  flex: 0 0 400px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -367,6 +368,45 @@ body {
 
 .chat-results-area.show {
   display: flex;
+}
+
+/* Chat Results Header */
+.chat-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-primary);
+  background: transparent;
+}
+
+.chat-results-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.chat-results-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-results-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.chat-results-toggle.collapsed svg {
+  transform: rotate(180deg);
 }
 
 .chat-results-content {
@@ -515,7 +555,7 @@ body {
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
   width: 100%;
-  pointer:cursor;
+  cursor: pointer;
 }
 
 /* 1-line recap (green) */
@@ -563,8 +603,9 @@ body {
   transition: all 0.2s ease;
 }
 
-.improvement-chevron:hover {  
-}
+ .improvement-chevron:hover { 
+   background: var(--bg-hover);
+ }
 
 /* Go deeper button */
 .go-deeper-btn {
@@ -719,7 +760,6 @@ body {
 /* Chat State with conversation - grows taller */
 .chat-state.with-conversation {
   max-height: 80vh;
-  min-height: 300px;
 }
 
 /* Progress Bar */
