@@ -2338,31 +2338,6 @@ class DesignRatingApp {
         }, { once: true });
     }
 
-    resetToDefaultCanvas() {
-        // Reset to default empty canvas state
-        const chatResultsArea = document.getElementById('chatResultsArea');
-        const chatResultsContent = document.getElementById('chatResultsContent');
-        const chatState = document.getElementById('chatState');
-        
-        // Clear current conversation
-        this.currentConversationId = null;
-        
-        // Reset chat results content to placeholder
-        if (chatResultsContent) {
-            chatResultsContent.innerHTML = '<div class="placeholder-text">Start a conversation...</div>';
-        }
-        
-        // Hide chat results area
-        if (chatResultsArea) {
-            chatResultsArea.classList.remove('show');
-        }
-        
-        // Remove conversation mode from chat state
-        if (chatState) {
-            chatState.classList.remove('with-conversation');
-        }
-    }
-
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
         const chatResultsContent = document.getElementById('chatResultsContent');
@@ -2456,7 +2431,7 @@ class DesignRatingApp {
         
         // Back handler
         const backBtn = document.getElementById('backToList');
-        if (backBtn) backBtn.addEventListener('click', () => this.resetToDefaultCanvas());
+        if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
         // No extra design fetch here; image urls in messages will have restored the image already
     }
     
