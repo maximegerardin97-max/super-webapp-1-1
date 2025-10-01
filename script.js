@@ -503,18 +503,6 @@ class DesignRatingApp {
             showDesignsLabel: 'Show designs'
         };
 
-        // Extract COMMAND line if present to preserve and for designs toggle
-        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
-        if (commandMatch) {
-            result.commandLine = commandMatch[0];
-        }
-
-        // Pull product/industry/platform line (e.g., "Product: ... | Industry: ... | Platform: ...")
-        const metaMatch = message.match(/Product:\s*[^\n]+/i);
-        if (metaMatch) {
-            result.productMeta = metaMatch[0].trim();
-        }
-
         // Helpers
         const stripAll = (s) => (s || '')
             .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -523,23 +511,373 @@ class DesignRatingApp {
             .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '')
             .trim();
 
-        // Ensure we always have a header (first non-empty line) if none was found later
-        if (!result.header) {
-            const firstNonEmpty = (message.split('\n').find(l => l.trim().length > 0) || '').trim();
-            if (firstNonEmpty) result.header = stripAll(firstNonEmpty);
+        // Try role-specific parsing first, then fall back to general chat parsing
+        const roleResult = this.parseRoleSpecific(message, stripAll);
+        if (roleResult.hasScreenAnalysis) {
+            return roleResult;
         }
 
-        // Parse numbered cards and split Title: Justification; supports multiline bodies
+        // Fallback to general chat parsing
+        return this.parseGeneralChat(message, stripAll);
+    }
+
+    // Parse role-specific structured responses
+    parseRoleSpecific(message, stripAll) {
+        const result = {
+            hasScreenAnalysis: false,
+            header: '',
+            productMeta: '',
+            cards: [],
+            recommendation: '',
+            commandLine: '',
+            punchline: '',
+            showDesignsLabel: 'Show designs'
+        };
+
+        // Extract COMMAND line
+        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+        if (commandMatch) {
+            result.commandLine = commandMatch[0];
+        }
+
+        // Extract punchline (bold text at end or explicit punchline)
+        const punchlineMatch = message.match(/\*\*([^*]+)\*\*$/) || message.match(/Punchline:\s*(.+)$/i);
+        if (punchlineMatch) {
+            result.punchline = stripAll(punchlineMatch[1]);
+        }
+
+        // Extract recommendation
+        const recMatch = message.match(/Recommendation:\s*([^\n]+)/i) || message.match(/✨\s*Recommendation:\s*([^\n]+)/i);
+        if (recMatch) {
+            result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recMatch[1]) });
+        }
+
         const lines = message.split('\n');
         let i = 0;
-        let firstNumberLineIndex = -1;
+
+        // Try Role 1: Product Reviewer (default)
+        if (this.tryParseProductReviewer(lines, result, stripAll)) {
+            return result;
+        }
+
+        // Try Role 2: Knowledge Expert
+        if (this.tryParseKnowledgeExpert(lines, result, stripAll)) {
+            return result;
+        }
+
+        // Try Role 3: Idea Starter
+        if (this.tryParseIdeaStarter(lines, result, stripAll)) {
+            return result;
+        }
+
+        // Try Role 4: Design Generator
+        if (this.tryParseDesignGenerator(lines, result, stripAll)) {
+            return result;
+        }
+
+        // Try Role 5: Quick UI Reviewer
+        if (this.tryParseQuickUIReviewer(lines, result, stripAll)) {
+            return result;
+        }
+
+        // Try Role 6: Metrics Expert
+        if (this.tryParseMetricsExpert(lines, result, stripAll)) {
+            return result;
+        }
+
+        return result;
+    }
+
+    // Role 1: Product Reviewer
+    tryParseProductReviewer(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Product: ... | Industry: ... | Platform: ... header
+        const productMetaMatch = lines.find(line => /Product:\s*[^|]+\s*\|\s*Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line));
+        if (productMetaMatch) {
+            result.productMeta = stripAll(productMetaMatch.trim());
+            foundStructure = true;
+        }
+
+        // Look for checkmark solutions
+        for (const line of lines) {
+            const checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*[=:]\s*([^:]+):\s*(.+)$/);
+            if (checkmarkMatch) {
+                const title = stripAll(checkmarkMatch[1]);
+                const just = stripAll(checkmarkMatch[2]);
+                result.cards.push({ title, justification: just });
+                foundStructure = true;
+            }
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Role 2: Knowledge Expert
+    tryParseKnowledgeExpert(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Design Topic: header
+        const designTopicMatch = lines.find(line => /Design Topic:\s*/i.test(line));
+        if (designTopicMatch) {
+            result.cards.push({ title: 'Design Topic', justification: stripAll(designTopicMatch.replace(/Design Topic:\s*/i, '')) });
+            foundStructure = true;
+        }
+
+        // Look for From screens_library: and From design_knowledge:
+        for (const line of lines) {
+            const screensMatch = line.match(/From screens_library:\s*(.+)/i);
+            if (screensMatch) {
+                result.cards.push({ title: 'From screens_library', justification: stripAll(screensMatch[1]) });
+                foundStructure = true;
+            }
+            const knowledgeMatch = line.match(/From design_knowledge:\s*(.+)/i);
+            if (knowledgeMatch) {
+                result.cards.push({ title: 'From design_knowledge', justification: stripAll(knowledgeMatch[1]) });
+                foundStructure = true;
+            }
+        }
+
+        // Look for ✨ Rec items
+        for (const line of lines) {
+            const recMatch = line.match(/^\s*✨\s*Rec\s*\d*\s*[:\-]\s*(.+)$/);
+            if (recMatch) {
+                result.cards.push({ title: `Rec ${result.cards.filter(c => c.title.startsWith('Rec')).length + 1}`, justification: stripAll(recMatch[1]) });
+                foundStructure = true;
+            }
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Role 3: Idea Starter
+    tryParseIdeaStarter(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Flow: header
+        const flowMatch = lines.find(line => /Flow:\s*/i.test(line));
+        if (flowMatch) {
+            result.header = stripAll(flowMatch);
+            foundStructure = true;
+        }
+
+        // Look for Screen N: items and collect their content
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const screenMatch = line.match(/^Screen\s*(\d+):\s*(.+)$/i);
+            if (screenMatch) {
+                const screenNum = screenMatch[1];
+                const screenTitle = stripAll(screenMatch[2]);
+                
+                // Collect following lines until next Screen or end
+                let j = i + 1;
+                const bodyLines = [];
+                while (j < lines.length) {
+                    const nextLine = lines[j].trim();
+                    if (/^Screen\s*\d+:/i.test(nextLine)) break;
+                    if (/^References:/i.test(nextLine)) break;
+                    if (/^Recommendation:/i.test(nextLine)) break;
+                    if (nextLine === '') {
+                        j++;
+                        continue;
+                    }
+                    bodyLines.push(nextLine);
+                    j++;
+                }
+                
+                const body = stripAll(bodyLines.join('\n'));
+                result.cards.push({ 
+                    title: `Screen ${screenNum}: ${screenTitle}`, 
+                    justification: body 
+                });
+                foundStructure = true;
+                i = j - 1; // Continue from where we left off
+            }
+        }
+
+        // Look for References:
+        const refMatch = lines.find(line => /References:\s*/i.test(line));
+        if (refMatch) {
+            result.cards.push({ title: 'References', justification: stripAll(refMatch.replace(/References:\s*/i, '')) });
+            foundStructure = true;
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Role 4: Design Generator
+    tryParseDesignGenerator(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Context: header
+        const contextMatch = lines.find(line => /Context:\s*/i.test(line));
+        if (contextMatch) {
+            result.header = stripAll(contextMatch);
+            foundStructure = true;
+        }
+
+        // Look for specific sections
+        const sections = ['Suggested layout', 'Interactions', 'Visuals', 'Next steps'];
+        for (const section of sections) {
+            const sectionMatch = lines.find(line => new RegExp(`${section}:\\s*`, 'i').test(line));
+            if (sectionMatch) {
+                result.cards.push({ title: section, justification: stripAll(sectionMatch.replace(new RegExp(`${section}:\\s*`, 'i'), '')) });
+                foundStructure = true;
+            }
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Role 5: Quick UI Reviewer
+    tryParseQuickUIReviewer(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Product: ... | Platform: ... header
+        const productMetaMatch = lines.find(line => /Product:\s*[^|]+\s*\|\s*Platform:/i.test(line));
+        if (productMetaMatch) {
+            result.productMeta = stripAll(productMetaMatch.trim());
+            foundStructure = true;
+        }
+
+        // Look for checkmark solutions
+        for (const line of lines) {
+            const checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*[=:]\s*([^:]+):\s*(.+)$/);
+            if (checkmarkMatch) {
+                const title = stripAll(checkmarkMatch[1]);
+                const just = stripAll(checkmarkMatch[2]);
+                result.cards.push({ title, justification: just });
+                foundStructure = true;
+            }
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Role 6: Metrics Expert
+    tryParseMetricsExpert(lines, result, stripAll) {
+        let foundStructure = false;
+        let i = 0;
+
+        // Look for Industry: ... | Platform: ... header
+        const industryMetaMatch = lines.find(line => /Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line));
+        if (industryMetaMatch) {
+            result.productMeta = stripAll(industryMetaMatch.trim());
+            foundStructure = true;
+        }
+
+        // Look for specific sections
+        const sections = ['Metric focus', 'Current signal', 'Diagnosis', 'Experiments (prioritized)'];
+        for (const section of sections) {
+            const sectionMatch = lines.find(line => new RegExp(`${section}:\\s*`, 'i').test(line));
+            if (sectionMatch) {
+                let content = stripAll(sectionMatch.replace(new RegExp(`${section}:\\s*`, 'i'), ''));
+                
+                // For Experiments, collect all Test N items
+                if (section === 'Experiments (prioritized)') {
+                    const testItems = [];
+                    for (const line of lines) {
+                        const testMatch = line.match(/^\s*[✅✔️]\s*Test\s*(\d+):\s*(.+)$/);
+                        if (testMatch) {
+                            testItems.push(`Test ${testMatch[1]}: ${stripAll(testMatch[2])}`);
+                        }
+                    }
+                    if (testItems.length > 0) {
+                        content = testItems.join('\n');
+                    }
+                }
+                
+                result.cards.push({ title: section, justification: content });
+                foundStructure = true;
+            }
+        }
+
+        if (foundStructure) {
+            result.hasScreenAnalysis = true;
+        }
+        return foundStructure;
+    }
+
+    // Fallback: General chat parsing
+    parseGeneralChat(message, stripAll) {
+        const result = {
+            hasScreenAnalysis: false,
+            header: '',
+            productMeta: '',
+            cards: [],
+            recommendation: '',
+            commandLine: '',
+            punchline: '',
+            showDesignsLabel: 'Show designs'
+        };
+
+        // Extract COMMAND line
+        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+        if (commandMatch) {
+            result.commandLine = commandMatch[0];
+        }
+
+        // Extract punchline
+        const punchlineMatch = message.match(/\*\*([^*]+)\*\*$/) || message.match(/Punchline:\s*(.+)$/i);
+        if (punchlineMatch) {
+            result.punchline = stripAll(punchlineMatch[1]);
+        }
+
+        // Extract recommendation
+        const recMatch = message.match(/Recommendation:\s*([^\n]+)/i) || message.match(/✨\s*Recommendation:\s*([^\n]+)/i);
+        if (recMatch) {
+            result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recMatch[1]) });
+        }
+
+        // Extract product meta
+        const metaMatch = message.match(/Product:\s*[^\n]+/i);
+        if (metaMatch) {
+            result.productMeta = metaMatch[0].trim();
+        }
+
+        // Process message sequentially to preserve order
+        const lines = message.split('\n');
+        let i = 0;
+        let hasAnyCards = false;
+        
         while (i < lines.length) {
             const line = lines[i].trim();
-            const numberedHead = line.match(/^\d+\.\s*(.+)/);
-            if (numberedHead) {
-                if (firstNumberLineIndex === -1) firstNumberLineIndex = i;
-                const remainder = numberedHead[1];
-                // Try to extract title and first-line justification
+            
+            // Check for checkmark-style items
+            const checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+            if (checkmarkMatch) {
+                const title = stripAll(checkmarkMatch[1]);
+                const just = stripAll(checkmarkMatch[2]);
+                result.cards.push({ title, justification: just });
+                hasAnyCards = true;
+                i++;
+                continue;
+            }
+
+            // Check for numbered items
+            const numberedMatch = line.match(/^\d+\.\s*(.+)/);
+            if (numberedMatch) {
+                const remainder = numberedMatch[1];
                 let title = '';
                 let just = '';
                 const md = remainder.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);
@@ -548,184 +886,66 @@ class DesignRatingApp {
                 else if (simple) { title = simple[1]; just = simple[2]; }
                 else { title = remainder; just = ''; }
 
-                // Accumulate following lines until next numbered item or blank-blank separation
+                // Accumulate following lines
                 let j = i + 1;
                 const bodyLines = [just].filter(Boolean);
                 while (j < lines.length) {
                     const l = lines[j];
                     if (/^\s*\d+\./.test(l)) break;
-                    // stop if we hit an Overall paragraph start (for recommendation)
-                    if (/^\s*Overall[\s,:]/i.test(l)) break;
+                    if (/^\s*[✅✔️]/.test(l)) break;
+                    if (/^\s*###/.test(l)) break;
                     bodyLines.push(l.trim());
                     j++;
                 }
                 const body = stripAll(bodyLines.join(' ').replace(/\s+/g, ' ').trim());
                 result.cards.push({ title: stripAll(title).replace(/\.$/, ''), justification: body });
-                result.hasScreenAnalysis = true;
+                hasAnyCards = true;
                 i = j;
                 continue;
             }
 
-            // Recommendation card
-            const recStart = line.match(/^Recommandation\s*card:|Recommendation\s*card:/i);
-            if (recStart) {
-                // Expect a title line and then a collapsible with recommendation
-                let recTitle = 'Recommendation';
-                let rec = '';
-                const tLine = (lines[i+1]||'').trim();
-                const tM = tLine.match(/^title:\s*(.+)/i);
-                if (tM) { recTitle = tM[1].trim(); }
-                const rLine = (lines[i+2]||'').trim();
-                const rM = rLine.match(/recommendation:\s*(.+)/i);
-                if (rM) { rec = rM[1].trim(); }
-                result.recommendation = JSON.stringify({ title: recTitle, text: rec });
-                result.hasScreenAnalysis = true;
-                i += 3;
+            // Check for markdown headers
+            const headerMatch = line.match(/^###\s*(.+)$/);
+            if (headerMatch) {
+                const title = stripAll(headerMatch[1]);
+                // Collect following lines until next header or empty line
+                let j = i + 1;
+                const bodyLines = [];
+                while (j < lines.length) {
+                    const l = lines[j].trim();
+                    if (/^###/.test(l)) break;
+                    if (/^\s*[✅✔️]/.test(l)) break;
+                    if (/^\s*\d+\./.test(l)) break;
+                    if (l === '') break;
+                    bodyLines.push(l);
+                    j++;
+                }
+                const body = stripAll(bodyLines.join(' ').replace(/\s+/g, ' ').trim());
+                result.cards.push({ title, justification: body });
+                hasAnyCards = true;
+                i = j;
+                continue;
+            }
+
+            // Check for generic labeled sections
+            const genericMatch = line.match(/^([A-Za-z][A-Za-z0-9 &()/%-]*):\s*(.+)$/);
+            if (genericMatch && !line.includes('Product:') && !line.includes('Industry:') && !line.includes('Platform:')) {
+                const title = stripAll(genericMatch[1]);
+                const just = stripAll(genericMatch[2]);
+                result.cards.push({ title, justification: just });
+                hasAnyCards = true;
+                i++;
                 continue;
             }
 
             i++;
         }
 
-        // Pass for checkmark-style solutions (design rating format): "✅ Title: justification"
-        if (result.cards.length === 0) {
-            for (const ln of lines) {
-                const m = ln.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
-                if (m) {
-                    // If experiments are present in the message, skip separate Test cards; they will be grouped under Experiments
-                    if (/^\s*(test)\s*\d+/i.test(m[1]) && /experiments\s*\(/i.test(message)) {
-                        continue;
-                    }
-                    const title = m[1];
-                    const just = m[2];
-                    result.cards.push({ title: stripAll(title), justification: stripAll(just) });
-                }
-            }
-        }
-
-        // Handle inline recommendation prefixed with sparkle (✨ Recommendation: ...)
-        if (!result.recommendation) {
-            const recSparkle = message.match(/✨\s*Recommendation\s*:\s*([^\n]+)/i);
-            if (recSparkle) {
-                result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recSparkle[1]) });
-            }
-        }
-
-        // Secondary pass A: explicit "Screen N: Title" sections (common for flows)
-        {
-            const scrLines = message.split('\n');
-            const screenIndices = [];
-            for (let si = 0; si < scrLines.length; si++) {
-                const ln = scrLines[si].trim();
-                if (/^Screen\s*\d+\s*:/i.test(ln)) {
-                    screenIndices.push(si);
-                }
-            }
-            if (screenIndices.length > 0) {
-                for (let k = 0; k < screenIndices.length; k++) {
-                    const start = screenIndices[k];
-                    const end = k < screenIndices.length - 1 ? screenIndices[k+1] : scrLines.length;
-                    const head = scrLines[start].trim();
-                    const title = head.replace(/^Screen\s*\d+\s*:\s*/i, '').trim();
-                    const body = stripAll(scrLines.slice(start + 1, end).join('\n'));
-                    result.cards.push({ title: `Screen ${k+1}: ${stripAll(title)}`, justification: body });
-                }
-            }
-        }
-
-        // Secondary pass A.2: Generic labeled sections like "Current signal:", "Diagnosis:", "Metric focus:" etc.
-        {
-            const genLines = message.split('\n');
-            const labelIdxs = [];
-            for (let li = 0; li < genLines.length; li++) {
-                const ln = genLines[li].trim();
-                if (/^[A-Za-z][A-Za-z0-9 &()/%-]*:\s*$/i.test(ln) || /^[A-Za-z][A-Za-z0-9 &()/%-]*:\s+.+$/.test(ln)) {
-                    // Skip individual Test N: labels so they remain inside Experiments body
-                    if (/^Test\s*\d+\s*:/i.test(ln)) continue;
-                    // Heading-like line ending with ':' or with inline value
-                    labelIdxs.push(li);
-                }
-            }
-            // Merge contiguous duplicates and build cards
-            for (let k = 0; k < labelIdxs.length; k++) {
-                const start = labelIdxs[k];
-                const end = k < labelIdxs.length - 1 ? labelIdxs[k+1] : genLines.length;
-                let head = genLines[start].trim();
-                let title = head.replace(/:.*$/, '').trim();
-                // Inline value on the same line
-                let inline = '';
-                const inlineMatch = head.match(/:\s*(.+)$/);
-                if (inlineMatch) inline = inlineMatch[1];
-                const body = stripAll([inline, ...genLines.slice(start + 1, end)].join('\n'));
-                if (title && body) {
-                    // Avoid capturing Recommendation and Punchline here (handled later)
-                    if (!/^recommendation$/i.test(title) && !/^punchline$/i.test(title)) {
-                        result.cards.push({ title: stripAll(title), justification: body });
-                    }
-                }
-            }
-        }
-
-        // Secondary pass B: extract inline Solutions, Recommendation, Flows/COMMAND, Punchline from one-paragraph replies
-        const solRegex = /Solution\s*(\d+)\s*:\s*([^\-\n]+?)(?:\s*-\s*([^\n]+?))(?:[\u2705\u2714\ufe0f]|\.|\n|$)/gi;
-        let mm;
-        while ((mm = solRegex.exec(message)) !== null) {
-            const title = stripAll(mm[2] || '');
-            const just = stripAll(mm[3] || '');
-            if (title) result.cards.push({ title, justification: just });
-        }
-
-        // Tertiary pass: Markdown-style sections using ### anywhere as card titles and '-' bullets as details
-        if (result.cards.length === 0) {
-            // Find all headings regardless of line starts
-            const headingRegex = /###\s*([^:#\n]+)\s*:?/gi;
-            const indices = [];
-            let m;
-            while ((m = headingRegex.exec(message)) !== null) {
-                indices.push({ title: stripAll(m[1]), start: m.index, end: headingRegex.lastIndex });
-            }
-            if (indices.length > 0) {
-                for (let i = 0; i < indices.length; i++) {
-                    const start = indices[i].end;
-                    const end = i < indices.length - 1 ? indices[i+1].start : message.length;
-                    const sectionText = stripAll(message.slice(start, end));
-                    // Convert inline bullets "- " into list lines
-                    const bullets = sectionText.split(/\n|(?=-\s+)/).map(s => s.trim()).filter(Boolean);
-                    const body = bullets.map(b => b.replace(/^[-•]\s*/, '• ')).join('\n');
-                    result.cards.push({ title: indices[i].title, justification: body });
-                }
-            }
-        }
-
-        if (!result.recommendation) {
-            const recInline = message.match(/Recommendation\s*:\s*([^\n]+)/i);
-            if (recInline) {
-                result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recInline[1]) });
-            } else {
-                const overallMatch = message.match(/^\s*Overall[,\s]+([\s\S]+?)(?:\n\n|$)/im);
-                if (overallMatch) {
-                    result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(overallMatch[1]) });
-                }
-            }
-        }
-
-        const flowsCmd = message.match(/👉[^\n]*COMMAND:[^\n]+/i) || message.match(/COMMAND:\s*send\s+[^\n]+/i);
-        if (flowsCmd) result.commandLine = stripAll(flowsCmd[0]);
-
-        const punch = message.match(/\*\*([^*][^\n]+?)\*\*(?![\s\S]*\*\*)/m) || message.match(/\*\*?\s*Punchline\s*:\s*([^*\n]+)\*?\*/i) || message.match(/Punchline\s*:\s*([^\n]+)/i);
-        if (punch) result.punchline = stripAll(punch[1]);
-
-        // Intro paragraph before first numbered item
-        if (!result.header && firstNumberLineIndex > 0) {
-            result.header = stripAll(lines.slice(0, firstNumberLineIndex).join('\n'));
-        }
-
-        // Only treat as screen analysis if we actually parsed cards or a recommendation
-        if ((result.cards && result.cards.length > 0) || (result.recommendation && result.recommendation.length > 0)) {
+        // If we found any structured content, mark as screen analysis
+        if (hasAnyCards || result.recommendation || result.punchline || result.commandLine) {
             result.hasScreenAnalysis = true;
-        } else {
-            result.hasScreenAnalysis = false;
         }
+
         return result;
     }
 
