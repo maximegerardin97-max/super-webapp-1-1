@@ -310,7 +310,7 @@ body {
 
 .app-container-content {
   display: none;
-  padding: 0 0 12px 0; /* remove horizontal padding to avoid image crop */
+  padding: 20px; /* remove horizontal padding to avoid image crop */
 }
 
 .app-container.expanded .app-container-content {
@@ -376,7 +376,6 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  border-bottom: 1px solid var(--border-primary);
   background: transparent;
 }
 
@@ -392,7 +391,7 @@ body {
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-right: 8px;
+  margin-right: 0px;
 }
 
 .chat-back-btn:hover {
@@ -401,11 +400,14 @@ body {
 
 .chat-results-title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 300;
   color: var(--text-primary);
   flex: 1;
-  text-align: center;
-  margin: 0 8px;
+  text-align: left;
+  margin: 0px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-results-toggle {
@@ -1377,7 +1379,7 @@ body {
 
 .large-image-content img {
   display: block;
-  width: auto;
+  width: 250px;
   height: auto;
   max-width: min(70vw, 1080px);
   max-height: calc(80vh - 40px);
