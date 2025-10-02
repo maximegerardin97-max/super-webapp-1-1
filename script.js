@@ -600,23 +600,38 @@ class DesignRatingApp {
             foundStructure = true;
         }
 
-        // Look for checkmark items (both Solution N: and direct Title: formats)
+        // Look for numbered solution items (1. **Title**: description format)
         for (const line of lines) {
-            // Try Solution N: format first
-            let checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*[=:]\s*([^:]+):\s*(.+)$/);
-            if (checkmarkMatch) {
-                const title = stripAll(checkmarkMatch[1]);
-                const just = stripAll(checkmarkMatch[2]);
-                result.cards.push({ title, justification: just });
-                foundStructure = true;
+            // Try numbered format with bold titles: "1. **Interactive Engagement**: description"
+            // This handles the case where multiple solutions are on one line
+            const numberedMatches = line.match(/\d+\.\s*\*\*([^*]+)\*\*:\s*([^0-9]+?)(?=\s*\d+\.\s*\*\*|$)/g);
+            if (numberedMatches) {
+                numberedMatches.forEach(match => {
+                    const itemMatch = match.match(/\d+\.\s*\*\*([^*]+)\*\*:\s*(.+)/);
+                    if (itemMatch) {
+                        const title = stripAll(itemMatch[1]);
+                        const just = stripAll(itemMatch[2]);
+                        result.cards.push({ title, justification: just });
+                        foundStructure = true;
+                    }
+                });
             } else {
-                // Try direct Title: format (like "✅ Clear Visual Hierarchy: justification")
-                checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+                // Try Solution N: format first (legacy)
+                let checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*[=:]\s*([^:]+):\s*(.+)$/);
                 if (checkmarkMatch) {
                     const title = stripAll(checkmarkMatch[1]);
                     const just = stripAll(checkmarkMatch[2]);
                     result.cards.push({ title, justification: just });
                     foundStructure = true;
+                } else {
+                    // Try direct Title: format (like "✅ Clear Visual Hierarchy: justification")
+                    checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+                    if (checkmarkMatch) {
+                        const title = stripAll(checkmarkMatch[1]);
+                        const just = stripAll(checkmarkMatch[2]);
+                        result.cards.push({ title, justification: just });
+                        foundStructure = true;
+                    }
                 }
             }
         }
