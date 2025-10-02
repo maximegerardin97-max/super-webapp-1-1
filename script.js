@@ -2310,6 +2310,13 @@ class DesignRatingApp {
     async renderConversationList() {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
+        const chatResultsTitle = document.getElementById('chatResultsTitle');
+        
+        // Reset title to generic "Conversation"
+        if (chatResultsTitle) {
+            chatResultsTitle.textContent = 'Conversation';
+        }
+        
         chatResultsArea.classList.add('show');
         this.setChatState('expanded-state');
         chatResultsContent.innerHTML = `<div class="message-content">Conversations</div><div class="message-content" id="convLoading">Loading conversations…</div>`;
@@ -2353,9 +2360,16 @@ class DesignRatingApp {
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
         const chatResultsContent = document.getElementById('chatResultsContent');
-        chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
+        const chatResultsTitle = document.getElementById('chatResultsTitle');
+        
+        // Set conversation title (you can customize this based on your data)
+        if (chatResultsTitle) {
+            chatResultsTitle.textContent = `Conversation ${conversationId}`;
+        }
+        
+        chatResultsContent.innerHTML = `<div class="message-content">Loading messages…</div>`;
         const messages = await this.fetchMessages(conversationId);
-        let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
+        let html = '';
         const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp)|data:image\/[^;]+;base64,[^\s]+)/ig;
         const extractText = (val) => {
             if (val == null) return '';
@@ -2440,10 +2454,6 @@ class DesignRatingApp {
         
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);
-        
-        // Back handler
-        const backBtn = document.getElementById('backToList');
-        if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
         // No extra design fetch here; image urls in messages will have restored the image already
     }
     
@@ -3855,6 +3865,7 @@ Product: E-commerce App | Industry: Retail | Platform: Web
 
     initChatResultsToggle() {
         const chatResultsToggle = document.getElementById('chatResultsToggle');
+        const chatResultsBack = document.getElementById('chatResultsBack');
         const chatResultsContent = document.getElementById('chatResultsContent');
         
         if (chatResultsToggle && chatResultsContent) {
@@ -3872,6 +3883,12 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                     chatResultsToggle.classList.add('collapsed');
                     chatResultsToggle.title = 'Show conversation';
                 }
+            });
+        }
+        
+        if (chatResultsBack) {
+            chatResultsBack.addEventListener('click', () => {
+                this.renderConversationList();
             });
         }
     }

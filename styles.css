@@ -378,12 +378,34 @@ body {
   padding: 12px 20px;
   border-bottom: 1px solid var(--border-primary);
   background: transparent;
+  gap: 12px;
+}
+
+.chat-results-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chat-results-back:hover {
+  background: var(--bg-hover);
 }
 
 .chat-results-title {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  flex: 1;
+  text-align: center;
 }
 
 .chat-results-toggle {
