@@ -1032,23 +1032,28 @@ class DesignRatingApp {
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
-        const punchlineCard = data.punchline ? `
-            <div class="improvement-card improvement-card--recap" data-card-type="punchline">
-                <div class="improvement-header">
-                    <div class="improvement-title">1-line recap</div>
-                    <div class="improvement-actions"><button class="improvement-chevron" type="button">▾</button></div>
-                </div>
-                <div class="improvement-body">${this.escapeHtml(data.punchline)}</div>
+        // Create punchline as simple message (first element)
+        const punchlineMessage = data.punchline ? `
+            <div class="message-content">${this.escapeHtml(data.punchline)}</div>
+        ` : '';
+
+        // Create "How to improve?" separator
+        const improvementSeparator = (data.cards.length > 0 || data.recommendation) ? `
+            <div class="improvement-separator">
+                <div class="separator-line"></div>
+                <div class="separator-text">How to improve?</div>
+                <div class="separator-line"></div>
             </div>
         ` : '';
 
         messageDiv.innerHTML = `
+            ${punchlineMessage}
+            ${improvementSeparator}
             ${headerLine}
             ${metaLine}
             ${cardsHtml}
             ${recommendationHtml}
             ${commandLine}
-            ${punchlineCard}
             ${showDesignsBtn}
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
@@ -2289,7 +2294,7 @@ class DesignRatingApp {
             const authHeader = await this.getAuthHeader();
             const user = await this.getCurrentUser();
             if (!user) return [];
-            const url = `${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.asc`;
+            const url = `${this.supabaseUrl}/rest/v1/conversations?select=id,title,created_at&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.desc`;
             const resp = await fetch(url, {
                 headers: { 'apikey': this.supabaseKey, 'Accept': 'application/json', ...authHeader }
             });
@@ -2331,8 +2336,8 @@ class DesignRatingApp {
             if (!byDate[key]) byDate[key] = [];
             byDate[key].push(c);
         }
-        const sections = Object.keys(byDate).map(dateKey => {
-            const itemsHtml = byDate[dateKey].map(c => {
+        const sections = Object.keys(byDate).reverse().map(dateKey => {
+            const itemsHtml = byDate[dateKey].reverse().map(c => {
                 const created = new Date(c.created_at);
                 const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
                 const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
@@ -2360,10 +2365,12 @@ class DesignRatingApp {
 
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
+        const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
         
-        // Set loading state
+        // Ensure chat results area is shown and set loading state
+        chatResultsArea.classList.add('show');
         chatResultsTitle.textContent = 'Loading...';
         chatResultsContent.innerHTML = `<div class="message-content">Loading messages…</div>`;
         
@@ -2372,6 +2379,9 @@ class DesignRatingApp {
         // Set the actual conversation title (you can customize this based on your data structure)
         const conversationTitle = this.getConversationTitle(conversationId);
         chatResultsTitle.textContent = conversationTitle || 'Conversation';
+        
+        // Clear content completely and start fresh
+        chatResultsContent.innerHTML = '';
         
         let html = '';
         const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp)|data:image\/[^;]+;base64,[^\s]+)/ig;
