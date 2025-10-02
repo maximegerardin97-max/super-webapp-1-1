@@ -2148,6 +2148,9 @@ class DesignRatingApp {
         
         // Chat Results Toggle
         this.initChatResultsToggle();
+        
+        // Chat Back Button
+        this.initChatBackButton();
     }
     
     setupDebugControls() {
@@ -2312,14 +2315,12 @@ class DesignRatingApp {
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
         
-        // Reset title to generic "Conversation"
-        if (chatResultsTitle) {
-            chatResultsTitle.textContent = 'Conversation';
-        }
+        // Set title for conversation list
+        chatResultsTitle.textContent = 'Spaces';
         
         chatResultsArea.classList.add('show');
         this.setChatState('expanded-state');
-        chatResultsContent.innerHTML = `<div class="message-content">Conversations</div><div class="message-content" id="convLoading">Loading conversations…</div>`;
+        chatResultsContent.innerHTML = `<div class="message-content" id="convLoading">Loading conversations…</div>`;
         const list = await this.fetchConversationsForUser();
         this.conversationsList = Array.isArray(list) ? list : [];
         // Group by date (YYYY-MM-DD)
@@ -2362,13 +2363,16 @@ class DesignRatingApp {
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
         
-        // Set conversation title (you can customize this based on your data)
-        if (chatResultsTitle) {
-            chatResultsTitle.textContent = `Conversation ${conversationId}`;
-        }
-        
+        // Set loading state
+        chatResultsTitle.textContent = 'Loading...';
         chatResultsContent.innerHTML = `<div class="message-content">Loading messages…</div>`;
+        
         const messages = await this.fetchMessages(conversationId);
+        
+        // Set the actual conversation title (you can customize this based on your data structure)
+        const conversationTitle = this.getConversationTitle(conversationId);
+        chatResultsTitle.textContent = conversationTitle || 'Conversation';
+        
         let html = '';
         const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp)|data:image\/[^;]+;base64,[^\s]+)/ig;
         const extractText = (val) => {
@@ -2454,6 +2458,8 @@ class DesignRatingApp {
         
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);
+        
+        // Back handler is now in the header - handled by initChatBackButton
         // No extra design fetch here; image urls in messages will have restored the image already
     }
     
@@ -3865,7 +3871,6 @@ Product: E-commerce App | Industry: Retail | Platform: Web
 
     initChatResultsToggle() {
         const chatResultsToggle = document.getElementById('chatResultsToggle');
-        const chatResultsBack = document.getElementById('chatResultsBack');
         const chatResultsContent = document.getElementById('chatResultsContent');
         
         if (chatResultsToggle && chatResultsContent) {
@@ -3885,12 +3890,29 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                 }
             });
         }
+    }
+
+    initChatBackButton() {
+        const chatBackBtn = document.getElementById('chatBackBtn');
         
-        if (chatResultsBack) {
-            chatResultsBack.addEventListener('click', () => {
+        if (chatBackBtn) {
+            chatBackBtn.addEventListener('click', () => {
                 this.renderConversationList();
             });
         }
+    }
+
+    getConversationTitle(conversationId) {
+        // Find the conversation in the list and return its title
+        if (this.conversationsList && Array.isArray(this.conversationsList)) {
+            const conversation = this.conversationsList.find(conv => conv.id === conversationId);
+            if (conversation) {
+                // Extract title from the conversation data
+                // You can customize this based on your data structure
+                return conversation.title || conversation.name || `Conversation ${conversationId}`;
+            }
+        }
+        return `Conversation ${conversationId}`;
     }
 
     initTrainingDataModal() {

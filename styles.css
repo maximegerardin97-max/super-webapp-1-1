@@ -378,10 +378,9 @@ body {
   padding: 12px 20px;
   border-bottom: 1px solid var(--border-primary);
   background: transparent;
-  gap: 12px;
 }
 
-.chat-results-back {
+.chat-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,10 +392,10 @@ body {
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  margin-right: 8px;
 }
 
-.chat-results-back:hover {
+.chat-back-btn:hover {
   background: var(--bg-hover);
 }
 
@@ -406,6 +405,7 @@ body {
   color: var(--text-primary);
   flex: 1;
   text-align: center;
+  margin: 0 8px;
 }
 
 .chat-results-toggle {
