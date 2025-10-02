@@ -2336,8 +2336,8 @@ class DesignRatingApp {
             if (!byDate[key]) byDate[key] = [];
             byDate[key].push(c);
         }
-        const sections = Object.keys(byDate).reverse().map(dateKey => {
-            const itemsHtml = byDate[dateKey].reverse().map(c => {
+        const sections = Object.keys(byDate).map(dateKey => {
+            const itemsHtml = byDate[dateKey].map(c => {
                 const created = new Date(c.created_at);
                 const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
                 const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
