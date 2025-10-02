@@ -533,6 +533,28 @@ body {
   transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
+/* Improvement Separator */
+.improvement-separator {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  gap: 12px;
+}
+
+.separator-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-primary);
+}
+
+.separator-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
 /* Show Images Tag */
 .show-images-tag {
   display: inline-flex;
@@ -633,8 +655,7 @@ body {
 
 /* Go deeper button */
 .go-deeper-btn {
-  padding: 4px;
-  font-size: 12px;
+  padding: 4px 8px;
   border-radius: 14px;
   border: none;
   background: var(--bg-tertiary);
