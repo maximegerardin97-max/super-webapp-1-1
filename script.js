@@ -2148,6 +2148,9 @@ class DesignRatingApp {
         
         // Chat Results Toggle
         this.initChatResultsToggle();
+        
+        // Chat Back Button
+        this.initChatBackButton();
     }
     
     setupDebugControls() {
@@ -2310,9 +2313,14 @@ class DesignRatingApp {
     async renderConversationList() {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
+        const chatResultsTitle = document.getElementById('chatResultsTitle');
+        
+        // Set title for conversation list
+        chatResultsTitle.textContent = 'Spaces';
+        
         chatResultsArea.classList.add('show');
         this.setChatState('expanded-state');
-        chatResultsContent.innerHTML = `<div class="message-content">Conversations</div><div class="message-content" id="convLoading">Loading conversations…</div>`;
+        chatResultsContent.innerHTML = `<div class="message-content" id="convLoading">Loading conversations…</div>`;
         const list = await this.fetchConversationsForUser();
         this.conversationsList = Array.isArray(list) ? list : [];
         // Group by date (YYYY-MM-DD)
@@ -2353,9 +2361,19 @@ class DesignRatingApp {
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
         const chatResultsContent = document.getElementById('chatResultsContent');
-        chatResultsContent.innerHTML = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div><div class="message-content">Loading messages…</div>`;
+        const chatResultsTitle = document.getElementById('chatResultsTitle');
+        
+        // Set loading state
+        chatResultsTitle.textContent = 'Loading...';
+        chatResultsContent.innerHTML = `<div class="message-content">Loading messages…</div>`;
+        
         const messages = await this.fetchMessages(conversationId);
-        let html = `<div class="message-content"><button id="backToList" class="go-deeper-btn" type="button">◀ Back</button></div>`;
+        
+        // Set the actual conversation title (you can customize this based on your data structure)
+        const conversationTitle = this.getConversationTitle(conversationId);
+        chatResultsTitle.textContent = conversationTitle || 'Conversation';
+        
+        let html = '';
         const urlRegex = /(https?:[^\s]+\.(?:png|jpe?g|gif|webp)|data:image\/[^;]+;base64,[^\s]+)/ig;
         const extractText = (val) => {
             if (val == null) return '';
@@ -2441,9 +2459,7 @@ class DesignRatingApp {
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);
         
-        // Back handler
-        const backBtn = document.getElementById('backToList');
-        if (backBtn) backBtn.addEventListener('click', () => this.renderConversationList());
+        // Back handler is now in the header - handled by initChatBackButton
         // No extra design fetch here; image urls in messages will have restored the image already
     }
     
@@ -3874,6 +3890,29 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                 }
             });
         }
+    }
+
+    initChatBackButton() {
+        const chatBackBtn = document.getElementById('chatBackBtn');
+        
+        if (chatBackBtn) {
+            chatBackBtn.addEventListener('click', () => {
+                this.renderConversationList();
+            });
+        }
+    }
+
+    getConversationTitle(conversationId) {
+        // Find the conversation in the list and return its title
+        if (this.conversationsList && Array.isArray(this.conversationsList)) {
+            const conversation = this.conversationsList.find(conv => conv.id === conversationId);
+            if (conversation) {
+                // Extract title from the conversation data
+                // You can customize this based on your data structure
+                return conversation.title || conversation.name || `Conversation ${conversationId}`;
+            }
+        }
+        return `Conversation ${conversationId}`;
     }
 
     initTrainingDataModal() {

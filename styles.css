@@ -380,10 +380,32 @@ body {
   background: transparent;
 }
 
+.chat-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+}
+
+.chat-back-btn:hover {
+  background: var(--bg-hover);
+}
+
 .chat-results-title {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  flex: 1;
+  text-align: center;
+  margin: 0 8px;
 }
 
 .chat-results-toggle {
