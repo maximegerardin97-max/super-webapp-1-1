@@ -572,28 +572,73 @@ class DesignRatingApp {
             foundStructure = true;
         }
 
-        // Look for checkmark items (both Solution N: and direct Title: formats)
-        for (const raw of lines) {
-            const line = raw.trim();
-            // Try Solution N: format first (allow ':' or '=' after Solution N)
-            let checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*\s*[:=]\s*([^:]+):\s*(.+)$/i);
-            if (checkmarkMatch) {
-                const title = stripAll(checkmarkMatch[1]);
-                const just = stripAll(checkmarkMatch[2]);
+        // Sequential pass to preserve order: checkmarks and numbered items
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+
+            // Skip meta and empty
+            if (!line) continue;
+            if (/Product:\s*[^|]+\s*\|\s*Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line)) continue;
+
+            // Stop at commands/punchline headers
+            if (/^COMMAND:\s*send/i.test(line)) break;
+            if (/^Punchline:/i.test(line)) break;
+
+            // Checkmark: Solution N: Title: body OR ✅ Title: body
+            let m = line.match(/^\s*[✅✔️]\s*Solution\s*\d*\s*[:=]\s*([^:]+):\s*(.+)$/i);
+            if (m) {
+                const title = stripAll(m[1]);
+                const just = stripAll(m[2]);
                 result.cards.push({ title, justification: just });
                 foundStructure = true;
                 hasSolutions = true;
                 continue;
             }
-            // Try direct Title: format (e.g., "✅ Clear Visual Hierarchy: justification")
-            checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
-            if (checkmarkMatch) {
-                const title = stripAll(checkmarkMatch[1]);
-                const just = stripAll(checkmarkMatch[2]);
+            m = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+            if (m) {
+                const title = stripAll(m[1]);
+                const just = stripAll(m[2]);
                 result.cards.push({ title, justification: just });
                 foundStructure = true;
                 hasSolutions = true;
+                continue;
             }
+
+            // Numbered item: 1. Title: body (with optional **Title**)
+            const numbered = line.match(/^\s*(\d+)\.\s*(.+)$/);
+            if (numbered) {
+                const remainder = numbered[2];
+                let title = '';
+                let bodyFirst = '';
+                const md = remainder.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);
+                const simple = remainder.match(/^([^:]+):\s*(.+)$/);
+                if (md) { title = md[1]; bodyFirst = md[2]; }
+                else if (simple) { title = simple[1]; bodyFirst = simple[2]; }
+                else { title = remainder; bodyFirst = ''; }
+
+                // Collect continuation lines until next numbered/checkmark/Recommendation/COMMAND/Punchline/blank
+                let j = i + 1;
+                const bodyLines = [bodyFirst].filter(Boolean);
+                while (j < lines.length) {
+                    const nl = lines[j].trim();
+                    if (!nl) break;
+                    if (/^\s*\d+\./.test(nl)) break;
+                    if (/^\s*[✅✔️]/.test(nl)) break;
+                    if (/^(Recommendation|Recommendations):/i.test(nl)) break;
+                    if (/^COMMAND:\s*send/i.test(nl)) break;
+                    if (/^Punchline:/i.test(nl)) break;
+                    bodyLines.push(nl);
+                    j++;
+                }
+                const body = stripAll(bodyLines.join(' ').replace(/\s+/g, ' ').trim());
+                result.cards.push({ title: stripAll(title).replace(/\.$/, ''), justification: body });
+                foundStructure = true;
+                hasSolutions = true;
+                i = j - 1;
+                continue;
+            }
+
+            // Recommendation header encountered; handle below
         }
 
         // Recommendations: support both single-line and multi-line after header
@@ -605,7 +650,6 @@ class DesignRatingApp {
             if (single && single[2]) {
                 recText = single[2];
             } else {
-                // Collect following numbered or dashed lines until blank or COMMAND/Punchline
                 const collected = [];
                 for (let i = recHeaderIdx + 1; i < lines.length; i++) {
                     const l = lines[i].trim();
