@@ -579,9 +579,9 @@ body {
 }
 
 .show-images-tag.active {
-  background: var(--accent-primary);
+  background: transparent;
   color: white;
-  border-color: var(--accent-primary);
+  border-color: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .show-images-tag-icon {
