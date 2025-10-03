@@ -1486,7 +1486,7 @@ class DesignRatingApp {
         
         commandSection.innerHTML = `
             <div class="command-images-content">
-                <div class="app-container expanded">
+                <div class="app-container">
                     <div class="app-container-header">
                         <div>
                             <h3 class="app-container-title">${appName}</h3>
@@ -3991,6 +3991,7 @@ Product: E-commerce App | Industry: Retail | Platform: Web
     initImageModal() {
         const imageModal = document.getElementById('imageModal');
         const imageModalClose = document.getElementById('imageModalClose');
+        const imageModalTagBtn = document.getElementById('imageModalTagBtn');
         
         if (imageModal && imageModalClose) {
             // Close modal when clicking close button
@@ -4013,6 +4014,14 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                 }
             });
         }
+        
+        if (imageModalTagBtn) {
+            // Tag image in chat
+            imageModalTagBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.tagImageInChat();
+            });
+        }
     }
 
     showImageModal(imageUrl, imageName) {
@@ -4028,6 +4037,12 @@ Product: E-commerce App | Industry: Retail | Platform: Web
                 imageModalInfo.textContent = imageName || '';
             }
             
+            // Store current image data for tagging
+            this.currentModalImage = {
+                url: imageUrl,
+                name: imageName
+            };
+            
             imageModal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
@@ -4039,6 +4054,38 @@ Product: E-commerce App | Industry: Retail | Platform: Web
         if (imageModal) {
             imageModal.classList.remove('active');
             document.body.style.overflow = ''; // Restore scrolling
+        }
+    }
+
+    tagImageInChat() {
+        if (!this.currentModalImage) {
+            console.log('No image to tag');
+            return;
+        }
+
+        const { url, name } = this.currentModalImage;
+        
+        // Create a message with the tagged image
+        const imageTagMessage = `![${name || 'Image'}](${url})`;
+        
+        // Add the message to chat input
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+            // If there's existing text, add a space before the image tag
+            const currentText = chatInput.value;
+            if (currentText.trim()) {
+                chatInput.value = currentText + ' ' + imageTagMessage;
+            } else {
+                chatInput.value = imageTagMessage;
+            }
+            
+            // Focus the input
+            chatInput.focus();
+            
+            // Close the modal
+            this.hideImageModal();
+            
+            console.log('Image tagged in chat:', imageTagMessage);
         }
     }
 
