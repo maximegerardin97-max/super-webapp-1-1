@@ -1114,7 +1114,7 @@ class DesignRatingApp {
         }
         const headerLine = _headerText ? `<div class=\"message-content\">${this.escapeHtml(_headerText)}</div>` : '';
         const metaLine = _metaText ? `<div class=\"message-content\">${this.escapeHtml(_metaText)}</div>` : '';
-        const showDesignsBtn = `<button class="show-images-tag" type="button"><span>Show designs</span></button>`;
+        const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
         // Punchline should be at the end; no top separator
@@ -1258,6 +1258,7 @@ class DesignRatingApp {
         messageDiv.innerHTML = `
             <div class="message-content">${cleanMessage}</div>
             <button class="show-images-tag active" type="button" data-app="${encodeURIComponent(appName)}">
+                <span class="show-images-tag-icon">📱</span>
                 <span>Hide ${appName} screens</span>
             </button>
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
