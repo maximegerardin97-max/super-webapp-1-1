@@ -511,14 +511,9 @@ class DesignRatingApp {
             .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '')
             .trim();
 
-        // Try role-specific parsing first, then fall back to general chat parsing
+        // Only support Role 1 (Product Reviewer). Otherwise, no cards.
         const roleResult = this.parseRoleSpecific(message, stripAll);
-        if (roleResult.hasScreenAnalysis) {
-            return roleResult;
-        }
-
-        // Fallback to general chat parsing
-        return this.parseGeneralChat(message, stripAll);
+        return roleResult;
     }
 
     // Parse role-specific structured responses
@@ -555,33 +550,8 @@ class DesignRatingApp {
         const lines = message.split('\n');
         let i = 0;
 
-        // Try Role 1: Product Reviewer (default)
+        // Only Role 1: Product Reviewer
         if (this.tryParseProductReviewer(lines, result, stripAll)) {
-            return result;
-        }
-
-        // Try Role 2: Knowledge Expert
-        if (this.tryParseKnowledgeExpert(lines, result, stripAll)) {
-            return result;
-        }
-
-        // Try Role 3: Idea Starter
-        if (this.tryParseIdeaStarter(lines, result, stripAll)) {
-            return result;
-        }
-
-        // Try Role 4: Design Generator
-        if (this.tryParseDesignGenerator(lines, result, stripAll)) {
-            return result;
-        }
-
-        // Try Role 5: Quick UI Reviewer
-        if (this.tryParseQuickUIReviewer(lines, result, stripAll)) {
-            return result;
-        }
-
-        // Try Role 6: Metrics Expert
-        if (this.tryParseMetricsExpert(lines, result, stripAll)) {
             return result;
         }
 
@@ -591,40 +561,74 @@ class DesignRatingApp {
     // Role 1: Product Reviewer
     tryParseProductReviewer(lines, result, stripAll) {
         let foundStructure = false;
-        let i = 0;
+        let hasMeta = false;
+        let hasSolutions = false;
 
         // Look for Product: ... | Industry: ... | Platform: ... header
         const productMetaMatch = lines.find(line => /Product:\s*[^|]+\s*\|\s*Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line));
         if (productMetaMatch) {
             result.productMeta = stripAll(productMetaMatch.trim());
+            hasMeta = true;
             foundStructure = true;
         }
 
         // Look for checkmark items (both Solution N: and direct Title: formats)
-        for (const line of lines) {
-            // Try Solution N: format first
-            let checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*[=:]\s*([^:]+):\s*(.+)$/);
+        for (const raw of lines) {
+            const line = raw.trim();
+            // Try Solution N: format first (allow ':' or '=' after Solution N)
+            let checkmarkMatch = line.match(/^\s*[✅✔️]\s*Solution\s*\d*\s*[:=]\s*([^:]+):\s*(.+)$/i);
             if (checkmarkMatch) {
                 const title = stripAll(checkmarkMatch[1]);
                 const just = stripAll(checkmarkMatch[2]);
                 result.cards.push({ title, justification: just });
                 foundStructure = true;
-            } else {
-                // Try direct Title: format (like "✅ Clear Visual Hierarchy: justification")
-                checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
-                if (checkmarkMatch) {
-                    const title = stripAll(checkmarkMatch[1]);
-                    const just = stripAll(checkmarkMatch[2]);
-                    result.cards.push({ title, justification: just });
-                    foundStructure = true;
-                }
+                hasSolutions = true;
+                continue;
+            }
+            // Try direct Title: format (e.g., "✅ Clear Visual Hierarchy: justification")
+            checkmarkMatch = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+            if (checkmarkMatch) {
+                const title = stripAll(checkmarkMatch[1]);
+                const just = stripAll(checkmarkMatch[2]);
+                result.cards.push({ title, justification: just });
+                foundStructure = true;
+                hasSolutions = true;
             }
         }
 
-        if (foundStructure) {
-            result.hasScreenAnalysis = true;
+        // Recommendations: support both single-line and multi-line after header
+        let recText = '';
+        const recHeaderIdx = lines.findIndex(l => /^(Recommendation|Recommendations):/i.test(l.trim()));
+        if (recHeaderIdx !== -1) {
+            const header = lines[recHeaderIdx].trim();
+            const single = header.match(/^(Recommendation|Recommendations):\s*(.+)$/i);
+            if (single && single[2]) {
+                recText = single[2];
+            } else {
+                // Collect following numbered or dashed lines until blank or COMMAND/Punchline
+                const collected = [];
+                for (let i = recHeaderIdx + 1; i < lines.length; i++) {
+                    const l = lines[i].trim();
+                    if (!l) break;
+                    if (/^COMMAND:\s*send/i.test(l)) break;
+                    if (/^Punchline:/i.test(l)) break;
+                    if (/^\d+\./.test(l) || /^-\s+/.test(l)) {
+                        collected.push(l.replace(/^\d+\.\s*/, '').replace(/^-\s+/, ''));
+                        continue;
+                    }
+                    collected.push(l);
+                }
+                recText = collected.join(' ').replace(/\s+/g, ' ').trim();
+            }
         }
-        return foundStructure;
+        if (recText) {
+            result.recommendation = JSON.stringify({ title: 'Recommendation', text: stripAll(recText) });
+            foundStructure = true;
+        }
+
+        // Only mark as Role 1 if meta and at least one solution exist
+        result.hasScreenAnalysis = !!(hasMeta && hasSolutions);
+        return result.hasScreenAnalysis;
     }
 
     // Role 2: Knowledge Expert
