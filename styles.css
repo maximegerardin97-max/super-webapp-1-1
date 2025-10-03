@@ -624,7 +624,7 @@ body {
 .improvement-title { 
   font-size: 14px; 
   font-weight: 300; 
-  color: #000000; 
+  color: white; 
   flex: 1 1 auto; 
   min-width: 120px; 
   margin-right: 8px; 
@@ -660,8 +660,8 @@ body {
   padding: 4px 8px;
   border-radius: 14px;
   border: none;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -671,8 +671,8 @@ body {
 .improvement-body { 
   display: none; 
   padding: 0 14px 14px 14px; 
-  color: #333333; 
-  font-size: 13px; 
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px; 
   line-height: 1.5; 
 }
 
