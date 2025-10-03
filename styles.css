@@ -591,7 +591,7 @@ body {
 /* Neutral Improvements cards (like screenshot) */
 .improvements-list { display: flex; flex-direction: column; gap: 4px; }
 
-.cards-stack { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.cards-stack { display: flex; flex-direction: column; gap: 4px; }
 
 /* Message Cards - for chat message content */
 .improvement-card {
@@ -605,10 +605,9 @@ body {
 
 /* Conversation Cards - for conversation list items */
 .conversation-card {
-  background: var(--bg-primary);
-  color: var(--text-secondary);
+  background: var(--text-primary);
+  color: var(--bg-primary);
   border-radius: 16px 16px 16px 4px;
-  box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
   cursor: pointer;
 }
@@ -640,15 +639,15 @@ body {
 .improvement-title { 
   font-size: 14px; 
   font-weight: 300; 
-  color: var(--text-secondary); 
+  color: var(--bg-primary);
   flex: 1 1 auto; 
-  margin-right: 8px; 
+  margin-right: 40px; 
 }
 
 .conversation-title { 
   font-size: 14px; 
   font-weight: 300; 
-  color: var(--text-secondary); 
+  color: var(--bg-primary); 
   flex: 1 1 auto; 
   margin-right: 8px; 
 }
@@ -683,13 +682,14 @@ body {
   padding: 4px 8px;
   border-radius: 14px;
   border: none;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
+  background: transparent;
+  color: var(--bg-primary);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .go-deeper-btn:hover { 
-  background: var(--bg-hover); }
+  transform: translateY(-1px);
+}
 
 .improvement-body { 
   display: none; 
@@ -3157,7 +3157,7 @@ body { padding-bottom: 140px; }
   max-width: 100%;
   max-height: 80vh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 44px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 

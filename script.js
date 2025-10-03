@@ -1071,7 +1071,7 @@ class DesignRatingApp {
                                 <div class="improvement-title">${safeTitle}</div>
                                 <div class="improvement-actions">
                                     <button class="go-deeper-btn" type="button" data-role="go-deeper">
-                                    <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
+                                    <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Go deeper" class="auth-icon-img" />
                                     </button>
                                     <button class="improvement-chevron" type="button">
                                     <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
@@ -1098,7 +1098,7 @@ class DesignRatingApp {
                         <div class="improvement-title">${rTitle}</div>
                         <div class="improvement-actions">
                             <button class="go-deeper-btn" type="button" data-role="go-deeper">
-                            <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
+                            <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Go deeper" class="auth-icon-img" />
                             </button>
                             <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                         </div>
