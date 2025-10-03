@@ -595,9 +595,11 @@ body {
 .cards-stack { display: flex; flex-direction: column; gap: 2px; width: 100%; }
 
 .improvement-card {
-  background: #ffffff; /* force pure white like the mock */
-  border: none; /* subtle light border */
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-bottom-left-radius: 4px;
+  border-radius: 16px 16px 16px 4px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
   width: 100%;
@@ -3145,8 +3147,8 @@ body { padding-bottom: 140px; }
 }
 
 .image-modal-tag-btn {
-  margin-top: 20px;
-  padding: 12px 24px;
+  margin-top: 8px;
+  padding: 8px 12px 8px 8px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
