@@ -607,7 +607,7 @@ body {
 .conversation-card {
   background: var(--text-primary);
   color: var(--bg-primary);
-  border-radius: 16px 16px 16px 4px;
+  border-radius: 16px 16px 16px 16px;
   overflow: hidden;
   cursor: pointer;
 }
@@ -650,6 +650,9 @@ body {
   color: var(--bg-primary); 
   flex: 1 1 auto; 
   margin-right: 8px; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .improvement-actions { 
@@ -681,7 +684,7 @@ body {
 .go-deeper-btn {
   padding: 4px 8px;
   border-radius: 14px;
-  border: 1px solid rgba(var(--bg-primary-rgb), 0.1);
+  border: 1px solid var(--bg-quaternary);
   background: transparent;
   color: var(--bg-primary);
   cursor: pointer;
