@@ -1097,7 +1097,9 @@ class DesignRatingApp {
                     <div class="improvement-header">
                         <div class="improvement-title">${rTitle}</div>
                         <div class="improvement-actions">
-                            <button class="go-deeper-btn" type="button" data-role="go-deeper">Go deeper</button>
+                            <button class="go-deeper-btn" type="button" data-role="go-deeper">
+                            <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
+                            </button>
                             <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                         </div>
                     </div>

@@ -473,8 +473,8 @@ body {
 
 .chat-message.user-message .message-content {
   background: var(--accent-primary);
-  color: white;
-  border-bottom-right-radius: 4px;
+  color: var(--bg-primary);
+  border-radius: 16px 16px 4px 16px;
 }
 
 .chat-message.assistant-message .message-content {
@@ -675,7 +675,7 @@ body {
 }
 
  .improvement-chevron:hover { 
-   background: var(--bg-hover);
+   transform: translateY(-1px);
  }
 
 /* Go deeper button */
