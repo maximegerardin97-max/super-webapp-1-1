@@ -594,15 +594,27 @@ body {
 
 .cards-stack { display: flex; flex-direction: column; gap: 2px; width: 100%; }
 
+/* Message Cards - for chat message content */
 .improvement-card {
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.10);
   color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom-left-radius: 4px;
   border-radius: 16px 16px 16px 4px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
-  width: 100%;
+  cursor: pointer;
+}
+
+/* Conversation Cards - for conversation list items */
+.conversation-card {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom-left-radius: 4px;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 2px 8px var(--shadow-secondary);
+  overflow: hidden;
   cursor: pointer;
 }
 
@@ -621,12 +633,28 @@ body {
   row-gap: 6px;
 }
 
+.conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  flex-wrap: wrap; /* allow wrap so buttons go to next line instead of overlapping */
+  row-gap: 6px;
+}
+
 .improvement-title { 
   font-size: 14px; 
   font-weight: 300; 
   color: white; 
   flex: 1 1 auto; 
-  min-width: 120px; 
+  margin-right: 8px; 
+}
+
+.conversation-title { 
+  font-size: 14px; 
+  font-weight: 300; 
+  color: white; 
+  flex: 1 1 auto; 
   margin-right: 8px; 
 }
 

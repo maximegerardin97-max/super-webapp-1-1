@@ -695,7 +695,7 @@ class DesignRatingApp {
                     if (/^Punchline:/i.test(l)) break;
                     if (/^\d+\./.test(l) || /^-\s+/.test(l)) {
                         collected.push(l.replace(/^\d+\.\s*/, '').replace(/^-\s+/, ''));
-                        continue;
+                continue;
                     }
                     collected.push(l);
                 }
@@ -783,7 +783,7 @@ class DesignRatingApp {
                     if (/^Recommendation:/i.test(nextLine)) break;
                     if (nextLine === '') {
                         j++;
-                continue;
+                        continue;
                     }
                     bodyLines.push(nextLine);
                     j++;
@@ -1074,7 +1074,7 @@ class DesignRatingApp {
                                     <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
                                     </button>
                                     <button class="improvement-chevron" type="button">
-                                    <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
+                                    <img src="./assets/images/icons/icon-chevron-down-wht.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                 </div>
                             </div>
@@ -1098,7 +1098,7 @@ class DesignRatingApp {
                         <div class="improvement-title">${rTitle}</div>
                         <div class="improvement-actions">
                             <button class="go-deeper-btn" type="button" data-role="go-deeper">Go deeper</button>
-                            <button class="improvement-chevron" type="button">▾</button>
+                            <img src="./assets/images/icons/icon-chevron-down-wht.png" alt="Open" class="auth-icon-img" />
                         </div>
                     </div>
                     <div class="improvement-body">${rText}</div>
@@ -2417,7 +2417,7 @@ class DesignRatingApp {
                 const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
                 const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
                 return `
-                <div class=\"improvement-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"improvement-header\">\n                        <div class=\"improvement-title\">${this.escapeHtml(title)}</div>\n                    </div>\n                </div>`;
+                <div class=\"conversation-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"conversation-header\">\n                        <div class=\"conversation-title\">${this.escapeHtml(title)}</div>\n                    </div>\n                </div>`;
             }).join('');
             return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
         }).join('');
