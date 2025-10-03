@@ -681,7 +681,7 @@ body {
 .go-deeper-btn {
   padding: 4px 8px;
   border-radius: 14px;
-  border: none;
+  border: 1px solid rgba(var(--bg-primary-rgb), 0.1);
   background: transparent;
   color: var(--bg-primary);
   cursor: pointer;
@@ -3143,8 +3143,9 @@ body { padding-bottom: 140px; }
   max-height: 80vh;
   object-fit: contain;
   border-radius: 44px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 4px solid rgba(255, 255, 255, 0.2);
 }
+
 
 .image-modal-info {
   margin-top: 16px;
