@@ -1117,28 +1117,18 @@ class DesignRatingApp {
         const showDesignsBtn = `<button class="show-images-tag" type="button"><span class="show-images-tag-icon">📱</span><span>Show designs</span></button>`;
         // Hide COMMAND line from UI but keep detection handled above
         const commandLine = '';
-        // Create punchline as simple message (first element)
+        // Punchline should be at the end; no top separator
         const punchlineMessage = data.punchline ? `
             <div class="message-content">${this.escapeHtml(data.punchline)}</div>
         ` : '';
 
-        // Create "How to improve?" separator
-        const improvementSeparator = (data.cards.length > 0 || data.recommendation) ? `
-            <div class="improvement-separator">
-                <div class="separator-line"></div>
-                <div class="separator-text">How to improve?</div>
-                <div class="separator-line"></div>
-            </div>
-        ` : '';
-
         messageDiv.innerHTML = `
-            ${punchlineMessage}
-            ${improvementSeparator}
             ${headerLine}
             ${metaLine}
             ${cardsHtml}
             ${recommendationHtml}
             ${commandLine}
+            ${punchlineMessage}
             ${showDesignsBtn}
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
