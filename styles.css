@@ -473,7 +473,7 @@ body {
 
 .chat-message.user-message .message-content {
   background: var(--accent-primary);
-  color: var(--bg-primary);
+  color: var(--text-primary);
   border-radius: 16px 16px 4px 16px;
 }
 
@@ -1465,21 +1465,6 @@ body {
   box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
-/* Top-left Close button for focused state */
-.image-close-tl {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  color: var(--text-secondary);
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px var(--shadow-secondary);
-}
-.image-close-tl:hover { background: var(--bg-hover); }
 
 
 /* Cards */

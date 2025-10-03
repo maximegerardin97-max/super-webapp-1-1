@@ -213,7 +213,6 @@ class DesignRatingApp {
         const largeImage = document.getElementById('largeImage');
         const removeLargeImage = document.getElementById('removeLargeImage');
         const addToChatLarge = document.getElementById('addToChatLarge');
-        const restoreInitialView = document.getElementById('restoreInitialView');
 
         // Click to upload (bind to multiple elements for robustness)
         if (largeImagePlaceholder) {
@@ -276,28 +275,6 @@ class DesignRatingApp {
             }
         });
 
-        // Restore to initial: show user's original design again (do not delete)
-        if (restoreInitialView) {
-            restoreInitialView.addEventListener('click', () => {
-                // Prefer restoring the user's uploaded design if available
-                if (this.userDesignImageData && this.userDesignImageData.dataUrl) {
-                    this.displayLargeImage(this.userDesignImageData.dataUrl, this.userDesignImageData.filename || 'Design');
-                    this.uploadedImageData = { ...this.userDesignImageData };
-                } else if (this.uploadedImageData && this.uploadedImageData.dataUrl) {
-                    // Fallback to the last uploaded image
-                    this.displayLargeImage(this.uploadedImageData.dataUrl, this.uploadedImageData.filename || 'Design');
-                } else {
-                    // No user design known; clear the image area to placeholder
-                    this.removeLargeImage();
-                }
-                // Keep inspirations container but minimize it; do not delete
-                const section = document.querySelector('.command-images-section');
-                if (section) {
-                    section.classList.add('visible');
-                    section.classList.add('minimized');
-                }
-            });
-        }
     }
 
     handleLargeImageUpload(file) {
