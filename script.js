@@ -1074,7 +1074,7 @@ class DesignRatingApp {
                                     <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
                                     </button>
                                     <button class="improvement-chevron" type="button">
-                                    <img src="./assets/images/icons/icon-chevron-down-wht.png" alt="Open" class="auth-icon-img" />
+                                    <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                 </div>
                             </div>
