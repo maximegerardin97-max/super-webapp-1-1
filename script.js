@@ -565,14 +565,40 @@ class DesignRatingApp {
         let hasSolutions = false;
 
         // Look for Product: ... | Industry: ... | Platform: ... header
-        const productMetaMatch = lines.find(line => /Product:\s*[^|]+\s*\|\s*Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line));
-        if (productMetaMatch) {
-            result.productMeta = stripAll(productMetaMatch.trim());
+        const metaIdx = lines.findIndex(line => /Product:\s*[^|]+\s*\|\s*Industry:\s*[^|]+\s*\|\s*Platform:/i.test(line));
+        if (metaIdx !== -1) {
+            result.productMeta = stripAll(lines[metaIdx].trim());
             hasMeta = true;
             foundStructure = true;
         }
 
-        // Sequential pass to preserve order: checkmarks and numbered items
+        // If meta found, capture the first analysis paragraph right after it (before any structured sections)
+        if (hasMeta) {
+            let j = metaIdx + 1;
+            const paragraphLines = [];
+            while (j < lines.length) {
+                const nl = lines[j].trim();
+                if (!nl) { j++; continue; }
+                if (/^\s*[✅✔️🔴]/.test(nl)) break;
+                if (/^\s*\d+\./.test(nl)) break;
+                if (/^(Recommendation|Recommendations):/i.test(nl)) break;
+                if (/^COMMAND:\s*send/i.test(nl)) break;
+                if (/^Punchline:/i.test(nl) || /\*\*\s*Punchline\s*:\s*/i.test(nl)) break;
+                paragraphLines.push(nl);
+                // stop the paragraph at the first blank after at least one line
+                let k = j + 1;
+                while (k < lines.length && lines[k].trim() === '') k++;
+                if (paragraphLines.length > 0) break;
+                j++;
+            }
+            const paragraph = stripAll(paragraphLines.join(' ').replace(/\s+/g, ' ').trim());
+            if (paragraph) {
+                result.header = `First analysis: ${paragraph}`;
+                foundStructure = true;
+            }
+        }
+
+        // Sequential pass to preserve order: checkmarks, red flags and numbered items
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
 
@@ -582,7 +608,7 @@ class DesignRatingApp {
 
             // Stop at commands/punchline headers
             if (/^COMMAND:\s*send/i.test(line)) break;
-            if (/^Punchline:/i.test(line)) break;
+            if (/^Punchline:/i.test(line) || /\*\*\s*Punchline\s*:/i.test(line)) break;
 
             // Checkmark: Solution N: Title: body OR ✅ Title: body
             let m = line.match(/^\s*[✅✔️]\s*Solution\s*\d*\s*[:=]\s*([^:]+):\s*(.+)$/i);
@@ -595,6 +621,17 @@ class DesignRatingApp {
                 continue;
             }
             m = line.match(/^\s*[✅✔️]\s*([^:]+):\s*(.+)$/);
+            if (m) {
+                const title = stripAll(m[1]);
+                const just = stripAll(m[2]);
+                result.cards.push({ title, justification: just });
+                foundStructure = true;
+                hasSolutions = true;
+                continue;
+            }
+
+            // Red flag items: 🔴 Title: body
+            m = line.match(/^\s*🔴\s*([^:]+):\s*(.+)$/);
             if (m) {
                 const title = stripAll(m[1]);
                 const just = stripAll(m[2]);
