@@ -1540,10 +1540,8 @@ class DesignRatingApp {
     selectCommandImage(imageName, imageUrl) {
         console.log('Selected image:', imageName, imageUrl);
         
-        // Load the selected image into the large image display
-        if (imageUrl && !imageUrl.includes('placeholder')) {
-            this.displayLargeImageFromUrl(imageUrl, imageName);
-        }
+        // Show fullscreen modal instead of loading into large display
+        this.showImageModal(imageUrl, imageName);
     }
 
     // Display image from URL in large image area
@@ -2231,6 +2229,9 @@ class DesignRatingApp {
         
         // Chat Back Button
         this.initChatBackButton();
+        
+        // Image Modal
+        this.initImageModal();
     }
     
     setupDebugControls() {
@@ -3984,6 +3985,60 @@ Product: E-commerce App | Industry: Retail | Platform: Web
             chatBackBtn.addEventListener('click', () => {
                 this.renderConversationList();
             });
+        }
+    }
+
+    initImageModal() {
+        const imageModal = document.getElementById('imageModal');
+        const imageModalClose = document.getElementById('imageModalClose');
+        
+        if (imageModal && imageModalClose) {
+            // Close modal when clicking close button
+            imageModalClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.hideImageModal();
+            });
+            
+            // Close modal when clicking overlay
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    this.hideImageModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+                    this.hideImageModal();
+                }
+            });
+        }
+    }
+
+    showImageModal(imageUrl, imageName) {
+        const imageModal = document.getElementById('imageModal');
+        const imageModalImg = document.getElementById('imageModalImg');
+        const imageModalInfo = document.getElementById('imageModalInfo');
+        
+        if (imageModal && imageModalImg) {
+            imageModalImg.src = imageUrl;
+            imageModalImg.alt = imageName || 'Full screen image';
+            
+            if (imageModalInfo) {
+                imageModalInfo.textContent = imageName || '';
+            }
+            
+            imageModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    hideImageModal() {
+        const imageModal = document.getElementById('imageModal');
+        
+        if (imageModal) {
+            imageModal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
         }
     }
 
