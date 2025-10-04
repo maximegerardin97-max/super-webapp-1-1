@@ -2310,8 +2310,11 @@ class DesignRatingApp {
             }
             
             // 2. SECOND: Check if this is a deep-dive response (Format B)
+            // Deep-dive responses have rec_id AND steps/state_chart (not summary/recommendations)
             const deepDiveParsed = this.parseDeepDive(message);
-            if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
+            if (deepDiveParsed && deepDiveParsed.deepDive && 
+                deepDiveParsed.deepDive.rec_id && 
+                (deepDiveParsed.deepDive.steps || deepDiveParsed.deepDive.state_chart)) {
                 // This is a deep-dive response - don't show as regular message
                 // It should be handled by replaceCardWithDeepDive
                 return null;
