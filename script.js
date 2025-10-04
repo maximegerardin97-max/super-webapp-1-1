@@ -1279,8 +1279,8 @@ class DesignRatingApp {
             // Add the payload as a user message
             this.addMessageToChat(JSON.stringify(payload), 'user');
             
-            // Send to agent with context directly (skip adding to chat)
-            const response = await this.sendToAgentWithContext(JSON.stringify(payload), true);
+            // Send to agent directly without going through addMessageToChat
+            const response = await this.sendDeepDiveRequest(JSON.stringify(payload));
             if (response) {
                 // Parse deep-dive response and replace the specific card
                 const parsed = this.parseDeepDive(response);
@@ -1295,6 +1295,37 @@ class DesignRatingApp {
             }
         } catch (error) {
             console.error('Go deeper failed:', error);
+        }
+    }
+
+    // Send deep-dive request directly without processing through addMessageToChat
+    async sendDeepDiveRequest(message) {
+        try {
+            const context = this.getCurrentContext();
+            const payload = {
+                message: message,
+                ...context
+            };
+            
+            // Send to agent using existing chat API
+            const response = await fetch(window.AGENT_CFG.CHAT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.supabaseKey}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.response) {
+                    // Return the response without adding to chat
+                    return data.response;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to send deep-dive request:', error);
         }
     }
 
@@ -2249,14 +2280,6 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
-            // First check if this is a deep-dive response
-            const deepDiveParsed = this.parseDeepDive(message);
-            if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
-                // This is a deep-dive response, don't add it as a regular message
-                // The deep-dive should have been handled by replaceCardWithDeepDive
-                return null;
-            }
-            
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
