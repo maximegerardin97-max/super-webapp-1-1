@@ -1262,6 +1262,8 @@ class DesignRatingApp {
     // Handle go deeper action
     async handleGoDeeper(recId, button) {
         try {
+            console.log('Go deeper clicked for:', recId);
+            
             // Send dive deeper action with context
             const context = this.getCurrentContext();
             const payload = {
@@ -1270,22 +1272,32 @@ class DesignRatingApp {
                 ...context
             };
             
+            console.log('Sending payload:', payload);
+            
             // Add the payload as a user message
             this.addMessageToChat(JSON.stringify(payload), 'user');
             
             // Send to agent directly without going through addMessageToChat
             const response = await this.sendDeepDiveRequest(JSON.stringify(payload));
+            console.log('Received response:', response);
+            
             if (response) {
                 // Parse deep-dive response and replace the specific card
                 const parsed = this.parseDeepDive(response);
+                console.log('Parsed deep dive:', parsed);
+                
                 if (parsed && parsed.deepDive) {
+                    console.log('Replacing card with deep dive');
                     this.replaceCardWithDeepDive(recId, parsed.deepDive, parsed.commandLine, parsed.punchline);
                 } else {
+                    console.log('Failed to parse deep dive response');
                     // Show error toast if parsing failed
                     if (typeof this.showToast === 'function') {
                         this.showToast('Couldn\'t parse deep dive response. Retry.', 'error');
                     }
                 }
+            } else {
+                console.log('No response received');
             }
         } catch (error) {
             console.error('Go deeper failed:', error);
