@@ -2249,6 +2249,14 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
+            // First check if this is a deep-dive response (has rec_id)
+            const deepDiveParsed = this.parseDeepDive(message);
+            if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
+                // This is a deep-dive response, don't display as regular message
+                // It should be handled by replaceCardWithDeepDive
+                return null;
+            }
+            
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
