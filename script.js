@@ -1763,6 +1763,38 @@ class DesignRatingApp {
             this.addMessageToChat(message, 'user');
             if (!customMessage && floatingInput) floatingInput.value = '';
             if (!customMessage && rightPaneInput) rightPaneInput.value = '';
+            
+            // Send to agent with context if available
+            this.sendToAgentWithContext(message);
+        }
+    }
+
+    async sendToAgentWithContext(message) {
+        try {
+            const context = this.getCurrentContext();
+            const payload = {
+                message: message,
+                ...context
+            };
+            
+            // Send to agent using existing chat API
+            const response = await fetch(window.AGENT_CFG.CHAT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.supabaseKey}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.response) {
+                    this.addMessageToChat(data.response, 'assistant');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to send message to agent:', error);
         }
     }
 

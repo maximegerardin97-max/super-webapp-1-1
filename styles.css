@@ -2156,12 +2156,12 @@ body {
 .context-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px;
+    gap: 8px;
+    padding: 12px;
     background: var(--bg-secondary);
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid var(--border-color);
-    margin-bottom: 12px;
+    margin-top: 12px;
 }
 
 .context-field {
