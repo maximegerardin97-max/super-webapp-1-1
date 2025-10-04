@@ -1533,6 +1533,8 @@ class DesignRatingApp {
             
             // Send to agent with context
             const response = await this.sendToAgentWithContext(payload);
+            
+            // Don't add the response as a regular message - let the caller handle it
             return response;
         } catch (error) {
             console.error('Agent communication failed:', error);
@@ -2214,7 +2216,8 @@ class DesignRatingApp {
             if (response.ok) {
                 const data = await response.json();
                 if (data.response) {
-                    this.addMessageToChat(data.response, 'assistant');
+                    // Don't automatically add to chat - let the caller handle it
+                    return data.response;
                 }
             }
         } catch (error) {
@@ -2239,6 +2242,14 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
+            // First check if this is a deep-dive response
+            const deepDiveParsed = this.parseDeepDive(message);
+            if (deepDiveParsed && deepDiveParsed.deepDive) {
+                // This is a deep-dive response, don't add it as a regular message
+                // The deep-dive should have been handled by replaceCardWithDeepDive
+                return null;
+            }
+            
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
