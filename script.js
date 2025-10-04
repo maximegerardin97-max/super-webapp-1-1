@@ -1555,7 +1555,6 @@ class DesignRatingApp {
         const chatImageBtn = document.getElementById('chatImageBtn');
         
         // Step navigation buttons
-        const step1NextBtn = document.getElementById('step1NextBtn');
         const step2BackBtn = document.getElementById('step2BackBtn');
         const step2NextBtn = document.getElementById('step2NextBtn');
         const step3BackBtn = document.getElementById('step3BackBtn');
@@ -1582,19 +1581,15 @@ class DesignRatingApp {
                 const file = e.target.files[0];
                 if (file) {
                     this.handleChatImageUpload(file);
-                    this.goToStep(1); // Move to step 1 when image is uploaded
+                    this.goToStep(2); // Move directly to product type selection
                 }
             };
             input.click();
         });
 
         // Step navigation
-        step1NextBtn.addEventListener('click', () => {
-            this.goToStep(2);
-        });
-
         step2BackBtn.addEventListener('click', () => {
-            this.goToStep(1);
+            this.goToStep(0);
         });
 
         step2NextBtn.addEventListener('click', () => {
@@ -1636,8 +1631,9 @@ class DesignRatingApp {
             targetStep.classList.add('active');
         }
 
-        // Update progress bar
-        this.updateProgressBar(stepNumber);
+        // Update progress bar (adjust for removed step 1)
+        const adjustedStep = stepNumber === 0 ? 0 : stepNumber - 1;
+        this.updateProgressBar(adjustedStep);
     }
 
 
@@ -1685,12 +1681,11 @@ class DesignRatingApp {
         const message = step3Input.value.trim();
         if (message) {
             // Collect all selected options
-            const imageType = this.getSelectedOption('chatStep1');
             const productType = this.getSelectedOption('chatStep2');
             const context = message;
 
             // Create comprehensive message
-            const fullMessage = `Image type: ${imageType}, Product type: ${productType}, Context: ${context}`;
+            const fullMessage = `Product type: ${productType}, Context: ${context}`;
             
             // Send the message
             this.sendMainChatMessage(fullMessage);
@@ -1712,7 +1707,6 @@ class DesignRatingApp {
     setupImageCloseButtons() {
         // Handle image close buttons for each step
         const closeButtons = [
-            'step1ImageCloseBtn',
             'step2ImageCloseBtn', 
             'step3ImageCloseBtn'
         ];
@@ -1767,6 +1761,14 @@ class DesignRatingApp {
             // Send to agent with context if available
             this.sendToAgentWithContext(message);
         }
+    }
+
+    getCurrentContext() {
+        // Get current context from form inputs
+        return {
+            industry: document.getElementById('industryInput')?.value || '',
+            optimize_for: document.getElementById('optimizeForSelect')?.value || 'experience'
+        };
     }
 
     async sendToAgentWithContext(message) {
@@ -1870,10 +1872,8 @@ class DesignRatingApp {
             
             // Prepare the message payload
             let msgPayload = message;
-            const imageTypeSel = this.getSelectedOption('chatStep1');
             const productTypeSel = this.getSelectedOption('chatStep2');
             const contextPrefix = [
-                imageTypeSel ? `Image type: ${imageTypeSel}` : '',
                 productTypeSel ? `Product type: ${productTypeSel}` : ''
             ].filter(Boolean).join(', ');
             const userTextFull = contextPrefix ? `${contextPrefix}. ${message}` : message;

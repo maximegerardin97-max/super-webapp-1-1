@@ -2152,25 +2152,21 @@ body {
 
 
 
-/* Context Input Fields */
-.context-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    margin-top: 12px;
+/* Context Selectors */
+.context-selectors {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.context-field {
+.context-selector {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
 }
 
-.context-field label {
+.context-selector label {
     font-size: 12px;
     font-weight: 500;
     color: var(--text-secondary);
@@ -2178,8 +2174,8 @@ body {
     letter-spacing: 0.5px;
 }
 
-.context-field input,
-.context-field select {
+.context-selector input,
+.context-selector select {
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -2188,8 +2184,8 @@ body {
     font-size: 14px;
 }
 
-.context-field input:focus,
-.context-field select:focus {
+.context-selector input:focus,
+.context-selector select:focus {
     outline: none;
     border-color: var(--accent-color);
 }

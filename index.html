@@ -89,6 +89,25 @@
                 </div>
                 <!-- Step 0: Initial State -->
                 <div class="chat-step active" id="chatStep0" data-step="0">
+                    <!-- Context Selectors -->
+                    <div class="context-selectors">
+                        <div class="context-selector">
+                            <label for="industryInput">Industry</label>
+                            <input type="text" id="industryInput" placeholder="e.g., Fintech, Healthcare" />
+                        </div>
+                        <div class="context-selector">
+                            <label for="optimizeForSelect">What to optimize for</label>
+                            <select id="optimizeForSelect">
+                                <option value="retention">Retention</option>
+                                <option value="conversion">Conversion</option>
+                                <option value="engagement">Engagement</option>
+                                <option value="trust">Trust</option>
+                                <option value="experience">Experience</option>
+                                <option value="information">Information</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div class="chat-input-container">
                         <button class="chat-image-btn" id="chatImageBtn" title="Upload image">
                             <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
@@ -99,73 +118,6 @@
                                 <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
                             </button>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Step 1: Image Type -->
-                <div class="chat-step hidden" id="chatStep1" data-step="1">
-                    <div class="step-layout">
-                        <div class="step-upload-section">
-                            <button class="chat-image-btn selected" id="chatImageBtnStep1" title="Uploaded image">
-                                <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
-                            </button>
-                            <button class="chat-image-close-btn floating" id="step1ImageCloseBtn" title="Remove image">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="step-content-box">
-                            <div class="step-content-left">
-                                <div class="step-header-inline">
-                                    <h3 class="step-title">Image type?</h3>
-                                </div>
-                                <div class="step-options">
-                                    <button class="option-tag" data-value="component">Component</button>
-                                    <button class="option-tag" data-value="screen">Screen</button>
-                                    <button class="option-tag" data-value="flow">Flow</button>
-                                </div>
-                                
-                                <!-- Context Input Fields -->
-                                <div class="context-inputs" id="contextInputs">
-                                    <div class="context-field">
-                                        <label for="platformSelect">Platform</label>
-                                        <select id="platformSelect">
-                                            <option value="mobile">Mobile</option>
-                                            <option value="desktop">Desktop</option>
-                                            <option value="website/ecommerce">Website/Ecommerce</option>
-                                        </select>
-                                    </div>
-                                    <div class="context-field">
-                                        <label for="industryInput">Industry</label>
-                                        <input type="text" id="industryInput" placeholder="e.g., Fintech, Healthcare" />
-                                    </div>
-                                    <div class="context-field">
-                                        <label for="screenPurposeInput">Screen purpose</label>
-                                        <input type="text" id="screenPurposeInput" placeholder="e.g., Onboarding, Checkout" />
-                                    </div>
-                                    <div class="context-field">
-                                        <label for="optimizeForSelect">What to optimize for</label>
-                                        <select id="optimizeForSelect">
-                                            <option value="retention">Retention</option>
-                                            <option value="conversion">Conversion</option>
-                                            <option value="engagement">Engagement</option>
-                                            <option value="trust">Trust</option>
-                                            <option value="experience">Experience</option>
-                                            <option value="information">Information</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="step-next-btn" id="step1NextBtn">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="step-progress-bar">
-                        <div class="progress-fill" id="step1ProgressFill"></div>
                     </div>
                 </div>
                 
