@@ -291,8 +291,8 @@ class DesignRatingApp {
             // Persist user's design for restore
             this.userDesignImageData = { ...this.uploadedImageData };
             
-            // Automatically move to step 1 when image is uploaded
-            this.goToStep(1);
+            // Automatically move to step 2 when image is uploaded
+            this.goToStep(2);
             
         };
         reader.readAsDataURL(file);
@@ -1088,12 +1088,22 @@ class DesignRatingApp {
                             <div class="improvement-header">
                                 <div class="improvement-title">${safeTitle}</div>
                                 <div class="improvement-actions">
-                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}">↑</button>
-                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}">↓</button>
-                                    <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}">
-                                        <span style="font-size: 16px; font-weight: bold; color: var(--text-primary);">+</span>
+                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}" title="Upvote">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M7 14l5-5 5 5z"/>
+                                        </svg>
                                     </button>
-                                    <button class="improvement-chevron" type="button">
+                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}" title="Downvote">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M7 10l5 5 5-5z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}" title="Go deeper">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="improvement-chevron" type="button" title="Expand">
                                         <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                 </div>
@@ -1295,12 +1305,22 @@ class DesignRatingApp {
                 <div class="improvement-header">
                     <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
                     <div class="improvement-actions">
-                        <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}">↑</button>
-                        <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}">↓</button>
-                        <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}">
-                            <span style="font-size: 16px; font-weight: bold; color: var(--text-primary);">+</span>
+                        <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 14l5-5 5 5z"/>
+                            </svg>
                         </button>
-                        <button class="improvement-chevron" type="button">
+                        <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 10l5 5 5-5z"/>
+                            </svg>
+                        </button>
+                        <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                        </button>
+                        <button class="improvement-chevron" type="button" title="Expand">
                             <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                         </button>
                     </div>

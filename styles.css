@@ -697,7 +697,7 @@ body {
 .improvement-body { 
   display: none; 
   padding: 0 14px 14px 14px; 
-  color: var(--text-quaternary);
+  color: var(--text-primary);
   font-size: 14px; 
   line-height: 1.5; 
 }
