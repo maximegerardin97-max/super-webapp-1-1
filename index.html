@@ -89,25 +89,6 @@
                 </div>
                 <!-- Step 0: Initial State -->
                 <div class="chat-step active" id="chatStep0" data-step="0">
-                    <!-- Context Selectors -->
-                    <div class="context-selectors">
-                        <div class="context-selector">
-                            <label for="industryInput">Industry</label>
-                            <input type="text" id="industryInput" placeholder="e.g., Fintech, Healthcare" />
-                        </div>
-                        <div class="context-selector">
-                            <label for="optimizeForSelect">What to optimize for</label>
-                            <select id="optimizeForSelect">
-                                <option value="retention">Retention</option>
-                                <option value="conversion">Conversion</option>
-                                <option value="engagement">Engagement</option>
-                                <option value="trust">Trust</option>
-                                <option value="experience">Experience</option>
-                                <option value="information">Information</option>
-                            </select>
-                        </div>
-                    </div>
-                    
                     <div class="chat-input-container">
                         <button class="chat-image-btn" id="chatImageBtn" title="Upload image">
                             <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
@@ -162,7 +143,7 @@
                     </div>
                 </div>
                 
-                <!-- Step 3: Prompt -->
+                <!-- Step 3: Industry Selection -->
                 <div class="chat-step hidden" id="chatStep3" data-step="3">
                     <div class="step-layout">
                         <div class="step-upload-section">
@@ -170,6 +151,96 @@
                                 <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
                             </button>
                             <button class="chat-image-close-btn floating" id="step3ImageCloseBtn" title="Remove image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="step-content-box">
+                            <div class="step-content-left">
+                                <div class="step-header-inline">
+                                    <h3 class="step-title">Industry?</h3>
+                                </div>
+                                <div class="step-options">
+                                    <button class="option-tag" data-value="fintech">Fintech</button>
+                                    <button class="option-tag" data-value="healthcare">Healthcare</button>
+                                    <button class="option-tag" data-value="ecommerce">E-commerce</button>
+                                    <button class="option-tag" data-value="education">Education</button>
+                                    <button class="option-tag" data-value="social">Social Media</button>
+                                    <button class="option-tag" data-value="productivity">Productivity</button>
+                                    <button class="option-tag" data-value="gaming">Gaming</button>
+                                    <button class="option-tag" data-value="other">Other</button>
+                                </div>
+                            </div>
+                            <button class="step-back-btn" id="step3BackBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                </svg>
+                            </button>
+                            <button class="step-next-btn" id="step3NextBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="step-progress-bar">
+                        <div class="progress-fill" id="step3ProgressFill"></div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: What to optimize for Selection -->
+                <div class="chat-step hidden" id="chatStep4" data-step="4">
+                    <div class="step-layout">
+                        <div class="step-upload-section">
+                            <button class="chat-image-btn selected" id="chatImageBtnStep4" title="Uploaded image">
+                                <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+                            </button>
+                            <button class="chat-image-close-btn floating" id="step4ImageCloseBtn" title="Remove image">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="step-content-box">
+                            <div class="step-content-left">
+                                <div class="step-header-inline">
+                                    <h3 class="step-title">What to optimize for?</h3>
+                                </div>
+                                <div class="step-options">
+                                    <button class="option-tag" data-value="retention">Retention</button>
+                                    <button class="option-tag" data-value="conversion">Conversion</button>
+                                    <button class="option-tag" data-value="engagement">Engagement</button>
+                                    <button class="option-tag" data-value="trust">Trust</button>
+                                    <button class="option-tag" data-value="experience">Experience</button>
+                                    <button class="option-tag" data-value="information">Information</button>
+                                </div>
+                            </div>
+                            <button class="step-back-btn" id="step4BackBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                </svg>
+                            </button>
+                            <button class="step-next-btn" id="step4NextBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="step-progress-bar">
+                        <div class="progress-fill" id="step4ProgressFill"></div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Prompt -->
+                <div class="chat-step hidden" id="chatStep5" data-step="5">
+                    <div class="step-layout">
+                        <div class="step-upload-section">
+                            <button class="chat-image-btn selected" id="chatImageBtnStep5" title="Uploaded image">
+                                <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+                            </button>
+                            <button class="chat-image-close-btn floating" id="step5ImageCloseBtn" title="Remove image">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                                 </svg>
@@ -186,17 +257,21 @@
                                     <h3 class="step-title">Additional context?</h3>
                                 </div>
                                 <div class="step-input-container">
-                                    <input type="text" id="step3Input" placeholder="Ask anything" />
+                                    <input type="text" id="step5Input" placeholder="Ask anything" />
                                 </div>
                             </div>
-                            <button class="step-send-btn" id="step3SendBtn">
-                                <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                            <button class="step-back-btn" id="step5BackBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                </svg>
                             </button>
+                            <button class="step-send-btn" id="step5SendBtn">
+                                <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
                             </button>
                         </div>
                     </div>
                     <div class="step-progress-bar">
-                        <div class="progress-fill" id="step3ProgressFill"></div>
+                        <div class="progress-fill" id="step5ProgressFill"></div>
                     </div>
                 </div>
                 
