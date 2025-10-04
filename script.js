@@ -1282,7 +1282,10 @@ class DesignRatingApp {
             console.log('Received response:', response);
             
             if (response) {
-                // Parse deep-dive response and replace the specific card
+                // First, add the full deep-dive response as a new assistant message
+                this.addMessageToChat(response, 'assistant');
+                
+                // Then parse and replace the specific card
                 const parsed = this.parseDeepDive(response);
                 console.log('Parsed deep dive:', parsed);
                 
