@@ -1276,7 +1276,11 @@ class DesignRatingApp {
                 ...context
             };
             
-            const response = await this.sendToAgent(JSON.stringify(payload));
+            // Add the payload as a user message
+            this.addMessageToChat(JSON.stringify(payload), 'user');
+            
+            // Send to agent with context directly (skip adding to chat)
+            const response = await this.sendToAgentWithContext(JSON.stringify(payload), true);
             if (response) {
                 // Parse deep-dive response and replace the specific card
                 const parsed = this.parseDeepDive(response);
@@ -2195,7 +2199,7 @@ class DesignRatingApp {
         };
     }
 
-    async sendToAgentWithContext(message) {
+    async sendToAgentWithContext(message, skipAddToChat = false) {
         try {
             const context = this.getCurrentContext();
             const payload = {
@@ -2216,7 +2220,10 @@ class DesignRatingApp {
             if (response.ok) {
                 const data = await response.json();
                 if (data.response) {
-                    // Don't automatically add to chat - let the caller handle it
+                    // Add the response to chat for regular messages (unless skipped)
+                    if (!skipAddToChat) {
+                        this.addMessageToChat(data.response, 'assistant');
+                    }
                     return data.response;
                 }
             }
@@ -2242,14 +2249,6 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
-            // First check if this is a deep-dive response
-            const deepDiveParsed = this.parseDeepDive(message);
-            if (deepDiveParsed && deepDiveParsed.deepDive) {
-                // This is a deep-dive response, don't add it as a regular message
-                // The deep-dive should have been handled by replaceCardWithDeepDive
-                return null;
-            }
-            
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
