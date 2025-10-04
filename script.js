@@ -1275,30 +1275,57 @@ class DesignRatingApp {
     // Handle downvote action
     async handleDownvote(recId, button) {
         try {
-            // Send downvote action with context
-            const context = this.getCurrentContext();
-            const payload = {
-                action: 'downvote',
-                rec_id: recId,
-                ...context
-            };
+            console.log('Downvote clicked for:', recId);
             
-            const response = await this.sendToAgent(JSON.stringify(payload));
-            if (response) {
-                // Re-render with new recommendations
-                const chatResultsContent = document.getElementById('chatResultsContent');
-                const analysis = this.parseScreenAnalysis(response);
-                if (analysis.hasScreenAnalysis) {
-                    // Replace the current message with new analysis
-                    const currentMessage = button.closest('.chat-message');
-                    if (currentMessage) {
-                        currentMessage.remove();
-                    }
-                    this.displayScreenAnalysis(analysis, chatResultsContent);
-                }
+            // Find the recommendation card to remove
+            const cardToRemove = document.querySelector(`[data-rec-id="${recId}"]`);
+            if (!cardToRemove) {
+                console.error('Could not find card with rec-id:', recId);
+                return;
             }
+            
+            // Add visual feedback
+            button.classList.add('endorsed');
+            button.innerHTML = '✓';
+            button.disabled = true;
+            
+            // Add fade out animation
+            cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            cardToRemove.style.opacity = '0.3';
+            cardToRemove.style.transform = 'scale(0.95)';
+            
+            // Remove the card after animation
+            setTimeout(() => {
+                cardToRemove.remove();
+                
+                // Check if there are any remaining recommendations
+                const remainingCards = document.querySelectorAll('.improvement-card');
+                if (remainingCards.length === 0) {
+                    // No more recommendations, show a message
+                    const chatResultsContent = document.getElementById('chatResultsContent');
+                    const noMoreMessage = document.createElement('div');
+                    noMoreMessage.className = 'chat-message assistant-message';
+                    noMoreMessage.innerHTML = `
+                        <div class="message-content">
+                            <p>All recommendations have been reviewed. Would you like to ask for more suggestions or try a different approach?</p>
+                        </div>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    `;
+                    chatResultsContent.appendChild(noMoreMessage);
+                    chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
+                }
+            }, 300);
+            
         } catch (error) {
             console.error('Downvote failed:', error);
+            // Reset button state on error
+            button.classList.remove('endorsed');
+            button.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
+                </svg>
+            `;
+            button.disabled = false;
         }
     }
 
@@ -2483,7 +2510,26 @@ class DesignRatingApp {
             
         } catch (error) {
             console.error('Analysis error:', error);
-            this.addMessageToChat('Sorry, there was an error processing your request. Please try again.', 'assistant');
+            
+            // Remove loading message if it exists
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+            
+            // Provide more specific error messages
+            let errorMessage = 'Sorry, there was an error processing your request. Please try again.';
+            
+            if (error.message.includes('401')) {
+                errorMessage = 'Authentication failed. Please refresh the page and try again.';
+            } else if (error.message.includes('429') || error.message.includes('quota')) {
+                errorMessage = 'API quota exceeded. Please wait a moment and try again, or try with a different request.';
+            } else if (error.message.includes('500')) {
+                errorMessage = 'Server error occurred. Please try again in a moment.';
+            } else if (error.message.includes('Chat not configured')) {
+                errorMessage = 'Chat service is not properly configured. Please check your settings.';
+            }
+            
+            this.addMessageToChat(errorMessage, 'assistant');
         }
     }
 
