@@ -480,35 +480,19 @@ class DesignRatingApp {
         };
 
         try {
-            // Normalize the message - strip any code fences
-            let normalizedMessage = message;
-            if (typeof message === 'object' && message.type === 'text' && message.value) {
-                normalizedMessage = message.value;
-            }
-
-            // Strip code fences if present
-            normalizedMessage = normalizedMessage.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-
-            // Find the first non-empty line that starts with {
-            const lines = normalizedMessage.split('\n').map(line => line.trim()).filter(line => line);
-            const jsonLine = lines.find(line => line.startsWith('{'));
-            
-            if (!jsonLine) {
+            // Extract JSON object from message
+            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
                 return result;
             }
 
-            // Parse the JSON
-            const jsonData = JSON.parse(jsonLine);
+            const jsonData = JSON.parse(jsonMatch[0]);
             
-            // Check if this is an initial answer (has summary) or go deeper (has rec_id)
+            // Only process if it has summary (initial design analysis)
             if (jsonData.summary) {
-                // This is an INITIAL ANSWER
                 this.populateResultFromJson(jsonData, result);
-                this.extractCommandAndPunchline(normalizedMessage, result);
+                this.extractCommandAndPunchline(message, result);
                 result.hasScreenAnalysis = true;
-            } else if (jsonData.rec_id) {
-                // This is a GO DEEPER response - don't process as initial answer
-                return result;
             }
         } catch (error) {
             console.error('Failed to parse design recommendations:', error);
@@ -536,24 +520,16 @@ class DesignRatingApp {
 
     // Helper method to extract COMMAND and punchline from message
     extractCommandAndPunchline(message, result) {
-        // Split into lines and find non-empty lines
-        const lines = message.split('\n').map(line => line.trim()).filter(line => line);
-        
-        // Find COMMAND line (must match ^COMMAND:\s+send\s+.+$)
-        const commandLine = lines.find(line => /^COMMAND:\s+send\s+.+$/.test(line));
-        if (commandLine) {
-            result.commandLine = commandLine;
+        // Extract COMMAND line
+        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+        if (commandMatch) {
+            result.commandLine = commandMatch[0];
         }
 
-        // Find punchline (next non-empty line after COMMAND)
-        if (commandLine) {
-            const commandIndex = lines.indexOf(commandLine);
-            if (commandIndex !== -1 && commandIndex + 1 < lines.length) {
-                let punchline = lines[commandIndex + 1];
-                // Strip bold markup if present
-                punchline = punchline.replace(/\*\*(.*?)\*\*/g, '$1');
-                result.punchline = punchline;
-            }
+        // Extract punchline (look for **text** or plain text after COMMAND)
+        const punchlineMatch = message.match(/\*\*([^*]+)\*\*/) || message.match(/COMMAND:.*\n(.+)$/m);
+        if (punchlineMatch) {
+            result.punchline = punchlineMatch[1].trim();
         }
     }
 
@@ -1350,38 +1326,19 @@ class DesignRatingApp {
     // Parse deep-dive JSON response
     parseDeepDive(message) {
         try {
-            // Normalize the payload
-            let raw = message;
-            if (typeof message === 'object' && message.type === 'text' && message.value) {
-                raw = message.value;
-            }
+            // Extract JSON object from message
+            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return null;
 
-            // Strip code fences if present
-            raw = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-
-            // Split into lines and find non-empty lines
-            const lines = raw.split('\n').map(line => line.trim()).filter(line => line);
+            const deepDive = JSON.parse(jsonMatch[0]);
             
-            // Find the first line that starts with { (should be the JSON)
-            const jsonLine = lines.find(line => line.startsWith('{'));
-            if (!jsonLine) return null;
+            // Extract COMMAND line
+            const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+            const commandLine = commandMatch ? commandMatch[0] : '';
 
-            // Parse JSON
-            const deepDive = JSON.parse(jsonLine);
-            
-            // Find COMMAND line (must match ^COMMAND:\s+send\s+.+$)
-            const commandLine = lines.find(line => /^COMMAND:\s+send\s+.+$/.test(line)) || '';
-
-            // Find punchline (next non-empty line after COMMAND)
-            let punchline = '';
-            if (commandLine) {
-                const commandIndex = lines.indexOf(commandLine);
-                if (commandIndex !== -1 && commandIndex + 1 < lines.length) {
-                    punchline = lines[commandIndex + 1];
-                    // Strip bold markup if present
-                    punchline = punchline.replace(/\*\*(.*?)\*\*/g, '$1');
-                }
-            }
+            // Extract punchline
+            const punchlineMatch = message.match(/\*\*([^*]+)\*\*/) || message.match(/COMMAND:.*\n(.+)$/m);
+            const punchline = punchlineMatch ? punchlineMatch[1].trim() : '';
 
             return {
                 deepDive,
