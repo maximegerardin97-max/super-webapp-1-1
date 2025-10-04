@@ -480,31 +480,41 @@ class DesignRatingApp {
         };
 
         try {
-            // First try to extract JSON from markdown code blocks
-            let jsonMatch = message.match(/```json\s*(\{[\s\S]*?\})\s*```/);
-            if (jsonMatch) {
-                const jsonData = JSON.parse(jsonMatch[1]);
+            // Normalize the message - strip any code fences
+            let normalizedMessage = message;
+            if (typeof message === 'object' && message.type === 'text' && message.value) {
+                normalizedMessage = message.value;
+            }
+
+            // Strip code fences if present
+            normalizedMessage = normalizedMessage.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
+            // Find the first non-empty line that starts with {
+            const lines = normalizedMessage.split('\n').map(line => line.trim()).filter(line => line);
+            const jsonLine = lines.find(line => line.startsWith('{'));
+            
+            if (!jsonLine) {
+                return result;
+            }
+
+            // Parse the JSON
+            const jsonData = JSON.parse(jsonLine);
+            
+            // Check if this is an initial answer (has summary) or go deeper (has rec_id)
+            if (jsonData.summary) {
+                // This is an INITIAL ANSWER
                 this.populateResultFromJson(jsonData, result);
-                this.extractCommandAndPunchline(message, result);
+                this.extractCommandAndPunchline(normalizedMessage, result);
                 result.hasScreenAnalysis = true;
+            } else if (jsonData.rec_id) {
+                // This is a GO DEEPER response - don't process as initial answer
                 return result;
             }
-
-            // Fallback: Extract JSON object from message
-            jsonMatch = message.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                return result;
-            }
-
-            const jsonData = JSON.parse(jsonMatch[0]);
-            this.populateResultFromJson(jsonData, result);
-            this.extractCommandAndPunchline(message, result);
-            result.hasScreenAnalysis = true;
         } catch (error) {
             console.error('Failed to parse design recommendations:', error);
             // Show error toast if available
             if (typeof this.showToast === 'function') {
-                this.showToast('Couldn\'t parse design recommendations. Retry.', 'error');
+                this.showToast('Couldn\'t parse design response. Retry.', 'error');
             }
         }
 
@@ -526,16 +536,24 @@ class DesignRatingApp {
 
     // Helper method to extract COMMAND and punchline from message
     extractCommandAndPunchline(message, result) {
-        // Extract COMMAND line
-        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
-        if (commandMatch) {
-            result.commandLine = commandMatch[0];
+        // Split into lines and find non-empty lines
+        const lines = message.split('\n').map(line => line.trim()).filter(line => line);
+        
+        // Find COMMAND line (must match ^COMMAND:\s+send\s+.+$)
+        const commandLine = lines.find(line => /^COMMAND:\s+send\s+.+$/.test(line));
+        if (commandLine) {
+            result.commandLine = commandLine;
         }
 
-        // Extract punchline (look for **text** or plain text after COMMAND)
-        const punchlineMatch = message.match(/\*\*([^*]+)\*\*/) || message.match(/COMMAND:.*\n(.+)$/m);
-        if (punchlineMatch) {
-            result.punchline = punchlineMatch[1].trim();
+        // Find punchline (next non-empty line after COMMAND)
+        if (commandLine) {
+            const commandIndex = lines.indexOf(commandLine);
+            if (commandIndex !== -1 && commandIndex + 1 < lines.length) {
+                let punchline = lines[commandIndex + 1];
+                // Strip bold markup if present
+                punchline = punchline.replace(/\*\*(.*?)\*\*/g, '$1');
+                result.punchline = punchline;
+            }
         }
     }
 
@@ -1338,36 +1356,30 @@ class DesignRatingApp {
                 raw = message.value;
             }
 
-            // Extract JSON block - prefer fenced ```json blocks
-            let jsonMatch = raw.match(/```json\s*(\{[\s\S]*?\})\s*```/);
-            let jsonString = null;
-            
-            if (jsonMatch) {
-                jsonString = jsonMatch[1];
-            } else {
-                // Fallback: find first { to matching } using brace balancer
-                const braceMatch = raw.match(/\{[\s\S]*\}/);
-                if (braceMatch) {
-                    jsonString = braceMatch[0];
-                }
-            }
+            // Strip code fences if present
+            raw = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '');
 
-            if (!jsonString) return null;
+            // Split into lines and find non-empty lines
+            const lines = raw.split('\n').map(line => line.trim()).filter(line => line);
+            
+            // Find the first line that starts with { (should be the JSON)
+            const jsonLine = lines.find(line => line.startsWith('{'));
+            if (!jsonLine) return null;
 
             // Parse JSON
-            const deepDive = JSON.parse(jsonString);
+            const deepDive = JSON.parse(jsonLine);
             
-            // Extract COMMAND line
-            const commandMatch = raw.match(/^COMMAND:\s+send\s+.+$/m);
-            const commandLine = commandMatch ? commandMatch[0] : '';
+            // Find COMMAND line (must match ^COMMAND:\s+send\s+.+$)
+            const commandLine = lines.find(line => /^COMMAND:\s+send\s+.+$/.test(line)) || '';
 
-            // Extract punchline (next non-empty line after COMMAND)
+            // Find punchline (next non-empty line after COMMAND)
             let punchline = '';
-            if (commandMatch) {
-                const afterCommand = raw.substring(commandMatch.index + commandMatch[0].length);
-                const punchlineMatch = afterCommand.match(/^\s*\n\s*([^\n]+)/);
-                if (punchlineMatch) {
-                    punchline = punchlineMatch[1].trim();
+            if (commandLine) {
+                const commandIndex = lines.indexOf(commandLine);
+                if (commandIndex !== -1 && commandIndex + 1 < lines.length) {
+                    punchline = lines[commandIndex + 1];
+                    // Strip bold markup if present
+                    punchline = punchline.replace(/\*\*(.*?)\*\*/g, '$1');
                 }
             }
 
