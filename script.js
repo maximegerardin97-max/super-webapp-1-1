@@ -1279,9 +1279,14 @@ class DesignRatingApp {
             const response = await this.sendToAgent(JSON.stringify(payload));
             if (response) {
                 // Parse deep-dive response and replace the specific card
-                const deepDiveData = this.parseDeepDive(response);
-                if (deepDiveData) {
-                    this.replaceCardWithDeepDive(recId, deepDiveData);
+                const parsed = this.parseDeepDive(response);
+                if (parsed && parsed.deepDive) {
+                    this.replaceCardWithDeepDive(recId, parsed.deepDive, parsed.commandLine, parsed.punchline);
+                } else {
+                    // Show error toast if parsing failed
+                    if (typeof this.showToast === 'function') {
+                        this.showToast('Couldn\'t parse deep dive response. Retry.', 'error');
+                    }
                 }
             }
         } catch (error) {
@@ -1292,9 +1297,50 @@ class DesignRatingApp {
     // Parse deep-dive JSON response
     parseDeepDive(message) {
         try {
-            const jsonMatch = message.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) return null;
-            return JSON.parse(jsonMatch[0]);
+            // Normalize the payload
+            let raw = message;
+            if (typeof message === 'object' && message.type === 'text' && message.value) {
+                raw = message.value;
+            }
+
+            // Extract JSON block - prefer fenced ```json blocks
+            let jsonMatch = raw.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+            let jsonString = null;
+            
+            if (jsonMatch) {
+                jsonString = jsonMatch[1];
+            } else {
+                // Fallback: find first { to matching } using brace balancer
+                const braceMatch = raw.match(/\{[\s\S]*\}/);
+                if (braceMatch) {
+                    jsonString = braceMatch[0];
+                }
+            }
+
+            if (!jsonString) return null;
+
+            // Parse JSON
+            const deepDive = JSON.parse(jsonString);
+            
+            // Extract COMMAND line
+            const commandMatch = raw.match(/^COMMAND:\s+send\s+.+$/m);
+            const commandLine = commandMatch ? commandMatch[0] : '';
+
+            // Extract punchline (next non-empty line after COMMAND)
+            let punchline = '';
+            if (commandMatch) {
+                const afterCommand = raw.substring(commandMatch.index + commandMatch[0].length);
+                const punchlineMatch = afterCommand.match(/^\s*\n\s*([^\n]+)/);
+                if (punchlineMatch) {
+                    punchline = punchlineMatch[1].trim();
+                }
+            }
+
+            return {
+                deepDive,
+                commandLine,
+                punchline
+            };
         } catch (error) {
             console.error('Failed to parse deep dive:', error);
             return null;
@@ -1302,7 +1348,7 @@ class DesignRatingApp {
     }
 
     // Replace card with deep-dive detail view
-    replaceCardWithDeepDive(recId, deepDiveData) {
+    replaceCardWithDeepDive(recId, deepDiveData, commandLine = '', punchline = '') {
         const card = document.querySelector(`[data-rec-id="${recId}"]`);
         if (!card) return;
 
@@ -1314,21 +1360,27 @@ class DesignRatingApp {
         const safeAnalytics = deepDiveData.analytics ? deepDiveData.analytics.map(a => `<span>${this.escapeHtml(a)}</span>`).join('') : '';
         const safeRollout = deepDiveData.rollout_plan ? deepDiveData.rollout_plan.map(r => `<li>${this.escapeHtml(r)}</li>`).join('') : '';
 
+        // Get original card data for subchips
+        const originalCard = card;
+        const originalCategory = originalCard.querySelector('.chip-category')?.textContent || '';
+        const originalImpact = originalCard.querySelector('.chip-impact')?.textContent || '';
+        const originalConfidence = originalCard.querySelector('.chip-confidence')?.textContent || '';
+
         const deepDiveHtml = `
             <div class="improvement-card deep-dive" data-rec-id="${recId}">
                 <div class="improvement-header">
                     <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
                     <div class="improvement-actions">
-                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
-                                        </svg>
-                                    </button>
+                        <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
+                            </svg>
+                        </button>
+                        <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
+                            </svg>
+                        </button>
                         <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -1340,8 +1392,14 @@ class DesignRatingApp {
                     </div>
                 </div>
                 <div class="improvement-body">
+                    <div class="rec-chips">
+                        <span class="chip chip-rec-id">${recId}</span>
+                        ${originalCategory ? `<span class="chip chip-category">${this.escapeHtml(originalCategory)}</span>` : ''}
+                        ${originalImpact ? `<span class="chip chip-impact">${this.escapeHtml(originalImpact)}</span>` : ''}
+                        ${originalConfidence ? `<span class="chip chip-confidence">${this.escapeHtml(originalConfidence)}</span>` : ''}
+                    </div>
                     <div class="rec-section">
-                        <h4>Steps</h4>
+                        <h4>Steps <button class="copy-btn" data-copy="steps" title="Copy steps">Copy</button></h4>
                         <ol>${safeSteps}</ol>
                     </div>
                     <div class="rec-section">
@@ -1353,26 +1411,117 @@ class DesignRatingApp {
                         <ul>${safeEdges}</ul>
                     </div>
                     <div class="rec-section">
-                        <h4>Copy examples</h4>
-                        <ul>${safeCopy}</ul>
+                        <h4>Copy examples <button class="copy-btn" data-copy="copy" title="Copy all">Copy all</button></h4>
+                        <ul class="copy-examples">${safeCopy}</ul>
                     </div>
                     <div class="rec-section">
-                        <h4>Acceptance criteria</h4>
+                        <h4>Acceptance criteria <button class="copy-btn" data-copy="criteria" title="Copy AC">Copy AC</button></h4>
                         <ul>${safeCriteria}</ul>
                     </div>
                     <div class="rec-section">
-                        <h4>Analytics</h4>
+                        <h4>Analytics <button class="copy-btn" data-copy="analytics" title="Copy events">Copy events</button></h4>
                         <div class="analytics-badges">${safeAnalytics}</div>
                     </div>
                     <div class="rec-section">
-                        <h4>Rollout plan</h4>
+                        <h4>Rollout plan <button class="copy-btn" data-copy="rollout" title="Copy rollout">Copy rollout</button></h4>
                         <ul>${safeRollout}</ul>
                     </div>
+                    ${commandLine ? `
+                        <div class="flow-inspiration">
+                            <button class="preview-flow-btn" type="button" data-command="${this.escapeHtml(commandLine)}">Preview flow</button>
+                        </div>
+                    ` : ''}
+                    ${punchline ? `
+                        <div class="punchline">${this.escapeHtml(punchline)}</div>
+                    ` : ''}
                 </div>
             </div>
         `;
 
         card.outerHTML = deepDiveHtml;
+        
+        // Add copy button event listeners
+        this.setupCopyButtons(recId);
+    }
+
+    // Setup copy button functionality
+    setupCopyButtons(recId) {
+        const card = document.querySelector(`[data-rec-id="${recId}"]`);
+        if (!card) return;
+
+        card.addEventListener('click', (e) => {
+            const copyBtn = e.target.closest('.copy-btn');
+            if (!copyBtn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const copyType = copyBtn.dataset.copy;
+            const section = copyBtn.closest('.rec-section');
+            if (!section) return;
+
+            let textToCopy = '';
+            
+            switch (copyType) {
+                case 'steps':
+                    const stepsList = section.querySelector('ol');
+                    if (stepsList) {
+                        textToCopy = Array.from(stepsList.querySelectorAll('li'))
+                            .map((li, index) => `${index + 1}. ${li.textContent}`)
+                            .join('\n');
+                    }
+                    break;
+                case 'copy':
+                    const copyList = section.querySelector('.copy-examples');
+                    if (copyList) {
+                        textToCopy = Array.from(copyList.querySelectorAll('li'))
+                            .map(li => li.textContent)
+                            .join('\n');
+                    }
+                    break;
+                case 'criteria':
+                    const criteriaList = section.querySelector('ul');
+                    if (criteriaList) {
+                        textToCopy = Array.from(criteriaList.querySelectorAll('li'))
+                            .map(li => `• ${li.textContent}`)
+                            .join('\n');
+                    }
+                    break;
+                case 'analytics':
+                    const analyticsDiv = section.querySelector('.analytics-badges');
+                    if (analyticsDiv) {
+                        textToCopy = Array.from(analyticsDiv.querySelectorAll('span'))
+                            .map(span => span.textContent)
+                            .join('\n');
+                    }
+                    break;
+                case 'rollout':
+                    const rolloutList = section.querySelector('ul');
+                    if (rolloutList) {
+                        textToCopy = Array.from(rolloutList.querySelectorAll('li'))
+                            .map(li => `• ${li.textContent}`)
+                            .join('\n');
+                    }
+                    break;
+            }
+
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // Show brief success feedback
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.style.background = '#10b981';
+                    copyBtn.style.color = 'white';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = '';
+                        copyBtn.style.color = '';
+                    }, 1000);
+                }).catch(err => {
+                    console.error('Failed to copy text:', err);
+                });
+            }
+        });
     }
 
     // Send payload to agent
