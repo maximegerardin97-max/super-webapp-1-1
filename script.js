@@ -1377,7 +1377,12 @@ class DesignRatingApp {
     // Replace card with deep-dive detail view
     replaceCardWithDeepDive(recId, deepDiveData, commandLine = '', punchline = '') {
         const card = document.querySelector(`[data-rec-id="${recId}"]`);
-        if (!card) return;
+        console.log('Looking for card with recId:', recId);
+        console.log('Found card:', card);
+        if (!card) {
+            console.error('Card not found for recId:', recId);
+            return;
+        }
 
         const safeSteps = deepDiveData.steps ? deepDiveData.steps.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
         const safeStates = deepDiveData.state_chart ? deepDiveData.state_chart.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
@@ -1465,10 +1470,12 @@ class DesignRatingApp {
             </div>
         `;
 
+        console.log('Replacing card HTML with deep dive content');
         card.outerHTML = deepDiveHtml;
         
         // Add copy button event listeners
         this.setupCopyButtons(recId);
+        console.log('Deep dive replacement completed');
     }
 
     // Setup copy button functionality
