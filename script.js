@@ -480,39 +480,25 @@ class DesignRatingApp {
         };
 
         try {
-            // Extract JSON object from message
-            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            // First try to extract JSON from markdown code blocks
+            let jsonMatch = message.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+            if (jsonMatch) {
+                const jsonData = JSON.parse(jsonMatch[1]);
+                this.populateResultFromJson(jsonData, result);
+                this.extractCommandAndPunchline(message, result);
+                result.hasScreenAnalysis = true;
+                return result;
+            }
+
+            // Fallback: Extract JSON object from message
+            jsonMatch = message.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 return result;
             }
 
             const jsonData = JSON.parse(jsonMatch[0]);
-            
-            // Extract COMMAND line (next line after JSON)
-            const afterJson = message.substring(jsonMatch.index + jsonMatch[0].length);
-            const commandMatch = afterJson.match(/COMMAND:\s*send\s+.+/i);
-            if (commandMatch) {
-                result.commandLine = commandMatch[0];
-            }
-
-            // Extract punchline (next line after COMMAND)
-            const afterCommand = afterJson.substring(commandMatch ? commandMatch.index + commandMatch[0].length : 0);
-            const punchlineMatch = afterCommand.match(/\*\*([^*]+)\*\*/) || afterCommand.match(/^(.+)$/m);
-            if (punchlineMatch) {
-                result.punchline = punchlineMatch[1].trim();
-            }
-
-            // Parse JSON data
-            if (jsonData.summary) {
-                result.summary = jsonData.summary;
-            }
-            if (jsonData.recommendations && Array.isArray(jsonData.recommendations)) {
-                result.recommendations = jsonData.recommendations;
-            }
-            if (jsonData.flow_inspiration) {
-                result.flowInspiration = jsonData.flow_inspiration;
-            }
-
+            this.populateResultFromJson(jsonData, result);
+            this.extractCommandAndPunchline(message, result);
             result.hasScreenAnalysis = true;
         } catch (error) {
             console.error('Failed to parse design recommendations:', error);
@@ -523,6 +509,34 @@ class DesignRatingApp {
         }
 
         return result;
+    }
+
+    // Helper method to populate result from JSON data
+    populateResultFromJson(jsonData, result) {
+        if (jsonData.summary) {
+            result.summary = jsonData.summary;
+        }
+        if (jsonData.recommendations && Array.isArray(jsonData.recommendations)) {
+            result.recommendations = jsonData.recommendations;
+        }
+        if (jsonData.flow_inspiration) {
+            result.flowInspiration = jsonData.flow_inspiration;
+        }
+    }
+
+    // Helper method to extract COMMAND and punchline from message
+    extractCommandAndPunchline(message, result) {
+        // Extract COMMAND line
+        const commandMatch = message.match(/COMMAND:\s*send\s+.+/i);
+        if (commandMatch) {
+            result.commandLine = commandMatch[0];
+        }
+
+        // Extract punchline (look for **text** or plain text after COMMAND)
+        const punchlineMatch = message.match(/\*\*([^*]+)\*\*/) || message.match(/COMMAND:.*\n(.+)$/m);
+        if (punchlineMatch) {
+            result.punchline = punchlineMatch[1].trim();
+        }
     }
 
     // Parse role-specific structured responses
