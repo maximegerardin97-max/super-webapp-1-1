@@ -89,6 +89,36 @@
                 </div>
                 <!-- Step 0: Initial State -->
                 <div class="chat-step active" id="chatStep0" data-step="0">
+                    <!-- Context Input Fields -->
+                    <div class="context-inputs" id="contextInputs">
+                        <div class="context-field">
+                            <label for="platformSelect">Platform</label>
+                            <select id="platformSelect">
+                                <option value="mobile">Mobile</option>
+                                <option value="desktop">Desktop</option>
+                                <option value="website/ecommerce">Website/Ecommerce</option>
+                            </select>
+                        </div>
+                        <div class="context-field">
+                            <label for="industryInput">Industry</label>
+                            <input type="text" id="industryInput" placeholder="e.g., Fintech, Healthcare" />
+                        </div>
+                        <div class="context-field">
+                            <label for="screenPurposeInput">Screen purpose</label>
+                            <input type="text" id="screenPurposeInput" placeholder="e.g., Onboarding, Checkout" />
+                        </div>
+                        <div class="context-field">
+                            <label for="optimizeForSelect">What to optimize for</label>
+                            <select id="optimizeForSelect">
+                                <option value="retention">Retention</option>
+                                <option value="conversion">Conversion</option>
+                                <option value="engagement">Engagement</option>
+                                <option value="trust">Trust</option>
+                                <option value="experience">Experience</option>
+                                <option value="information">Information</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="chat-input-container">
                         <button class="chat-image-btn" id="chatImageBtn" title="Upload image">
                             <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
