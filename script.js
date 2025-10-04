@@ -1313,22 +1313,33 @@ class DesignRatingApp {
                 ...context
             };
             
+            // Use the same authentication method as regular chat
+            const authToken = await this.supabase.auth.getSession();
+            const token = authToken.data?.session?.access_token;
+            
+            console.log('Deep-dive auth token:', token ? 'Present' : 'Missing');
+            
             // Send to agent using existing chat API
             const response = await fetch(window.AGENT_CFG.CHAT_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.supabaseKey}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });
             
+            console.log('Deep-dive response status:', response.status);
+            
             if (response.ok) {
                 const data = await response.json();
+                console.log('Deep-dive response data:', data);
                 if (data.response) {
                     // Return the response without adding to chat
                     return data.response;
                 }
+            } else {
+                console.error('Deep-dive request failed:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Failed to send deep-dive request:', error);
