@@ -2296,14 +2296,7 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
-            // Check if this is a deep-dive response (has rec_id)
-            const deepDiveParsed = this.parseDeepDive(message);
-            if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
-                // This is a deep-dive response - don't show as regular message
-                // It should be handled by replaceCardWithDeepDive
-                return null;
-            }
-            
+            // 1. FIRST: Try to parse as initial screen analysis (Format A)
             const screenAnalysis = this.parseScreenAnalysis(message);
             if (screenAnalysis.hasScreenAnalysis) {
                 this.displayScreenAnalysis(screenAnalysis, chatResultsContent);
@@ -2313,6 +2306,14 @@ class DesignRatingApp {
                 }
                 // Set up event listeners for the new cards
                 this.setupCardEventListeners(chatResultsContent);
+                return null;
+            }
+            
+            // 2. SECOND: Check if this is a deep-dive response (Format B)
+            const deepDiveParsed = this.parseDeepDive(message);
+            if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
+                // This is a deep-dive response - don't show as regular message
+                // It should be handled by replaceCardWithDeepDive
                 return null;
             }
         }
