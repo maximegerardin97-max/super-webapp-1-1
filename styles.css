@@ -595,8 +595,8 @@ body {
 
 /* Message Cards - for chat message content */
 .improvement-card {
-  background: var(--text-primary);
-  color: var(--bg-secondary);
+  background: #ffffff;
+  color: #333333;
   border-radius: 16px 16px 16px 4px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
@@ -638,8 +638,8 @@ body {
 
 .improvement-title { 
   font-size: 14px; 
-  font-weight: 300; 
-  color: var(--bg-primary);
+  font-weight: 600; 
+  color: #333333;
   flex: 1 1 auto; 
   margin-right: 40px; 
 }
@@ -697,7 +697,7 @@ body {
 .improvement-body { 
   display: none; 
   padding: 0 14px 14px 14px; 
-  color: var(--text-primary);
+  color: #333333;
   font-size: 14px; 
   line-height: 1.5; 
 }
@@ -2274,7 +2274,7 @@ body {
     padding: 4px 8px;
     font-size: 14px;
     cursor: pointer;
-    color: var(--text-primary);
+    color: #333333;
     transition: all 0.2s;
     min-width: 32px;
     height: 32px;
@@ -2303,7 +2303,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--text-primary);
+    color: #333333;
     transition: all 0.2s;
 }
 
