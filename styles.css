@@ -2208,8 +2208,8 @@ body {
 }
 
 .chip-category {
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
+    background: #f3f4f6;
+    color: #333333;
 }
 
 .chip-high {
@@ -2235,7 +2235,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--text-primary);
+    color: #333333;
 }
 
 .rec-section p,
@@ -2243,7 +2243,7 @@ body {
 .rec-section ol {
     font-size: 13px;
     line-height: 1.4;
-    color: var(--text-primary);
+    color: #333333;
 }
 
 .rec-section ul,

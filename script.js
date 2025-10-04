@@ -1088,16 +1088,16 @@ class DesignRatingApp {
                             <div class="improvement-header">
                                 <div class="improvement-title">${safeTitle}</div>
                                 <div class="improvement-actions">
-                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}" title="Upvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M7 14l5-5 5 5z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}" title="Downvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M7 10l5 5 5-5z"/>
-                                        </svg>
-                                    </button>
+                                                <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}" title="Upvote">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}" title="Downvote">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
+                                                    </svg>
+                                                </button>
                                     <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}" title="Go deeper">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -1305,16 +1305,16 @@ class DesignRatingApp {
                 <div class="improvement-header">
                     <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
                     <div class="improvement-actions">
-                        <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M7 14l5-5 5 5z"/>
-                            </svg>
-                        </button>
-                        <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M7 10l5 5 5-5z"/>
-                            </svg>
-                        </button>
+                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
+                                        </svg>
+                                    </button>
                         <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
