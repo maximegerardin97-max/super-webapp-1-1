@@ -480,34 +480,16 @@ class DesignRatingApp {
         };
 
         try {
-            // Extract JSON object from message - find the first complete JSON object
-            const jsonStart = message.indexOf('{');
-            if (jsonStart === -1) {
+            // Extract JSON object from message
+            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
                 return result;
             }
 
-            // Find the matching closing brace by counting braces
-            let braceCount = 0;
-            let jsonEnd = -1;
-            for (let i = jsonStart; i < message.length; i++) {
-                if (message[i] === '{') braceCount++;
-                if (message[i] === '}') braceCount--;
-                if (braceCount === 0) {
-                    jsonEnd = i;
-                    break;
-                }
-            }
-
-            if (jsonEnd === -1) {
-                return result;
-            }
-
-            const jsonString = message.substring(jsonStart, jsonEnd + 1);
-            console.log('JSON extracted:', jsonString.substring(0, 200) + '...');
-            const jsonData = JSON.parse(jsonString);
+            const jsonData = JSON.parse(jsonMatch[0]);
             
             // Extract COMMAND line (next line after JSON)
-            const afterJson = message.substring(jsonEnd + 1);
+            const afterJson = message.substring(jsonMatch.index + jsonMatch[0].length);
             const commandMatch = afterJson.match(/COMMAND:\s*send\s+.+/i);
             if (commandMatch) {
                 result.commandLine = commandMatch[0];
