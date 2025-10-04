@@ -480,22 +480,45 @@ class DesignRatingApp {
         };
 
         try {
-            // Extract JSON object from message
-            const jsonMatch = message.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
+            // Try multiple JSON extraction patterns
+            let jsonData = null;
+            let jsonMatch = null;
+            
+            // Pattern 1: Full message is JSON
+            try {
+                jsonData = JSON.parse(message.trim());
+                jsonMatch = [message.trim()];
+                console.log('Full message is JSON');
+            } catch (e) {
+                // Pattern 2: JSON embedded in text
+                jsonMatch = message.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    jsonData = JSON.parse(jsonMatch[0]);
+                    console.log('Found embedded JSON');
+                }
+            }
+            
+            if (!jsonData) {
+                console.log('No valid JSON found in message:', message.substring(0, 200));
                 return result;
             }
 
-            const jsonData = JSON.parse(jsonMatch[0]);
+            console.log('Parsed JSON data:', jsonData);
+            console.log('JSON keys:', Object.keys(jsonData));
             
-            // Only process if it has summary (initial design analysis)
-            if (jsonData.summary) {
+            // Check for different possible response formats
+            if (jsonData.summary || jsonData.recommendations || jsonData.response || jsonData.content || jsonData.message) {
                 this.populateResultFromJson(jsonData, result);
                 this.extractCommandAndPunchline(message, result);
                 result.hasScreenAnalysis = true;
+                console.log('Successfully parsed as screen analysis');
+            } else {
+                console.log('JSON does not contain expected fields (summary, recommendations, response, content, message)');
+                console.log('Available fields:', Object.keys(jsonData));
             }
         } catch (error) {
             console.error('Failed to parse design recommendations:', error);
+            console.log('Raw message that failed to parse:', message.substring(0, 500));
             // Show error toast if available
             if (typeof this.showToast === 'function') {
                 this.showToast('Couldn\'t parse design response. Retry.', 'error');
@@ -507,14 +530,34 @@ class DesignRatingApp {
 
     // Helper method to populate result from JSON data
     populateResultFromJson(jsonData, result) {
+        // Handle different response formats
         if (jsonData.summary) {
             result.summary = jsonData.summary;
+        } else if (jsonData.response) {
+            result.summary = jsonData.response;
+        } else if (jsonData.content) {
+            result.summary = jsonData.content;
+        } else if (jsonData.message) {
+            result.summary = jsonData.message;
         }
+        
         if (jsonData.recommendations && Array.isArray(jsonData.recommendations)) {
             result.recommendations = jsonData.recommendations;
+        } else if (jsonData.suggestions && Array.isArray(jsonData.suggestions)) {
+            result.recommendations = jsonData.suggestions;
+        } else if (jsonData.improvements && Array.isArray(jsonData.improvements)) {
+            result.recommendations = jsonData.improvements;
         }
+        
         if (jsonData.flow_inspiration) {
             result.flowInspiration = jsonData.flow_inspiration;
+        } else if (jsonData.inspiration) {
+            result.flowInspiration = jsonData.inspiration;
+        }
+        
+        // If we have a summary but no recommendations, create a basic structure
+        if (result.summary && !result.recommendations) {
+            result.recommendations = [];
         }
     }
 
@@ -2336,12 +2379,37 @@ class DesignRatingApp {
             }
         }
 
+        // For assistant messages, try to format JSON content if it's raw JSON
+        let displayMessage = message;
+        if (sender === 'assistant' && !isLoading) {
+            try {
+                // Try to parse as JSON (either full message or embedded)
+                let jsonData = null;
+                try {
+                    jsonData = JSON.parse(message.trim());
+                } catch (e) {
+                    const jsonMatch = message.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        jsonData = JSON.parse(jsonMatch[0]);
+                    }
+                }
+                
+                if (jsonData) {
+                    // Format the JSON nicely for display
+                    displayMessage = `<pre style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; line-height: 1.4; white-space: pre-wrap;">${JSON.stringify(jsonData, null, 2)}</pre>`;
+                }
+            } catch (e) {
+                // Not JSON, use original message
+                displayMessage = message;
+            }
+        }
+
         // Create message element
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${sender}-message`;
         const loadingClass = isLoading ? ' loading' : '';
         messageDiv.innerHTML = `
-            <div class="message-content${loadingClass}">${message}</div>
+            <div class="message-content${loadingClass}">${displayMessage}</div>
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
         
