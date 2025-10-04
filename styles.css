@@ -2258,7 +2258,7 @@ body {
 }
 
 .analytics-badges span {
-    background: var(--accent-color);
+    background: #007bff;
     color: white;
     padding: 2px 6px;
     border-radius: 4px;
@@ -2327,17 +2327,17 @@ body {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--text-primary);
+    color: #333333;
 }
 
 .flow-inspiration p {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: #333333;
     margin-bottom: 12px;
 }
 
 .preview-flow-btn {
-    background: var(--accent-color);
+    background: #007bff;
     color: white;
     border: none;
     padding: 8px 16px;
