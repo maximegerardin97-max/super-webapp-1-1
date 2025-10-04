@@ -1283,9 +1283,10 @@ class DesignRatingApp {
             
             if (response) {
                 // First, add the full deep-dive response as a new assistant message
+                // This shows the user exactly what they got back from their go deeper request
                 this.addMessageToChat(response, 'assistant');
                 
-                // Then parse and replace the specific card
+                // Then parse and replace the specific card with detailed view
                 const parsed = this.parseDeepDive(response);
                 console.log('Parsed deep dive:', parsed);
                 
@@ -2287,11 +2288,19 @@ class DesignRatingApp {
 
         // Screen-analysis card format (cards with collapsible justifications)
         if (sender === 'assistant') {
-            // First check if this is a deep-dive response (has rec_id)
+            // Check if this is a deep-dive response (has rec_id)
             const deepDiveParsed = this.parseDeepDive(message);
             if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
-                // This is a deep-dive response, don't display as regular message
-                // It should be handled by replaceCardWithDeepDive
+                // This is a deep-dive response - show it as a regular message
+                // The user wants to see the full response
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message assistant-message';
+                messageDiv.innerHTML = `
+                    <div class="message-content">${this.escapeHtml(message)}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                `;
+                chatResultsContent.appendChild(messageDiv);
+                chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
                 return null;
             }
             
