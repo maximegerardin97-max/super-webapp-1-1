@@ -1282,17 +1282,25 @@ class DesignRatingApp {
             console.log('Received response:', response);
             
             if (response) {
-                // First, add the full deep-dive response as a new assistant message
-                // This shows the user exactly what they got back from their go deeper request
-                this.addMessageToChat(response, 'assistant');
-                
-                // Then parse and replace the specific card with detailed view
+                // Parse and replace the specific card with detailed view
                 const parsed = this.parseDeepDive(response);
                 console.log('Parsed deep dive:', parsed);
                 
                 if (parsed && parsed.deepDive) {
                     console.log('Replacing card with deep dive');
                     this.replaceCardWithDeepDive(recId, parsed.deepDive, parsed.commandLine, parsed.punchline);
+                    
+                    // Focus on the updated card
+                    setTimeout(() => {
+                        const updatedCard = document.querySelector(`[data-rec-id="${recId}"]`);
+                        if (updatedCard) {
+                            updatedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            updatedCard.style.border = '2px solid #007bff';
+                            setTimeout(() => {
+                                updatedCard.style.border = '';
+                            }, 2000);
+                        }
+                    }, 100);
                 } else {
                     console.log('Failed to parse deep dive response');
                     // Show error toast if parsing failed
@@ -2291,16 +2299,8 @@ class DesignRatingApp {
             // Check if this is a deep-dive response (has rec_id)
             const deepDiveParsed = this.parseDeepDive(message);
             if (deepDiveParsed && deepDiveParsed.deepDive && deepDiveParsed.deepDive.rec_id) {
-                // This is a deep-dive response - show it as a regular message
-                // The user wants to see the full response
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'chat-message assistant-message';
-                messageDiv.innerHTML = `
-                    <div class="message-content">${this.escapeHtml(message)}</div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                `;
-                chatResultsContent.appendChild(messageDiv);
-                chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
+                // This is a deep-dive response - don't show as regular message
+                // It should be handled by replaceCardWithDeepDive
                 return null;
             }
             
