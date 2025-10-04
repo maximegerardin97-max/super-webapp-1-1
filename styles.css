@@ -2243,7 +2243,7 @@ body {
 .rec-section ol {
     font-size: 13px;
     line-height: 1.4;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .rec-section ul,
@@ -2264,6 +2264,56 @@ body {
     border-radius: 4px;
     font-size: 10px;
     font-family: monospace;
+}
+
+/* Action buttons styling */
+.upvote-btn, .downvote-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.2s;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upvote-btn:hover, .downvote-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.upvote-btn.endorsed {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.go-deeper-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.go-deeper-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.go-deeper-btn img {
+    width: 16px;
+    height: 16px;
 }
 
 .flow-inspiration {

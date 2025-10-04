@@ -1091,7 +1091,7 @@ class DesignRatingApp {
                                     <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}">↑</button>
                                     <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}">↓</button>
                                     <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}">
-                                        <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
+                                        <span style="font-size: 16px; font-weight: bold; color: var(--text-primary);">+</span>
                                     </button>
                                     <button class="improvement-chevron" type="button">
                                         <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
@@ -1101,8 +1101,8 @@ class DesignRatingApp {
                             <div class="improvement-body">
                                 <div class="rec-chips">
                                     <span class="chip chip-category">${this.escapeHtml(rec.category || '')}</span>
-                                    <span class="chip chip-impact chip-${rec.impact || 'medium'}">${this.escapeHtml(rec.impact || 'medium')}</span>
-                                    <span class="chip chip-confidence chip-${rec.confidence || 'medium'}">${this.escapeHtml(rec.confidence || 'medium')}</span>
+                                    <span class="chip chip-impact chip-${rec.impact || 'medium'}">${this.escapeHtml(rec.impact || 'medium')} Impact</span>
+                                    <span class="chip chip-confidence chip-${rec.confidence || 'medium'}">${this.escapeHtml(rec.confidence || 'medium')} Confidence</span>
                                 </div>
                                 <div class="rec-section">
                                     <h4>Why it matters</h4>
@@ -1297,6 +1297,9 @@ class DesignRatingApp {
                     <div class="improvement-actions">
                         <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}">↑</button>
                         <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}">↓</button>
+                        <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}">
+                            <span style="font-size: 16px; font-weight: bold; color: var(--text-primary);">+</span>
+                        </button>
                         <button class="improvement-chevron" type="button">
                             <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                         </button>
