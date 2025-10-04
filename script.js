@@ -1399,7 +1399,7 @@ class DesignRatingApp {
         const originalConfidence = originalCard.querySelector('.chip-confidence')?.textContent || '';
 
         const deepDiveHtml = `
-            <div class="improvement-card deep-dive" data-rec-id="${recId}">
+            <div class="improvement-card deep-dive expanded" data-rec-id="${recId}">
                 <div class="improvement-header">
                     <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
                     <div class="improvement-actions">
@@ -1473,9 +1473,14 @@ class DesignRatingApp {
         console.log('Replacing card HTML with deep dive content');
         card.outerHTML = deepDiveHtml;
         
-        // Add copy button event listeners
-        this.setupCopyButtons(recId);
-        console.log('Deep dive replacement completed');
+        // Wait a moment for DOM to update, then add copy button event listeners
+        setTimeout(() => {
+            const newCard = document.querySelector(`[data-rec-id="${recId}"]`);
+            console.log('New card after replacement:', newCard);
+            console.log('New card innerHTML:', newCard ? newCard.innerHTML.substring(0, 200) + '...' : 'Not found');
+            this.setupCopyButtons(recId);
+            console.log('Deep dive replacement completed');
+        }, 100);
     }
 
     // Setup copy button functionality
