@@ -1562,8 +1562,10 @@ class DesignRatingApp {
         const step4BackBtn = document.getElementById('step4BackBtn');
         const step4NextBtn = document.getElementById('step4NextBtn');
         const step5BackBtn = document.getElementById('step5BackBtn');
-        const step5SendBtn = document.getElementById('step5SendBtn');
-        const step5Input = document.getElementById('step5Input');
+        const step5NextBtn = document.getElementById('step5NextBtn');
+        const step6BackBtn = document.getElementById('step6BackBtn');
+        const step6SendBtn = document.getElementById('step6SendBtn');
+        const step6Input = document.getElementById('step6Input');
 
         // Handle initial state input
         mainChatInput.addEventListener('keypress', (e) => {
@@ -1620,13 +1622,21 @@ class DesignRatingApp {
             this.goToStep(4);
         });
 
-        step5SendBtn.addEventListener('click', () => {
-            this.sendStep5Message();
+        step5NextBtn.addEventListener('click', () => {
+            this.goToStep(6);
         });
 
-        step5Input.addEventListener('keypress', (e) => {
+        step6BackBtn.addEventListener('click', () => {
+            this.goToStep(5);
+        });
+
+        step6SendBtn.addEventListener('click', () => {
+            this.sendStep6Message();
+        });
+
+        step6Input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.sendStep5Message();
+                this.sendStep6Message();
             }
         });
 
@@ -1667,18 +1677,21 @@ class DesignRatingApp {
                 progress = 0;
                 break;
             case 1:
-                progress = 20;
+                progress = 16.67;
                 break;
             case 2:
-                progress = 40;
+                progress = 33.33;
                 break;
             case 3:
-                progress = 60;
+                progress = 50;
                 break;
             case 4:
-                progress = 80;
+                progress = 66.67;
                 break;
             case 5:
+                progress = 83.33;
+                break;
+            case 6:
                 progress = 100;
                 break;
         }
@@ -1702,24 +1715,25 @@ class DesignRatingApp {
         });
     }
 
-    sendStep5Message() {
-        const step5Input = document.getElementById('step5Input');
-        const message = step5Input.value.trim();
+    sendStep6Message() {
+        const step6Input = document.getElementById('step6Input');
+        const message = step6Input.value.trim();
         if (message) {
             // Collect all selected options
             const productType = this.getSelectedOption('chatStep2');
             const industry = this.getSelectedOption('chatStep3');
-            const optimizeFor = this.getSelectedOption('chatStep4');
+            const improveWhat = this.getSelectedOption('chatStep4');
+            const optimizeFor = this.getSelectedOption('chatStep5');
             const context = message;
 
             // Create comprehensive message
-            const fullMessage = `Product type: ${productType}, Industry: ${industry}, Optimize for: ${optimizeFor}, Context: ${context}`;
+            const fullMessage = `Product type: ${productType}, Industry: ${industry}, Improve: ${improveWhat}, Optimize for: ${optimizeFor}, Context: ${context}`;
             
             // Send the message
             this.sendMainChatMessage(fullMessage);
             
             // Clear input
-            step5Input.value = '';
+            step6Input.value = '';
             
             // Reset to initial state
             this.goToStep(0);
@@ -1738,7 +1752,8 @@ class DesignRatingApp {
             'step2ImageCloseBtn', 
             'step3ImageCloseBtn',
             'step4ImageCloseBtn',
-            'step5ImageCloseBtn'
+            'step5ImageCloseBtn',
+            'step6ImageCloseBtn'
         ];
 
         closeButtons.forEach(buttonId => {
@@ -1797,7 +1812,8 @@ class DesignRatingApp {
         // Get current context from step selections
         return {
             industry: this.getSelectedOption('chatStep3') || '',
-            optimize_for: this.getSelectedOption('chatStep4') || 'experience'
+            improve_what: this.getSelectedOption('chatStep4') || 'general',
+            optimize_for: this.getSelectedOption('chatStep5') || 'experience'
         };
     }
 
