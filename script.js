@@ -467,30 +467,62 @@ class DesignRatingApp {
         `;
     }
 
-    // Parse the requested Screen Analysis card layout from free text
+    // Parse the requested Screen Analysis card layout from JSON
     parseScreenAnalysis(message) {
         const result = {
             hasScreenAnalysis: false,
-            header: '',
-            productMeta: '',
-            cards: [],
-            recommendation: '',
+            summary: '',
+            recommendations: [],
+            flowInspiration: null,
             commandLine: '',
             punchline: '',
             showDesignsLabel: 'Show designs'
         };
 
-        // Helpers
-        const stripAll = (s) => (s || '')
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/[_`~]/g, '')
-            // Keep numbers: remove only pictographic emoji and variation selectors
-            .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu, '')
-            .trim();
+        try {
+            // Extract JSON object from message
+            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                return result;
+            }
 
-        // Only support Role 1 (Product Reviewer). Otherwise, no cards.
-        const roleResult = this.parseRoleSpecific(message, stripAll);
-        return roleResult;
+            const jsonData = JSON.parse(jsonMatch[0]);
+            
+            // Extract COMMAND line (next line after JSON)
+            const afterJson = message.substring(jsonMatch.index + jsonMatch[0].length);
+            const commandMatch = afterJson.match(/COMMAND:\s*send\s+.+/i);
+            if (commandMatch) {
+                result.commandLine = commandMatch[0];
+            }
+
+            // Extract punchline (next line after COMMAND)
+            const afterCommand = afterJson.substring(commandMatch ? commandMatch.index + commandMatch[0].length : 0);
+            const punchlineMatch = afterCommand.match(/\*\*([^*]+)\*\*/) || afterCommand.match(/^(.+)$/m);
+            if (punchlineMatch) {
+                result.punchline = punchlineMatch[1].trim();
+            }
+
+            // Parse JSON data
+            if (jsonData.summary) {
+                result.summary = jsonData.summary;
+            }
+            if (jsonData.recommendations && Array.isArray(jsonData.recommendations)) {
+                result.recommendations = jsonData.recommendations;
+            }
+            if (jsonData.flow_inspiration) {
+                result.flowInspiration = jsonData.flow_inspiration;
+            }
+
+            result.hasScreenAnalysis = true;
+        } catch (error) {
+            console.error('Failed to parse design recommendations:', error);
+            // Show error toast if available
+            if (typeof this.showToast === 'function') {
+                this.showToast('Couldn\'t parse design recommendations. Retry.', 'error');
+            }
+        }
+
+        return result;
     }
 
     // Parse role-specific structured responses
@@ -1036,132 +1068,290 @@ class DesignRatingApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message assistant-message';
 
-        // Build neutral improvements cards like the screenshot
-        const cardsHtml = data.cards.length > 0 ? `
+        // Summary at the top
+        const summaryHtml = data.summary ? `
+            <div class="message-content">${this.escapeHtml(data.summary)}</div>
+        ` : '';
+
+        // Build recommendation cards
+        const cardsHtml = data.recommendations.length > 0 ? `
             <div class="cards-stack">
-                ${data.cards.map((c, idx) => {
-                    const safeTitle = this.escapeHtml(c.title || `Card ${idx+1}`);
-                    const safeJustif = this.escapeHtml(c.justification || '');
+                ${data.recommendations.map((rec, idx) => {
+                    const safeTitle = this.escapeHtml(rec.title || `Recommendation ${idx+1}`);
+                    const safeWhy = this.escapeHtml(rec.why_it_matters || '');
+                    const safeChanges = rec.what_to_change ? rec.what_to_change.map(c => `<li>${this.escapeHtml(c)}</li>`).join('') : '';
+                    const safeCriteria = rec.acceptance_criteria ? rec.acceptance_criteria.map(c => `<li>${this.escapeHtml(c)}</li>`).join('') : '';
+                    const safeAnalytics = rec.analytics ? rec.analytics.map(a => `<span>${this.escapeHtml(a)}</span>`).join('') : '';
+                    
                     return `
-                        <div class="improvement-card" data-index="${idx}">
+                        <div class="improvement-card" data-rec-id="${rec.id}" data-index="${idx}">
                             <div class="improvement-header">
                                 <div class="improvement-title">${safeTitle}</div>
                                 <div class="improvement-actions">
-                                    <button class="go-deeper-btn" type="button" data-role="go-deeper">
-                                    <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Go deeper" class="auth-icon-img" />
+                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}">↑</button>
+                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}">↓</button>
+                                    <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}">
+                                        <img src="./assets/images/icons/icon-plus-mini-wht.png" alt="Go deeper" class="auth-icon-img" />
                                     </button>
                                     <button class="improvement-chevron" type="button">
-                                    <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
+                                        <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                 </div>
                             </div>
-                            <div class="improvement-body">${safeJustif}</div>
+                            <div class="improvement-body">
+                                <div class="rec-chips">
+                                    <span class="chip chip-category">${this.escapeHtml(rec.category || '')}</span>
+                                    <span class="chip chip-impact chip-${rec.impact || 'medium'}">${this.escapeHtml(rec.impact || 'medium')}</span>
+                                    <span class="chip chip-confidence chip-${rec.confidence || 'medium'}">${this.escapeHtml(rec.confidence || 'medium')}</span>
+                                </div>
+                                <div class="rec-section">
+                                    <h4>Why it matters</h4>
+                                    <p>${safeWhy}</p>
+                                </div>
+                                <div class="rec-section">
+                                    <h4>What to change</h4>
+                                    <ul>${safeChanges}</ul>
+                                </div>
+                                <div class="rec-section">
+                                    <h4>Acceptance criteria</h4>
+                                    <ul>${safeCriteria}</ul>
+                                </div>
+                                <div class="rec-section">
+                                    <h4>Analytics</h4>
+                                    <div class="analytics-badges">${safeAnalytics}</div>
+                                </div>
+                            </div>
                         </div>
                     `;
                 }).join('')}
             </div>
         ` : '';
 
-        // Recommendation card (same design)
-        let recommendationHtml = '';
-        if (data.recommendation) {
-            try {
-                const rec = JSON.parse(data.recommendation);
-                const rTitle = this.escapeHtml(rec.title || 'Recommendation');
-                const rText = this.escapeHtml(rec.text || '');
-                recommendationHtml = `
-                <div class="improvement-card" data-card-type="recommendation">
-                    <div class="improvement-header">
-                        <div class="improvement-title">${rTitle}</div>
-                        <div class="improvement-actions">
-                            <button class="go-deeper-btn" type="button" data-role="go-deeper">
-                            <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Go deeper" class="auth-icon-img" />
-                            </button>
-                            <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
-                        </div>
-                    </div>
-                    <div class="improvement-body">${rText}</div>
-                </div>`;
-            } catch {}
-        }
+        // Flow inspiration
+        const flowInspirationHtml = data.flowInspiration ? `
+            <div class="flow-inspiration">
+                <h4>Flow inspiration: ${this.escapeHtml(data.flowInspiration.app)} — ${this.escapeHtml(data.flowInspiration.flow)}</h4>
+                <p>${this.escapeHtml(data.flowInspiration.why_this_flow || '')}</p>
+                <button class="preview-flow-btn" type="button" data-command="${this.escapeHtml(data.commandLine)}">Preview flow</button>
+            </div>
+        ` : '';
 
-        // Intro/header and product meta line (dedupe if identical)
-        let _headerText = data.header ? String(data.header).trim() : '';
-        let _metaText = data.productMeta ? String(data.productMeta).trim() : '';
-        if (_headerText && _metaText && _headerText.toLowerCase() === _metaText.toLowerCase()) {
-            _headerText = '';
-        }
-        const headerLine = _headerText ? `<div class=\"message-content\">${this.escapeHtml(_headerText)}</div>` : '';
-        const metaLine = _metaText ? `<div class=\"message-content\">${this.escapeHtml(_metaText)}</div>` : '';
-        const showDesignsBtn = `<button class="show-images-tag" type="button"><span>Show designs</span></button>`;
-        // Hide COMMAND line from UI but keep detection handled above
-        const commandLine = '';
-        // Punchline should be at the end; no top separator
+        // Punchline at the end
         const punchlineMessage = data.punchline ? `
-            <div class="message-content">${this.escapeHtml(data.punchline)}</div>
+            <div class="message-content punchline">${this.escapeHtml(data.punchline)}</div>
         ` : '';
 
         messageDiv.innerHTML = `
-            ${headerLine}
-            ${metaLine}
+            ${summaryHtml}
             ${cardsHtml}
-            ${recommendationHtml}
-            ${commandLine}
+            ${flowInspirationHtml}
             ${punchlineMessage}
-            ${showDesignsBtn}
             <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
 
         chatResultsContent.appendChild(messageDiv);
         chatResultsContent.scrollTop = chatResultsContent.scrollHeight;
 
-        // Ensure chevron buttons always toggle (direct binding in addition to delegation)
-        const chevButtons = messageDiv.querySelectorAll('.improvement-chevron');
-        chevButtons.forEach((btn) => {
-            btn.addEventListener('click', (e) => {
+        // Handle recommendation card interactions
+        messageDiv.addEventListener('click', (e) => {
+            const upvoteBtn = e.target.closest('[data-action="upvote"]');
+            if (upvoteBtn) {
                 e.preventDefault();
                 e.stopPropagation();
-                const card = btn.closest('.improvement-card');
+                const recId = upvoteBtn.dataset.recId;
+                this.handleUpvote(recId, upvoteBtn);
+                return;
+            }
+
+            const downvoteBtn = e.target.closest('[data-action="downvote"]');
+            if (downvoteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const recId = downvoteBtn.dataset.recId;
+                this.handleDownvote(recId, downvoteBtn);
+                return;
+            }
+
+            const goDeeperBtn = e.target.closest('[data-action="dive_deeper"]');
+            if (goDeeperBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const recId = goDeeperBtn.dataset.recId;
+                this.handleGoDeeper(recId, goDeeperBtn);
+                return;
+            }
+
+            const chevronBtn = e.target.closest('.improvement-chevron');
+            if (chevronBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = chevronBtn.closest('.improvement-card');
                 if (card) card.classList.toggle('expanded');
-            });
-        });
+                return;
+            }
 
-        // Bind show/hide designs toggle to existing analysis images section
-        const btn = messageDiv.querySelector('.show-images-tag');
-        if (btn) {
-            btn.addEventListener('click', () => {
-                // Toggle analysis section
-                const app = (this.currentCommandImages && this.currentCommandImages.appName) || 'App';
-                this.toggleCommandImages(app);
-                const isActive = btn.classList.toggle('active');
-                const label = btn.querySelector('span:nth-child(2)');
-                if (label) label.textContent = isActive ? 'Hide designs' : 'Show designs';
-            });
-        }
-
-        // Wire up expand/collapse and go deeper
-        messageDiv.addEventListener('click', (e) => {
-            const goDeeper = e.target.closest('[data-role="go-deeper"]');
-            if (goDeeper) {
-                const card = goDeeper.closest('.improvement-card');
-                if (card) {
-                    const titleEl = card.querySelector('.improvement-title');
-                    const bodyEl = card.querySelector('.improvement-body');
-                    const title = titleEl ? titleEl.textContent.trim() : '';
-                    const body = bodyEl ? bodyEl.textContent.trim() : '';
-                    const prompt = `${title}\n\n${body}\n\nTell me more about this.`;
-                    this.sendMainChatMessage(prompt);
+            const previewFlowBtn = e.target.closest('.preview-flow-btn');
+            if (previewFlowBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const command = previewFlowBtn.dataset.command;
+                if (command) {
+                    this.processCommandImagesFromMessage(command, true);
                 }
                 return;
             }
-            // Toggle on chevron or clicking anywhere on header
-            const header = e.target.closest('.improvement-header');
-            const chevron = e.target.closest('.improvement-chevron');
-            if (header || chevron) {
-                const card = (header || chevron).closest('.improvement-card');
-                if (card) card.classList.toggle('expanded');
-            }
         });
+    }
+
+    // Handle upvote action
+    handleUpvote(recId, button) {
+        // Visual feedback - mark as endorsed
+        button.classList.add('endorsed');
+        button.textContent = '✓';
+        // No API call needed for upvote
+    }
+
+    // Handle downvote action
+    async handleDownvote(recId, button) {
+        try {
+            // Send downvote action with context
+            const context = this.getCurrentContext();
+            const payload = {
+                action: 'downvote',
+                rec_id: recId,
+                ...context
+            };
+            
+            const response = await this.sendToAgent(JSON.stringify(payload));
+            if (response) {
+                // Re-render with new recommendations
+                const chatResultsContent = document.getElementById('chatResultsContent');
+                const analysis = this.parseScreenAnalysis(response);
+                if (analysis.hasScreenAnalysis) {
+                    // Replace the current message with new analysis
+                    const currentMessage = button.closest('.chat-message');
+                    if (currentMessage) {
+                        currentMessage.remove();
+                    }
+                    this.displayScreenAnalysis(analysis, chatResultsContent);
+                }
+            }
+        } catch (error) {
+            console.error('Downvote failed:', error);
+        }
+    }
+
+    // Handle go deeper action
+    async handleGoDeeper(recId, button) {
+        try {
+            // Send dive deeper action with context
+            const context = this.getCurrentContext();
+            const payload = {
+                action: 'dive_deeper',
+                rec_id: recId,
+                ...context
+            };
+            
+            const response = await this.sendToAgent(JSON.stringify(payload));
+            if (response) {
+                // Parse deep-dive response and replace the specific card
+                const deepDiveData = this.parseDeepDive(response);
+                if (deepDiveData) {
+                    this.replaceCardWithDeepDive(recId, deepDiveData);
+                }
+            }
+        } catch (error) {
+            console.error('Go deeper failed:', error);
+        }
+    }
+
+    // Parse deep-dive JSON response
+    parseDeepDive(message) {
+        try {
+            const jsonMatch = message.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return null;
+            return JSON.parse(jsonMatch[0]);
+        } catch (error) {
+            console.error('Failed to parse deep dive:', error);
+            return null;
+        }
+    }
+
+    // Replace card with deep-dive detail view
+    replaceCardWithDeepDive(recId, deepDiveData) {
+        const card = document.querySelector(`[data-rec-id="${recId}"]`);
+        if (!card) return;
+
+        const safeSteps = deepDiveData.steps ? deepDiveData.steps.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
+        const safeStates = deepDiveData.state_chart ? deepDiveData.state_chart.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
+        const safeEdges = deepDiveData.edge_cases ? deepDiveData.edge_cases.map(e => `<li>${this.escapeHtml(e)}</li>`).join('') : '';
+        const safeCopy = deepDiveData.copy_examples ? deepDiveData.copy_examples.map(c => `<li>${this.escapeHtml(c)}</li>`).join('') : '';
+        const safeCriteria = deepDiveData.acceptance_criteria ? deepDiveData.acceptance_criteria.map(c => `<li>${this.escapeHtml(c)}</li>`).join('') : '';
+        const safeAnalytics = deepDiveData.analytics ? deepDiveData.analytics.map(a => `<span>${this.escapeHtml(a)}</span>`).join('') : '';
+        const safeRollout = deepDiveData.rollout_plan ? deepDiveData.rollout_plan.map(r => `<li>${this.escapeHtml(r)}</li>`).join('') : '';
+
+        const deepDiveHtml = `
+            <div class="improvement-card deep-dive" data-rec-id="${recId}">
+                <div class="improvement-header">
+                    <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
+                    <div class="improvement-actions">
+                        <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}">↑</button>
+                        <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}">↓</button>
+                        <button class="improvement-chevron" type="button">
+                            <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
+                        </button>
+                    </div>
+                </div>
+                <div class="improvement-body">
+                    <div class="rec-section">
+                        <h4>Steps</h4>
+                        <ol>${safeSteps}</ol>
+                    </div>
+                    <div class="rec-section">
+                        <h4>State chart</h4>
+                        <ul>${safeStates}</ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>Edge cases</h4>
+                        <ul>${safeEdges}</ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>Copy examples</h4>
+                        <ul>${safeCopy}</ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>Acceptance criteria</h4>
+                        <ul>${safeCriteria}</ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>Analytics</h4>
+                        <div class="analytics-badges">${safeAnalytics}</div>
+                    </div>
+                    <div class="rec-section">
+                        <h4>Rollout plan</h4>
+                        <ul>${safeRollout}</ul>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        card.outerHTML = deepDiveHtml;
+    }
+
+    // Send payload to agent
+    async sendToAgent(payload) {
+        // Send payload to agent using existing chat functionality
+        try {
+            // Add the payload as a user message
+            this.addMessageToChat(payload, 'user');
+            
+            // Send to agent with context
+            const response = await this.sendToAgentWithContext(payload);
+            return response;
+        } catch (error) {
+            console.error('Agent communication failed:', error);
+            return null;
+        }
     }
 
     // Toggle Arguments card visibility
