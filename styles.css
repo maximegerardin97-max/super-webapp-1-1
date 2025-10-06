@@ -2324,33 +2324,32 @@ body {
 }
 
 .flow-inspiration {
-    background: var(--bg-secondary);
+    background: var(--text-primary);
     padding: 16px;
-    border-radius: 8px;
-    margin: 16px 0;
+    border-radius: 16px 16px 16px 6px;
 }
 
 .flow-inspiration h4 {
     font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #ffffff;
+    font-weight: 400;
+    margin-bottom: 4px;
+    color: var(--bg-primary);
 }
 
 .flow-inspiration p {
-    font-size: 13px;
-    color: #ffffff;
+    font-size: 14px;
+    color: var(--bg-primary);
     margin-bottom: 12px;
 }
 
 .preview-flow-btn {
     background: #007bff;
-    color: white;
+    color: var(--bg-primary);
     border: none;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 300;
     cursor: pointer;
 }
 
@@ -2359,13 +2358,11 @@ body {
 }
 
 .punchline {
-    font-weight: 600;
-    font-style: italic;
-    text-align: center;
+    font-weight: 400;
+    text-align: left;
     padding: 12px;
     background: var(--bg-secondary);
-    border-radius: 8px;
-    margin: 16px 0;
+    border-radius: 16px 16px 16px 6px;
 }
 
 /* Copy buttons */
