@@ -839,7 +839,7 @@ body {
 
 /* Chat State with conversation - grows taller */
 .chat-state.with-conversation {
-  max-height: 80vh;
+  max-height: 90vh;
 }
 
 /* Progress Bar */
