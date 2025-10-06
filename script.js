@@ -1337,10 +1337,10 @@ class DesignRatingApp {
                                 
                                 <div class="improvement-actions">
                                     <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
-                                        <img src="./assets/images/icons/icon-thumbs-up.png" alt="Open" class="auth-icon-img" />
+                                        <img src="./assets/images/icons/icon-thumb-up.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                     <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
-                                        <img src="./assets/images/icons/icon-thumbs-down.png" alt="Open" class="auth-icon-img" />
+                                        <img src="./assets/images/icons/icon-thumb-down.png" alt="Open" class="auth-icon-img" />
                                     </button>
                                     <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
                                         <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Open" class="auth-icon-img" />
