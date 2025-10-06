@@ -3092,6 +3092,15 @@ body { padding-bottom: 140px; }
   opacity: 0 !important;
 }
 
+.file-input-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
 #designContextModal .analyze-button-container {
   display: flex;
   justify-content: flex-end;
