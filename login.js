@@ -74,9 +74,6 @@ class LoginApp {
         }
 
         try {
-            // Set waiting state
-            this.setWaitingState(true);
-
             // Send magic link
             const { error } = await this.supabase.auth.signInWithOtp({
                 email: email,
@@ -89,15 +86,33 @@ class LoginApp {
                 throw error;
             }
 
-            // Success - show waiting message
-            this.setWaitingState(true);
+            // Success - show confirmation state first
+            this.setConfirmationState();
             this.hideError();
+
+            // After 1 second, switch to waiting state
+            setTimeout(() => {
+                this.setWaitingState(true);
+            }, 1000);
 
         } catch (error) {
             console.error('Login error:', error);
             this.setWaitingState(false);
             this.showError(error.message || 'Failed to send login email. Please try again.');
         }
+    }
+
+    setConfirmationState() {
+        const emailInput = document.getElementById('loginEmailInput');
+        const submitBtn = document.getElementById('loginSubmitBtn');
+        const icon = submitBtn.querySelector('img');
+
+        // Update to confirmation state
+        emailInput.placeholder = 'Email sent';
+        emailInput.disabled = true;
+        submitBtn.disabled = true;
+        icon.src = './assets/images/icons/icon-check-light.png';
+        icon.alt = 'Email sent';
     }
 
     setWaitingState(waiting) {
