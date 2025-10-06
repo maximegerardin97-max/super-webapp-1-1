@@ -176,8 +176,10 @@ class DesignRatingApp {
         try {
             const pill = document.getElementById('designContextPill');
             if (!pill) return;
-            const session = await this.supabase.auth.getUser();
-            const user = session && session.data && session.data.user ? session.data.user : null;
+            const userResp = await this.supabase.auth.getUser();
+            const sessionResp = await this.supabase.auth.getSession();
+            const user = userResp && userResp.data && userResp.data.user ? userResp.data.user : null;
+            const accessToken = sessionResp && sessionResp.data && sessionResp.data.session ? sessionResp.data.session.access_token : null;
             if (!user) {
                 pill.style.display = 'none';
                 return;
@@ -197,7 +199,9 @@ class DesignRatingApp {
             try {
                 let resp = null;
                 for (const u of urlCandidates) {
-                    resp = await fetch(u, { headers: { 'accept': 'application/json' } });
+                    const headers = { 'accept': 'application/json' };
+                    if (accessToken) headers['authorization'] = `Bearer ${accessToken}`;
+                    resp = await fetch(u, { headers });
                     if (resp.ok) { break; }
                 }
                 if (resp && resp.ok) {
@@ -282,8 +286,10 @@ class DesignRatingApp {
     }
 
     async analyzeDesignContext() {
-        const session = await this.supabase.auth.getUser();
-        const user = session && session.data && session.data.user ? session.data.user : null;
+        const userResp = await this.supabase.auth.getUser();
+        const sessionResp = await this.supabase.auth.getSession();
+        const user = userResp && userResp.data && userResp.data.user ? userResp.data.user : null;
+        const accessToken = sessionResp && sessionResp.data && sessionResp.data.session ? sessionResp.data.session.access_token : null;
         if (!user) throw new Error('Please sign in first.');
         const files = this.designContext.selectedFiles || [];
         if (!files.length) throw new Error('Please select 1–3 images.');
@@ -311,9 +317,11 @@ class DesignRatingApp {
         ];
         let resp = null;
         for (const u of urlCandidates) {
+            const headers = { 'content-type': 'application/json' };
+            if (accessToken) headers['authorization'] = `Bearer ${accessToken}`;
             resp = await fetch(u, {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
+                headers,
             body: JSON.stringify({ user_id: userId, asset_ids: uploadedPaths })
             });
             if (resp.ok) break;
