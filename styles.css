@@ -448,7 +448,7 @@ body {
 .chat-message {
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  max-width: 96%;
   margin-bottom: 4px;
 }
 
@@ -1970,7 +1970,7 @@ body {
   line-height: 1.4;
   padding: 8px 12px;
   border-radius: 12px;
-  max-width: 80%;
+  max-width: 96%;
 }
 
 .user-message .message-content {
@@ -2342,15 +2342,15 @@ body {
 }
 
 .flow-inspiration p {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--bg-primary);
     margin-bottom: 12px;
 }
 
 .preview-flow-btn {
-    background: #007bff;
-    color: white;
-    border: none;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: var(--border-primary);
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 12px;

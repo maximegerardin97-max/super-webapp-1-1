@@ -1189,7 +1189,7 @@ class DesignRatingApp {
             <div class="flow-inspiration">
                 <h4>Flow inspiration: ${this.escapeHtml(data.flowInspiration.app)} — ${this.escapeHtml(data.flowInspiration.flow)}</h4>
                 <p>${this.escapeHtml(data.flowInspiration.why_this_flow || '')}</p>
-                <button class="go-deeper-btn" type="button" data-command="${this.escapeHtml(data.commandLine)}">Preview flow</button>
+                <button class="preview-flow-btn" type="button" data-command="${this.escapeHtml(data.commandLine)}">Preview flow</button>
                         </div>
         ` : '';
 
