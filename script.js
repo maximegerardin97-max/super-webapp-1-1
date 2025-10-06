@@ -251,6 +251,7 @@ class DesignRatingApp {
         const uploadZone = document.getElementById('designContextUploadZone');
         const input = document.getElementById('designContextFiles');
         const uploadLabel = document.getElementById('designContextUploadLabel');
+        const browseBtn = document.getElementById('designContextBrowseBtn');
         const btnClose = document.getElementById('designContextCloseBtn');
         const btnCancel = document.getElementById('designContextCancelBtn');
         const btnAnalyze = document.getElementById('designContextAnalyzeBtn');
@@ -261,6 +262,7 @@ class DesignRatingApp {
         const bindClick = (el) => { if (el) el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); }); };
         bindClick(uploadZone);
         bindClick(uploadLabel);
+        bindClick(browseBtn);
         uploadZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFiles(); } });
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });

@@ -447,12 +447,13 @@
             <div class="modal-body">
                 <div class="upload-section">
                     <div class="upload-zone" id="designContextUploadZone" tabindex="0">
-                        <input type="file" id="designContextFiles" accept="image/*" multiple style="display:none;">
+                        <input type="file" id="designContextFiles" accept="image/*" multiple class="visually-hidden-input">
                         <label for="designContextFiles" class="upload-content" id="designContextUploadLabel">
                             <div class="upload-icon">🖼️</div>
                             <p>Click to select 1–3 images representing your product</p>
                             <p class="upload-hint">These images help tailor responses to your design language</p>
                         </label>
+                        <button type="button" id="designContextBrowseBtn" class="solution-more-btn" style="position:absolute; bottom:12px; right:12px;">Browse…</button>
                     </div>
                 </div>
                 <div id="designContextError" class="placeholder-text" style="display:none;"></div>
