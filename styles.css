@@ -1276,14 +1276,7 @@ body {
   align-items: flex-start;
 }
 
-.message-content { 
-  max-width: 100%; 
-  width: 100%; 
-  padding: 12px 14px; 
-  border-radius: 16px; 
-  font-size: 14px; 
-  line-height: 1.4; 
-}
+.message-content { max-width: 100%; width: 100%; padding: 12px 14px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
 
 .user-message .message-content {
   background: var(--accent-primary);
@@ -1291,12 +1284,7 @@ body {
   border-bottom-right-radius: 0.25rem;
 }
 
-.assistant-message .message-content { 
-  background: var(--bg-secondary); 
-  color: var(--text-primary); 
-  border: 1px solid var(--border-primary); 
-  border-bottom-left-radius: 6px; 
-}
+.assistant-message .message-content { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-primary); border-bottom-left-radius: 6px; }
 
 .message-time {
   font-size: 0.75rem;
@@ -2252,17 +2240,17 @@ body {
 
 .rec-section h4 {
     font-size: 14px;
-    font-weight: 300;
+    font-weight: 600;
     margin-bottom: 8px;
-    color: var(--bg-primary);
+    color: #333333;
 }
 
 .rec-section p,
 .rec-section ul,
 .rec-section ol {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.4;
-    color: var(--bg-primary);
+    color: #333333;
 }
 
 .rec-section ul,
@@ -2288,12 +2276,12 @@ body {
 /* Action buttons styling */
 .upvote-btn, .downvote-btn {
     background: none;
-    border: none;
-    border-radius: 24px;
-    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
     font-size: 14px;
     cursor: pointer;
-    color: var(--bg-primary);
+    color: #333333;
     transition: all 0.2s;
     min-width: 32px;
     height: 32px;
@@ -2303,7 +2291,7 @@ body {
 }
 
 .upvote-btn:hover, .downvote-btn:hover {
-  
+    background-color: #f5f5f5;
 }
 
 .upvote-btn.endorsed {
@@ -2336,32 +2324,33 @@ body {
 }
 
 .flow-inspiration {
-    background: var(--text-primary);
+    background: var(--bg-secondary);
     padding: 16px;
-    border-radius: 16px 16px 16px 6px;
+    border-radius: 8px;
+    margin: 16px 0;
 }
 
 .flow-inspiration h4 {
     font-size: 14px;
-    font-weight: 300;
+    font-weight: 600;
     margin-bottom: 8px;
-    color: var(--bg-primary);
+    color: #ffffff;
 }
 
 .flow-inspiration p {
-    font-size: 14px;
-    color: var(--bg-primary);
+    font-size: 13px;
+    color: #ffffff;
     margin-bottom: 12px;
 }
 
 .preview-flow-btn {
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: #007bff;
+    color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
-    font-size: 14px;
-    font-weight: 300;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
 }
 
@@ -2370,11 +2359,13 @@ body {
 }
 
 .punchline {
-    font-weight: 300;
-    text-align: left;
+    font-weight: 600;
+    font-style: italic;
+    text-align: center;
     padding: 12px;
-    background: var(--text-primary);
-    border-radius: 16px 16px 16px 6px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin: 16px 0;
 }
 
 /* Copy buttons */
