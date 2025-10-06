@@ -3110,6 +3110,24 @@ body { padding-bottom: 140px; }
   height: 38px;
 }
 
+#designContextModal .analyze-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+  position: relative;
+}
+
+#designContextModal .analyze-btn.loading::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  width: 16px; height: 16px;
+  border: 2px solid #fff; border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 #designContextModal #designContextCancelBtn.solution-more-btn {
   border: 1px solid var(--border-secondary);
   background: transparent;

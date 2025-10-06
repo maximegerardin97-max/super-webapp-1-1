@@ -245,6 +245,7 @@ class DesignRatingApp {
         const uploadZone = document.getElementById('designContextUploadZone');
         const input = document.getElementById('designContextFiles');
         const uploadLabel = document.getElementById('designContextUploadLabel');
+        const selectedInfo = document.getElementById('designContextSelected');
         const btnClose = document.getElementById('designContextCloseBtn');
         const btnCancel = document.getElementById('designContextCancelBtn');
         const btnAnalyze = document.getElementById('designContextAnalyzeBtn');
@@ -267,6 +268,10 @@ class DesignRatingApp {
         input.addEventListener('change', (e) => {
             const files = Array.from(e.target.files || []);
             this.designContext.selectedFiles = files;
+            if (selectedInfo) {
+                selectedInfo.style.display = files.length ? 'block' : 'none';
+                selectedInfo.textContent = files.length ? `Selected ${files.length} file${files.length>1?'s':''}` : '';
+            }
         });
 
         const close = () => { overlay.classList.remove('active'); };
@@ -274,6 +279,7 @@ class DesignRatingApp {
         btnCancel.addEventListener('click', close);
         btnAnalyze.addEventListener('click', async () => {
             errorBox && (errorBox.style.display = 'none');
+            btnAnalyze.classList.add('loading');
             try {
                 await this.analyzeDesignContext();
                 close();
@@ -285,6 +291,7 @@ class DesignRatingApp {
                     alert(err && err.message ? err.message : String(err));
                 }
             }
+            btnAnalyze.classList.remove('loading');
         });
     }
 
