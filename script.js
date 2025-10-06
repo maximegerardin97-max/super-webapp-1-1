@@ -241,8 +241,9 @@ class DesignRatingApp {
         const errorBox = document.getElementById('designContextError');
         if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
 
-        const selectFiles = () => input && input.click();
+        const selectFiles = () => { if (input) { input.value = ''; input.click(); } };
         uploadZone.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); });
+        uploadZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFiles(); } });
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
         uploadZone.addEventListener('drop', (e) => {

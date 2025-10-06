@@ -446,13 +446,13 @@
             </div>
             <div class="modal-body">
                 <div class="upload-section">
-                    <div class="upload-zone" id="designContextUploadZone">
+                    <div class="upload-zone" id="designContextUploadZone" tabindex="0">
                         <input type="file" id="designContextFiles" accept="image/*" multiple style="display:none;">
-                        <div class="upload-content">
+                        <label for="designContextFiles" class="upload-content">
                             <div class="upload-icon">🖼️</div>
                             <p>Click to select 1–3 images representing your product</p>
                             <p class="upload-hint">These images help tailor responses to your design language</p>
-                        </div>
+                        </label>
                     </div>
                 </div>
                 <div id="designContextError" class="placeholder-text" style="display:none;"></div>

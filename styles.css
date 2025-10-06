@@ -3075,6 +3075,7 @@ body { padding-bottom: 140px; }
   width: 320px;
   height: 220px;
   border-radius: 12px;
+  cursor: pointer;
 }
 
 #designContextUploadZone .upload-content p {
