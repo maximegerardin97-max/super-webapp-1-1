@@ -192,13 +192,20 @@ class DesignRatingApp {
             const userId = user.id;
             let pct = 0;
             try {
-                const { data: row, error } = await this.supabase
-                    .from('user_design_style')
-                    .select('context_pct')
-                    .eq('user_id', userId)
-                    .maybeSingle();
-                if (!error && row && typeof row.context_pct === 'number') {
-                    pct = Math.round(row.context_pct);
+                // Prefer Edge Function via supabase.functions.invoke (handles CORS)
+                const fn = await this.supabase.functions.invoke('design_context', {
+                    body: { action: 'get', user_id: userId }
+                });
+                if (!fn.error && fn.data && fn.data.data && typeof fn.data.data.context_pct === 'number') {
+                    pct = Math.round(fn.data.data.context_pct);
+                } else {
+                    // Fallback to table read if function unavailable
+                    const { data: row } = await this.supabase
+                        .from('user_design_style')
+                        .select('context_pct')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
                 }
             } catch (_) {}
             this.designContext.pct = pct;
@@ -303,22 +310,29 @@ class DesignRatingApp {
             uploadedPaths.push(path);
         }
 
-        // Direct table upsert (no Edge Function; avoids CORS entirely)
-        const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
-        const upsert = {
-            user_id: userId,
-            screen_count: uploadedPaths.length,
-            detail_scores: detailScores
-        };
-        const { data: row, error } = await this.supabase
-            .from('user_design_style')
-            .upsert(upsert, { onConflict: 'user_id' })
-            .select('context_pct')
-            .single();
-        if (error) throw error;
-        const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
-        this.designContext.pct = pct;
-        this.updateDesignContextPill(pct);
+        // Prefer Edge Function (service role; bypasses RLS)
+        try {
+            const fn = await this.supabase.functions.invoke('design_context', {
+                body: { action: 'analyze', user_id: userId, storage_paths: uploadedPaths }
+            });
+            if (fn.error) throw fn.error;
+            const pct = fn.data && typeof fn.data.context_pct === 'number' ? Math.round(fn.data.context_pct) : 0;
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+            return;
+        } catch (e) {
+            // Fallback: client upsert (requires insert/update RLS policies)
+            const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
+            const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
+            const { data: row } = await this.supabase
+                .from('user_design_style')
+                .upsert(upsert, { onConflict: 'user_id' })
+                .select('context_pct')
+                .single();
+            const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+        }
     }
 
     // Update connection status indicator
