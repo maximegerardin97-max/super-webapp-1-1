@@ -1145,7 +1145,9 @@ class DesignRatingApp {
                                                     </svg>
                                                 </button>
                                                 <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}" title="Downvote">
-                                                    <img src="./assets/images/icons/icon-thumb-down.png" alt="Open" class="auth-icon-img" />
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
+                                                    </svg>
                                                 </button>
                                     <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}" title="Go deeper">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
