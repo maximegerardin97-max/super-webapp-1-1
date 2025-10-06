@@ -193,7 +193,6 @@ class DesignRatingApp {
             let pct = 0;
             try {
                 const { data: row, error } = await this.supabase
-                    .schema('design_context')
                     .from('user_design_style')
                     .select('context_pct')
                     .eq('user_id', userId)
@@ -312,7 +311,6 @@ class DesignRatingApp {
             detail_scores: detailScores
         };
         const { data: row, error } = await this.supabase
-            .schema('design_context')
             .from('user_design_style')
             .upsert(upsert, { onConflict: 'user_id' })
             .select('context_pct')
