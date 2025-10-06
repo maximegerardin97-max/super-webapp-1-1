@@ -199,7 +199,7 @@ class DesignRatingApp {
             try {
                 // Simple GET to REST route (no Authorization/header) to avoid preflight
                 const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-                const u = `https://${projectRef}.functions.supabase.co/design_context/get?user_id=${encodeURIComponent(userId)}`;
+                const u = `https://${projectRef}.functions.supabase.co/design-context/get?user_id=${encodeURIComponent(userId)}`;
                 const resp = await fetch(u);
                 if (resp.ok) {
                     const data = await resp.json();
@@ -327,7 +327,7 @@ class DesignRatingApp {
         // Call REST route with FormData (no headers) to avoid preflight; function uses service role
         try {
             const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-            const u = `https://${projectRef}.functions.supabase.co/design_context/analyze`;
+            const u = `https://${projectRef}.functions.supabase.co/design-context/analyze`;
             const fd = new FormData();
             fd.append('user_id', userId);
             for (const p of uploadedPaths) fd.append('storage_paths[]', p);
