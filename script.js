@@ -189,11 +189,18 @@ class DesignRatingApp {
 
             const userId = user.id;
             const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-            const url = `https://${projectRef}.functions.supabase.co/design_context/get?user_id=${encodeURIComponent(userId)}`;
+            const urlCandidates = [
+                `https://${projectRef}.functions.supabase.co/design_context/get?user_id=${encodeURIComponent(userId)}`,
+                `https://${projectRef}.functions.supabase.co/design-context/get?user_id=${encodeURIComponent(userId)}`
+            ];
             let pct = 0;
             try {
-                const resp = await fetch(url, { headers: { 'accept': 'application/json' } });
-                if (resp.ok) {
+                let resp = null;
+                for (const u of urlCandidates) {
+                    resp = await fetch(u, { headers: { 'accept': 'application/json' } });
+                    if (resp.ok) { break; }
+                }
+                if (resp && resp.ok) {
                     const data = await resp.json();
                     const row = data && data.data ? data.data : null;
                     if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
@@ -235,7 +242,7 @@ class DesignRatingApp {
         if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
 
         const selectFiles = () => input && input.click();
-        uploadZone.addEventListener('click', (e) => { e.preventDefault(); selectFiles(); });
+        uploadZone.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); });
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
         uploadZone.addEventListener('drop', (e) => {
@@ -297,13 +304,20 @@ class DesignRatingApp {
 
         // Call analyze endpoint
         const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-        const url = `https://${projectRef}.functions.supabase.co/design_context/analyze`;
-        const resp = await fetch(url, {
+        const urlCandidates = [
+            `https://${projectRef}.functions.supabase.co/design_context/analyze`,
+            `https://${projectRef}.functions.supabase.co/design-context/analyze`
+        ];
+        let resp = null;
+        for (const u of urlCandidates) {
+            resp = await fetch(u, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ user_id: userId, asset_ids: uploadedPaths })
-        });
-        if (!resp.ok) throw new Error(`Analyze failed (${resp.status})`);
+            });
+            if (resp.ok) break;
+        }
+        if (!resp || !resp.ok) throw new Error(`Analyze failed${resp ? ` (${resp.status})` : ''}`);
         const data = await resp.json();
         if (data && data.ok) {
             const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
