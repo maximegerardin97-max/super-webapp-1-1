@@ -107,7 +107,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 async function upsertDesignSummary(summary: DesignSummary) {
   const { data, error } = await supabase
-    .schema('design_context')
     .from('user_design_style')
     .upsert(summary, { onConflict: 'user_id' })
     .select('*')
@@ -118,7 +117,6 @@ async function upsertDesignSummary(summary: DesignSummary) {
 
 async function getDesignSummary(user_id: string) {
   const { data, error } = await supabase
-    .schema('design_context')
     .from('user_design_style')
     .select('*')
     .eq('user_id', user_id)
