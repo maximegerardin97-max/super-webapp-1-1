@@ -43,6 +43,11 @@ class DesignRatingApp {
         this.setupLargeImageDisplay(); // Setup large image display
         this.setupChatStates(); // Setup chat states
         this.setupAuth(); // Setup Supabase auth
+        // Design context state
+        this.designContext = {
+            selectedFiles: [],
+            pct: 0
+        };
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -105,6 +110,8 @@ class DesignRatingApp {
             this.userSession = data.session || null;
             updateUi(this.userSession);
             if (this.userSession) { this.ensureProfile().catch(()=>{}); }
+            // After auth is ready, initialize design context UI
+            this.initDesignContext().catch(console.error);
         });
         this.supabase.auth.onAuthStateChange((event, session) => {
             this.userSession = session || null;
@@ -115,6 +122,8 @@ class DesignRatingApp {
                 // Redirect to login page when user signs out
                 window.location.href = 'login.html';
             }
+            // Re-init on auth state change
+            this.initDesignContext().catch(()=>{});
         });
         if (signInBtn) {
             signInBtn.addEventListener('click', async () => {
@@ -167,6 +176,169 @@ class DesignRatingApp {
         }
     }
 
+    // Initialize pill, modal, and fetch current pct
+    async initDesignContext() {
+        try {
+            const pill = document.getElementById('designContextPill');
+            if (!pill) return;
+            const userResp = await this.supabase.auth.getUser();
+            const sessionResp = await this.supabase.auth.getSession();
+            const user = userResp && userResp.data && userResp.data.user ? userResp.data.user : null;
+            const accessToken = sessionResp && sessionResp.data && sessionResp.data.session ? sessionResp.data.session.access_token : null;
+            if (!user) {
+                pill.style.display = 'none';
+                return;
+            }
+            pill.style.display = 'inline-flex';
+            pill.classList.remove('u-red', 'u-orange', 'u-green');
+            // Wire up modal events once
+            this.setupDesignContextModal();
+
+            const userId = user.id;
+            let pct = 0;
+            try {
+                // Prefer Edge Function via supabase.functions.invoke (handles CORS)
+                const fn = await this.supabase.functions.invoke('design_context', {
+                    body: { action: 'get', user_id: userId }
+                });
+                if (!fn.error && fn.data && fn.data.data && typeof fn.data.data.context_pct === 'number') {
+                    pct = Math.round(fn.data.data.context_pct);
+                } else {
+                    // Fallback to table read if function unavailable
+                    const { data: row } = await this.supabase
+                        .from('user_design_style')
+                        .select('context_pct')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                }
+            } catch (_) {}
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+            pill.onclick = () => this.openDesignContextModal();
+        } catch (e) {
+            console.warn('initDesignContext error', e);
+        }
+    }
+
+    updateDesignContextPill(pct) {
+        const pill = document.getElementById('designContextPill');
+        if (!pill) return;
+        const cl = pill.classList;
+        cl.remove('u-red', 'u-orange', 'u-green');
+        pill.textContent = `Design context: ${Math.max(0, Math.min(100, Math.round(pct || 0)))}%`;
+        if (!pct || pct === 0) {
+            cl.add('u-red');
+        } else if (pct > 0 && pct <= 50) {
+            cl.add('u-orange');
+        } else {
+            cl.add('u-green');
+        }
+    }
+
+    setupDesignContextModal() {
+        if (this._designContextModalWired) return; // idempotent
+        this._designContextModalWired = true;
+        const overlay = document.getElementById('designContextModal');
+        const uploadZone = document.getElementById('designContextUploadZone');
+        const input = document.getElementById('designContextFiles');
+        const uploadLabel = document.getElementById('designContextUploadLabel');
+        const btnClose = document.getElementById('designContextCloseBtn');
+        const btnCancel = document.getElementById('designContextCancelBtn');
+        const btnAnalyze = document.getElementById('designContextAnalyzeBtn');
+        const errorBox = document.getElementById('designContextError');
+        if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
+
+        const selectFiles = () => { if (input) { input.value = ''; try { input.showPicker?.(); } catch (_) {} input.click(); } };
+        const bindClick = (el) => { if (el) el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); }, { passive: false }); };
+        bindClick(uploadZone);
+        bindClick(uploadLabel);
+        uploadZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFiles(); } });
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+            this.designContext.selectedFiles = files;
+        });
+        input.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            this.designContext.selectedFiles = files;
+        });
+
+        const close = () => { overlay.classList.remove('active'); };
+        btnClose.addEventListener('click', close);
+        btnCancel.addEventListener('click', close);
+        btnAnalyze.addEventListener('click', async () => {
+            errorBox && (errorBox.style.display = 'none');
+            try {
+                await this.analyzeDesignContext();
+                close();
+            } catch (err) {
+                if (errorBox) {
+                    errorBox.textContent = err && err.message ? err.message : String(err);
+                    errorBox.style.display = 'block';
+                } else {
+                    alert(err && err.message ? err.message : String(err));
+                }
+            }
+        });
+    }
+
+    openDesignContextModal() {
+        const overlay = document.getElementById('designContextModal');
+        if (overlay) overlay.classList.add('active');
+    }
+
+    async analyzeDesignContext() {
+        const userResp = await this.supabase.auth.getUser();
+        const sessionResp = await this.supabase.auth.getSession();
+        const user = userResp && userResp.data && userResp.data.user ? userResp.data.user : null;
+        const accessToken = sessionResp && sessionResp.data && sessionResp.data.session ? sessionResp.data.session.access_token : null;
+        if (!user) throw new Error('Please sign in first.');
+        const files = this.designContext.selectedFiles || [];
+        if (!files.length) throw new Error('Please select 1–3 images.');
+
+        // Build timestamp folder name YYYYMMDD-HHMM
+        const now = new Date();
+        const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+        const userId = user.id;
+
+        // Upload each file to bucket user_context
+        const storage = this.supabase.storage.from('user_context');
+        const uploadedPaths = [];
+        for (const file of files) {
+            const path = `${userId}/${ts}/${file.name}`;
+            const { error } = await storage.upload(path, file, { upsert: true, cacheControl: '3600' });
+            if (error) throw new Error(`Upload failed for ${file.name}: ${error.message}`);
+            uploadedPaths.push(path);
+        }
+
+        // Prefer Edge Function (service role; bypasses RLS)
+        try {
+            const fn = await this.supabase.functions.invoke('design_context', {
+                body: { action: 'analyze', user_id: userId, storage_paths: uploadedPaths }
+            });
+            if (fn.error) throw fn.error;
+            const pct = fn.data && typeof fn.data.context_pct === 'number' ? Math.round(fn.data.context_pct) : 0;
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+            return;
+        } catch (e) {
+            // Fallback: client upsert (requires insert/update RLS policies)
+            const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
+            const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
+            const { data: row } = await this.supabase
+                .from('user_design_style')
+                .upsert(upsert, { onConflict: 'user_id' })
+                .select('context_pct')
+                .single();
+            const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+        }
+    }
     // Update connection status indicator
     updateConnectionStatus(status = 'connected') {
         const connectionStatus = document.getElementById('connectionStatus');

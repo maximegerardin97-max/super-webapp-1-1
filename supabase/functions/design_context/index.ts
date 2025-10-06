@@ -99,15 +99,17 @@ async function analyzeAssets(input: AnalyzeInput): Promise<DesignSummary> {
   };
 }
 
+// Optional: call Gemini (Google) for better heuristics later using GOOGLE_API_KEY
+
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY') || '';
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
 async function upsertDesignSummary(summary: DesignSummary) {
   const { data, error } = await supabase
-    .schema('design_context')
     .from('user_design_style')
     .upsert(summary, { onConflict: 'user_id' })
     .select('*')
@@ -118,7 +120,6 @@ async function upsertDesignSummary(summary: DesignSummary) {
 
 async function getDesignSummary(user_id: string) {
   const { data, error } = await supabase
-    .schema('design_context')
     .from('user_design_style')
     .select('*')
     .eq('user_id', user_id)
@@ -127,15 +128,25 @@ async function getDesignSummary(user_id: string) {
   return data as DesignSummary | null;
 }
 
+const corsHeaders: HeadersInit = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+};
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...corsHeaders },
   });
 }
 
 serve(async (req) => {
   try {
+    // CORS preflight
+    if (req.method === 'OPTIONS') {
+      return new Response('ok', { headers: corsHeaders });
+    }
     const url = new URL(req.url);
     const path = url.pathname.replace(/\/*$/, '');
     // Normalize to allow both '/upload' and '/design_context/upload'
