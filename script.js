@@ -1458,6 +1458,13 @@ class DesignRatingApp {
         // Visual feedback - mark as endorsed
         button.classList.add('endorsed');
         button.disabled = true;
+        
+        // Change icon to filled version
+        const img = button.querySelector('img');
+        if (img) {
+            img.src = './assets/images/icons/icon-thumb-up-fill.png';
+        }
+        
         console.log('Upvote clicked for:', recId);
         // No API call needed for upvote
     }
@@ -1477,6 +1484,12 @@ class DesignRatingApp {
             // Add visual feedback
             button.classList.add('endorsed');
             button.disabled = true;
+            
+            // Change icon to filled version
+            const img = button.querySelector('img');
+            if (img) {
+                img.src = './assets/images/icons/icon-thumb-down-fill.png';
+            }
             
             // Add fade out animation
             cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';

@@ -345,8 +345,7 @@ body {
 }
 
 .app-image-item img {
-  width: 250px;
-  height: auto;
+  height: 300px;
   object-fit: contain;
   display: block;
 }
@@ -2300,12 +2299,17 @@ body {
 /* Action buttons styling */
 .upvote-btn, .downvote-btn {
     background: none;
-    border: none;
+    border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
     color: var(--bg-primary);
     transition: all 0.2s;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .upvote-btn:hover, .downvote-btn:hover {
@@ -2323,18 +2327,10 @@ body {
     border-color: #4CAF50;
 }
 
-.upvote-btn.endorsed svg {
-    fill: white;
-}
-
 .downvote-btn.endorsed {
     background-color: #ff3b30;
     color: white;
     border-color: #ff3b30;
-}
-
-.downvote-btn.endorsed svg {
-    fill: white;
 }
 
 .upvote-btn:disabled,
