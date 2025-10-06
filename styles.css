@@ -595,12 +595,11 @@ body {
 
 /* Message Cards - for chat message content */
 .improvement-card {
-  background: #ffffff;
-  color: #333333;
-  border-radius: 16px 16px 16px 4px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: 16px 16px 16px 6px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
-  cursor: pointer;
 }
 
 /* Conversation Cards - for conversation list items */
@@ -615,7 +614,7 @@ body {
 /* 1-line recap (green) */
 .improvement-card--recap { 
   border-color: var(--accent-secondary); 
-  background: #ffffff; 
+  background: var(--text-primary); 
 }
 
 .improvement-header {
@@ -638,8 +637,8 @@ body {
 
 .improvement-title { 
   font-size: 14px; 
-  font-weight: 600; 
-  color: #333333;
+  font-weight: 300; 
+  color: var(--bg-primary);
   flex: 1 1 auto; 
   margin-right: 40px; 
 }
@@ -2290,6 +2289,12 @@ body {
     justify-content: center;
 }
 
+.thumb-icon {
+    width: 16px;
+    height: 16px;
+    transition: all 0.2s ease;
+}
+
 .upvote-btn:hover, .downvote-btn:hover {
     background-color: #f5f5f5;
 }
@@ -2324,22 +2329,21 @@ body {
 }
 
 .flow-inspiration {
-    background: var(--bg-secondary);
+    background: var(--text-primary);
     padding: 16px;
-    border-radius: 8px;
-    margin: 16px 0;
+    border-radius: 16px 16px 16px 6px;
 }
 
 .flow-inspiration h4 {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 300;
     margin-bottom: 8px;
-    color: #ffffff;
+    color: var(--bg-primary);
 }
 
 .flow-inspiration p {
     font-size: 13px;
-    color: #ffffff;
+    color: var(--bg-primary);
     margin-bottom: 12px;
 }
 
@@ -2359,13 +2363,11 @@ body {
 }
 
 .punchline {
-    font-weight: 600;
-    font-style: italic;
-    text-align: center;
+    font-weight: 300;
+    text-align: left;
     padding: 12px;
     background: var(--bg-secondary);
-    border-radius: 8px;
-    margin: 16px 0;
+    border-radius: 16px 16px 16px 6px;
 }
 
 /* Copy buttons */

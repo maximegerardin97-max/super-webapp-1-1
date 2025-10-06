@@ -1140,14 +1140,10 @@ class DesignRatingApp {
                                 <div class="improvement-title">${safeTitle}</div>
                                 <div class="improvement-actions">
                                                 <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${rec.id}" title="Upvote">
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
-                                                    </svg>
+                                                    <img src="./assets/images/icons/icon-thumb-up.png" alt="Upvote" class="thumb-icon" />
                                                 </button>
                                                 <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${rec.id}" title="Downvote">
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
-                                                    </svg>
+                                                    <img src="./assets/images/icons/icon-thumb-down.png" alt="Downvote" class="thumb-icon" />
                                                 </button>
                                     <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${rec.id}" title="Go deeper">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -1193,8 +1189,8 @@ class DesignRatingApp {
             <div class="flow-inspiration">
                 <h4>Flow inspiration: ${this.escapeHtml(data.flowInspiration.app)} — ${this.escapeHtml(data.flowInspiration.flow)}</h4>
                 <p>${this.escapeHtml(data.flowInspiration.why_this_flow || '')}</p>
-                <button class="preview-flow-btn" type="button" data-command="${this.escapeHtml(data.commandLine)}">Preview flow</button>
-            </div>
+                <button class="go-deeper-btn" type="button" data-command="${this.escapeHtml(data.commandLine)}">Preview flow</button>
+                        </div>
         ` : '';
 
         // Punchline at the end
@@ -1266,9 +1262,12 @@ class DesignRatingApp {
 
     // Handle upvote action
     handleUpvote(recId, button) {
-        // Visual feedback - mark as endorsed
+        // Visual feedback - mark as endorsed and switch to fill icon
         button.classList.add('endorsed');
-        button.textContent = '✓';
+        const icon = button.querySelector('.thumb-icon');
+        if (icon) {
+            icon.src = './assets/images/icons/icon-thumb-up-fill.png';
+        }
         // No API call needed for upvote
     }
 
@@ -1284,9 +1283,12 @@ class DesignRatingApp {
                 return;
             }
             
-            // Add visual feedback
+            // Add visual feedback - switch to fill icon
             button.classList.add('endorsed');
-            button.innerHTML = '✓';
+            const icon = button.querySelector('.thumb-icon');
+            if (icon) {
+                icon.src = './assets/images/icons/icon-thumb-down-fill.png';
+            }
             button.disabled = true;
             
             // Add fade out animation
@@ -1320,11 +1322,10 @@ class DesignRatingApp {
             console.error('Downvote failed:', error);
             // Reset button state on error
             button.classList.remove('endorsed');
-            button.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
-                </svg>
-            `;
+            const icon = button.querySelector('.thumb-icon');
+            if (icon) {
+                icon.src = './assets/images/icons/icon-thumb-down.png';
+            }
             button.disabled = false;
         }
     }
@@ -1463,8 +1464,8 @@ class DesignRatingApp {
         console.log('Found card:', card);
         if (!card) {
             console.error('Card not found for recId:', recId);
-            return;
-        }
+                return;
+            }
 
         const safeSteps = deepDiveData.steps ? deepDiveData.steps.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
         const safeStates = deepDiveData.state_chart ? deepDiveData.state_chart.map(s => `<li>${this.escapeHtml(s)}</li>`).join('') : '';
@@ -1486,14 +1487,10 @@ class DesignRatingApp {
                     <div class="improvement-title">${this.escapeHtml(deepDiveData.title || 'Deep Dive')}</div>
                     <div class="improvement-actions">
                         <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
-                            </svg>
+                            <img src="./assets/images/icons/icon-thumb-up.png" alt="Upvote" class="thumb-icon" />
                         </button>
                         <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
-                            </svg>
+                            <img src="./assets/images/icons/icon-thumb-down.png" alt="Downvote" class="thumb-icon" />
                         </button>
                         <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
