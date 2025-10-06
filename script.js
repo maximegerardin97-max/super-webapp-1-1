@@ -1328,26 +1328,24 @@ class DesignRatingApp {
                     return `
                         <div class="improvement-card" data-rec-id="${recId}" data-index="${idx}">
                             <div class="improvement-header">
-                                <div class="improvement-title">${safeTitle}</div>
-                                <div class="improvement-actions">
-                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28c1.14 0 2.16-.75 2.47-1.88l1.5-6a2.5 2.5 0 0 0-2.47-3.12H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3v11z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72c-1.14 0-2.16.75-2.47 1.88L1.75 9.88A2.5 2.5 0 0 0 4.22 13H10zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3V2z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                                        </svg>
-                                    </button>
+                                <div class="improvement-title-container">
+                                    <div class="improvement-title">${safeTitle}</div>
                                     <button class="improvement-chevron" type="button" title="Expand">
                                         <img src="./assets/images/icons/icon-chevron-down-blk.png" alt="Open" class="auth-icon-img" />
                                     </button>
+                                </div>
+                                
+                                <div class="improvement-actions">
+                                    <button class="upvote-btn" type="button" data-action="upvote" data-rec-id="${recId}" title="Upvote">
+                                        <img src="./assets/images/icons/icon-thumbs-up.png" alt="Open" class="auth-icon-img" />
+                                    </button>
+                                    <button class="downvote-btn" type="button" data-action="downvote" data-rec-id="${recId}" title="Downvote">
+                                        <img src="./assets/images/icons/icon-thumbs-down.png" alt="Open" class="auth-icon-img" />
+                                    </button>
+                                    <button class="go-deeper-btn" type="button" data-action="dive_deeper" data-rec-id="${recId}" title="Go deeper">
+                                        <img src="./assets/images/icons/icon-plus-mini-blk.png" alt="Open" class="auth-icon-img" />
+                                    </button>
+                                    
                                 </div>
                             </div>
                             <div class="improvement-body">

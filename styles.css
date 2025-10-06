@@ -636,6 +636,13 @@ body {
   row-gap: 6px;
 }
 
+.improvement-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
 .improvement-title { 
   font-size: 14px; 
   font-weight: 400; 
@@ -658,9 +665,7 @@ body {
 .improvement-actions { 
   display: flex; 
   align-items: center; 
-  gap: 8px; margin-left: 
-  auto; 
-  flex: 0 0 auto; 
+  gap: 8px; 
 }
 
 .improvement-chevron {
