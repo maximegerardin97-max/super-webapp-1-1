@@ -34,14 +34,14 @@
 }
 
 .login-text {
-    font-size: 32px;
+    font-size: 48px;
     font-weight: 300;
     color: var(--text-primary);
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
 .login-logo {
-    height: 40px;
+    height: 36px;
     width: auto;
     object-fit: contain;
 }
