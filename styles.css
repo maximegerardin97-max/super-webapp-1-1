@@ -3060,6 +3060,45 @@ body { padding-bottom: 140px; }
 .u-orange { background: #f59e0b !important; color: #ffffff !important; }
 .u-green { background: #10b981 !important; color: #ffffff !important; }
 
+/* Design Context Modal refinements */
+#designContextModal .modal-content {
+  max-width: 720px;
+}
+
+#designContextModal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#designContextUploadZone {
+  width: 320px;
+  height: 220px;
+  border-radius: 12px;
+}
+
+#designContextUploadZone .upload-content p {
+  color: var(--text-secondary);
+}
+
+#designContextModal .analyze-button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#designContextModal .analyze-btn {
+  width: auto;
+  min-width: 220px;
+  height: 38px;
+}
+
+#designContextModal #designContextCancelBtn.solution-more-btn {
+  border: 1px solid var(--border-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .main-container {
