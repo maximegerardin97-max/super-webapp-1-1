@@ -127,15 +127,25 @@ async function getDesignSummary(user_id: string) {
   return data as DesignSummary | null;
 }
 
+const corsHeaders: HeadersInit = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+};
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...corsHeaders },
   });
 }
 
 serve(async (req) => {
   try {
+    // CORS preflight
+    if (req.method === 'OPTIONS') {
+      return new Response('ok', { headers: corsHeaders });
+    }
     const url = new URL(req.url);
     const path = url.pathname.replace(/\/*$/, '');
     // Normalize to allow both '/upload' and '/design_context/upload'
