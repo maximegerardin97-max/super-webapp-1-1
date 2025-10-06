@@ -69,6 +69,8 @@ class DesignRatingApp {
             return;
         }
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        
+        // Main app auth elements
         const emailInput = document.getElementById('authEmail');
         const signInBtn = document.getElementById('signInBtn');
         const signOutBtn = document.getElementById('signOutBtn');
@@ -77,8 +79,23 @@ class DesignRatingApp {
         const userEmailDisplay = document.getElementById('userEmailDisplay');
         const connectionStatus = document.getElementById('connectionStatus');
         
+        // Login screen auth elements
+        const loginEmailInput = document.getElementById('loginAuthEmail');
+        const loginSignInBtn = document.getElementById('loginSignInBtn');
+        const loginSignOutBtn = document.getElementById('loginSignOutBtn');
+        const loginAuthStateSignedOut = document.getElementById('loginAuthStateSignedOut');
+        const loginAuthStateSignedIn = document.getElementById('loginAuthStateSignedIn');
+        const loginUserEmailDisplay = document.getElementById('loginUserEmailDisplay');
+        const loginConnectionStatus = document.getElementById('loginConnectionStatus');
+        
+        // Screen elements
+        const loginScreen = document.getElementById('loginScreen');
+        const mainContainer = document.getElementById('mainContainer');
+        
         const updateUi = (session) => {
             const user = session && session.user ? session.user : null;
+            
+            // Update main app auth UI
             if (user) {
                 // Show signed in state
                 if (authStateSignedOut) authStateSignedOut.classList.add('hidden');
@@ -89,6 +106,19 @@ class DesignRatingApp {
                     connectionStatus.classList.remove('error', 'disconnected');
                     connectionStatus.title = 'Connected';
                 }
+                
+                // Update login screen auth UI
+                if (loginAuthStateSignedOut) loginAuthStateSignedOut.classList.add('hidden');
+                if (loginAuthStateSignedIn) loginAuthStateSignedIn.classList.remove('hidden');
+                if (loginUserEmailDisplay) loginUserEmailDisplay.textContent = user.email || 'Signed in';
+                if (loginConnectionStatus) {
+                    loginConnectionStatus.classList.remove('error', 'disconnected');
+                    loginConnectionStatus.title = 'Connected';
+                }
+                
+                // Show main app, hide login screen
+                if (loginScreen) loginScreen.classList.add('hidden');
+                if (mainContainer) mainContainer.classList.remove('hidden');
             } else {
                 // Show signed out state
                 if (authStateSignedOut) authStateSignedOut.classList.remove('hidden');
@@ -99,6 +129,19 @@ class DesignRatingApp {
                     connectionStatus.classList.remove('error');
                     connectionStatus.title = 'Not connected';
                 }
+                
+                // Update login screen auth UI
+                if (loginAuthStateSignedOut) loginAuthStateSignedOut.classList.remove('hidden');
+                if (loginAuthStateSignedIn) loginAuthStateSignedIn.classList.add('hidden');
+                if (loginConnectionStatus) {
+                    loginConnectionStatus.classList.add('disconnected');
+                    loginConnectionStatus.classList.remove('error');
+                    loginConnectionStatus.title = 'Not connected';
+                }
+                
+                // Show login screen, hide main app
+                if (loginScreen) loginScreen.classList.remove('hidden');
+                if (mainContainer) mainContainer.classList.add('hidden');
             }
         };
         this.supabase.auth.getSession().then(({ data }) => {
@@ -148,6 +191,48 @@ class DesignRatingApp {
         }
         if (signOutBtn) {
             signOutBtn.addEventListener('click', async () => {
+                await this.supabase.auth.signOut();
+            });
+        }
+        
+        // Login screen event listeners
+        if (loginSignInBtn) {
+            loginSignInBtn.addEventListener('click', async () => {
+                const email = loginEmailInput && loginEmailInput.value ? loginEmailInput.value.trim() : '';
+                // Very basic email validation
+                const valid = /.+@.+\..+/.test(email);
+                if (!valid) {
+                    alert('Please enter a valid email address');
+                    return;
+                }
+                try {
+                    // UI: disable and show progress
+                    loginSignInBtn.disabled = true;
+                    const originalImg = loginSignInBtn.innerHTML;
+                    loginSignInBtn.innerHTML = 'Sending…';
+
+                    const { error } = await this.supabase.auth.signInWithOtp({
+                        email,
+                        options: {
+                            emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+                        }
+                    });
+                    if (error) throw error;
+
+                    alert(`Magic link sent to ${email}. Check your inbox.`);
+                    // restore button
+                    loginSignInBtn.innerHTML = originalImg;
+                    loginSignInBtn.disabled = false;
+                } catch (e) {
+                    console.error(e);
+                    alert('Sign-in failed: ' + (e && e.message ? e.message : String(e)));
+                    loginSignInBtn.disabled = false;
+                    loginSignInBtn.innerHTML = '<img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />';
+                }
+            });
+        }
+        if (loginSignOutBtn) {
+            loginSignOutBtn.addEventListener('click', async () => {
                 await this.supabase.auth.signOut();
             });
         }

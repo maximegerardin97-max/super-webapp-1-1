@@ -26,8 +26,47 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 </head>
 <body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="./assets/images/SuperLogo.png" alt="SUPER" class="logo-image">
+            </div>
+            <div class="login-form">
+                <div class="user-account-container">
+                    <!-- User Account Component -->
+                    <div class="user-account-component">
+                        <!-- Connection Status Indicator -->
+                        <div class="connection-status" id="loginConnectionStatus" title="Connected">
+                            <div class="status-dot"></div>
+                        </div>
+                        
+                        <!-- User Account Section -->
+                        <div class="user-account-section" id="loginUserAccountSection">
+                            <!-- Auth State: Not Signed In -->
+                            <div class="auth-state" id="loginAuthStateSignedOut">
+                                <input id="loginAuthEmail" type="email" placeholder="Enter your email" class="auth-email-input" />
+                                <button id="loginSignInBtn" class="IconButton-Wrapper" title="Sign in">
+                                    <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                                </button>
+                            </div>
+                            
+                            <!-- Auth State: Signed In -->
+                            <div class="auth-state hidden" id="loginAuthStateSignedIn">
+                                <span class="user-email" id="loginUserEmailDisplay"></span>
+                                <button id="loginSignOutBtn" class="IconButton-Wrapper">
+                                    <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Container -->
-    <div class="main-container">
+    <div class="main-container" id="mainContainer">
         <!-- Analysis Area (Left Side) -->
         <div class="analysis-area">
             <!-- Top row for image upload and command images -->
