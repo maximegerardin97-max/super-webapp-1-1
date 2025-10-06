@@ -389,6 +389,7 @@
                 <!-- Auth State: Signed In -->
                 <div class="auth-state hidden" id="authStateSignedIn">
                     <span class="user-email" id="userEmailDisplay"></span>
+                    <button id="designContextPill" class="show-images-tag" style="display:none;" title="View and update your design context">Design context: 0%</button>
                     <button id="signOutBtn" class="IconButton-Wrapper">
                         <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
                     </button>
@@ -431,6 +432,33 @@
                 <div class="upload-results" id="uploadResults" style="display: none;">
                     <h3>Upload Results</h3>
                     <div id="resultsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design Context Modal -->
+    <div class="modal-overlay" id="designContextModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Design Context</h2>
+                <button class="modal-close" id="designContextCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-section">
+                    <div class="upload-zone" id="designContextUploadZone">
+                        <input type="file" id="designContextFiles" accept="image/*" multiple style="display:none;">
+                        <div class="upload-content">
+                            <div class="upload-icon">🖼️</div>
+                            <p>Click to select 1–3 images representing your product</p>
+                            <p class="upload-hint">These images help tailor responses to your design language</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="designContextError" class="placeholder-text" style="display:none;"></div>
+                <div class="analyze-button-container" style="margin-top:16px; display:flex; gap:8px;">
+                    <button id="designContextCancelBtn" class="solution-more-btn" style="flex:0 0 auto;">Cancel</button>
+                    <button id="designContextAnalyzeBtn" class="analyze-btn" style="flex:1 1 auto;">Analyze design context</button>
                 </div>
             </div>
         </div>

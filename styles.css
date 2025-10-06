@@ -3055,6 +3055,11 @@ body { padding-bottom: 140px; }
   display: none !important;
 }
 
+/* Simple color utilities for pill state */
+.u-red { background: #ef4444 !important; color: #ffffff !important; }
+.u-orange { background: #f59e0b !important; color: #ffffff !important; }
+.u-green { background: #10b981 !important; color: #ffffff !important; }
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .main-container {
