@@ -1457,7 +1457,8 @@ class DesignRatingApp {
     handleUpvote(recId, button) {
         // Visual feedback - mark as endorsed
         button.classList.add('endorsed');
-        button.textContent = '✓';
+        button.disabled = true;
+        console.log('Upvote clicked for:', recId);
         // No API call needed for upvote
     }
 
@@ -1475,7 +1476,6 @@ class DesignRatingApp {
             
             // Add visual feedback
             button.classList.add('endorsed');
-            button.innerHTML = '✓';
             button.disabled = true;
             
             // Add fade out animation

@@ -687,7 +687,6 @@ body {
 
 /* Go deeper button */
 .go-deeper-btn {
-  padding: 4px 8px;
   border-radius: 14px;
   border: none;
   background: transparent;
@@ -2273,9 +2272,9 @@ body {
 .rec-section p,
 .rec-section ul,
 .rec-section ol {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.4;
-    color: #333333;
+    color: var(--bg-primary);
 }
 
 .rec-section ul,
@@ -2303,7 +2302,6 @@ body {
     background: none;
     border: none;
     border-radius: 4px;
-    padding: 4px 8px;
     font-size: 14px;
     cursor: pointer;
     color: var(--bg-primary);
@@ -2325,6 +2323,25 @@ body {
     border-color: #4CAF50;
 }
 
+.upvote-btn.endorsed svg {
+    fill: white;
+}
+
+.downvote-btn.endorsed {
+    background-color: #ff3b30;
+    color: white;
+    border-color: #ff3b30;
+}
+
+.downvote-btn.endorsed svg {
+    fill: white;
+}
+
+.upvote-btn:disabled,
+.downvote-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
 
 .flow-inspiration {
     background: var(--text-primary);
