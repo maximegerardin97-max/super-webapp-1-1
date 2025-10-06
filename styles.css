@@ -698,6 +698,10 @@ body {
 .go-deeper-btn:hover { 
   transform: translateY(-1px);
 }
+.go-deeper-btn img {
+  width: 24px;
+  height: 24px;
+}
 
 .improvement-body { 
   display: none; 
@@ -1450,8 +1454,7 @@ body {
 
 .large-image-content img {
   display: block;
-  width: 250px;
-  height: auto;
+  height: 400px;
   max-width: min(70vw, 1080px);
   max-height: calc(80vh - 40px);
   object-fit: contain;
@@ -2298,22 +2301,22 @@ body {
 /* Action buttons styling */
 .upvote-btn, .downvote-btn {
     background: none;
-    border: 1px solid #ddd;
+    border: none;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 14px;
     cursor: pointer;
-    color: #333333;
+    color: var(--bg-primary);
     transition: all 0.2s;
-    min-width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .upvote-btn:hover, .downvote-btn:hover {
-    background-color: #f5f5f5;
+    transform: translateY(-1px);
+}
+
+.upvote-btn img, .downvote-btn img {
+    width: 24px;
+    height: 24px;
 }
 
 .upvote-btn.endorsed {
@@ -2326,7 +2329,7 @@ body {
 .flow-inspiration {
     background: var(--text-primary);
     padding: 16px;
-    border-radius: 16px 16px 16px 6px;
+    border-radius: 16px 16px 16px 4px;
 }
 
 .flow-inspiration h4 {
