@@ -197,14 +197,16 @@ class DesignRatingApp {
             const userId = user.id;
             let pct = 0;
             try {
-                // Prefer Edge Function via supabase.functions.invoke (handles CORS)
-                const fn = await this.supabase.functions.invoke('design_context', {
-                    body: { action: 'get', user_id: userId }
-                });
-                if (!fn.error && fn.data && fn.data.data && typeof fn.data.data.context_pct === 'number') {
-                    pct = Math.round(fn.data.data.context_pct);
+                // Simple GET to REST route (no Authorization/header) to avoid preflight
+                const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+                const u = `https://${projectRef}.functions.supabase.co/design_context/get?user_id=${encodeURIComponent(userId)}`;
+                const resp = await fetch(u);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const row = data && data.data ? data.data : null;
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
                 } else {
-                    // Fallback to table read if function unavailable
+                    // Fallback: table read (requires select policy)
                     const { data: row } = await this.supabase
                         .from('user_design_style')
                         .select('context_pct')
@@ -315,17 +317,21 @@ class DesignRatingApp {
             uploadedPaths.push(path);
         }
 
-        // Prefer Edge Function (service role; bypasses RLS)
+        // Call REST route with FormData (no headers) to avoid preflight; function uses service role
         try {
-            const fn = await this.supabase.functions.invoke('design_context', {
-                body: { action: 'analyze', user_id: userId, storage_paths: uploadedPaths }
-            });
-            if (fn.error) throw fn.error;
-            const pct = fn.data && typeof fn.data.context_pct === 'number' ? Math.round(fn.data.context_pct) : 0;
+            const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+            const u = `https://${projectRef}.functions.supabase.co/design_context/analyze`;
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            for (const p of uploadedPaths) fd.append('storage_paths[]', p);
+            const resp = await fetch(u, { method: 'POST', body: fd });
+            if (!resp.ok) throw new Error(`analyze http ${resp.status}`);
+            const data = await resp.json();
+            const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
             this.designContext.pct = pct;
             this.updateDesignContextPill(pct);
             return;
-        } catch (e) {
+        } catch (_) {
             // Fallback: client upsert (requires insert/update RLS policies)
             const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
             const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
