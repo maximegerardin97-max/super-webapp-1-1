@@ -1275,7 +1275,14 @@ body {
   align-items: flex-start;
 }
 
-.message-content { max-width: 100%; width: 100%; padding: 12px 14px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
+.message-content { 
+  max-width: 100%; 
+  width: 100%; 
+  padding: 12px 14px; 
+  border-radius: 16px; 
+  font-size: 14px; 
+  line-height: 1.4; 
+}
 
 .user-message .message-content {
   background: var(--accent-primary);
@@ -1283,7 +1290,12 @@ body {
   border-bottom-right-radius: 0.25rem;
 }
 
-.assistant-message .message-content { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-primary); border-bottom-left-radius: 6px; }
+.assistant-message .message-content { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+  border: 1px solid var(--border-primary); 
+  border-bottom-left-radius: 6px; 
+}
 
 .message-time {
   font-size: 0.75rem;
