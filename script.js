@@ -43,6 +43,11 @@ class DesignRatingApp {
         this.setupLargeImageDisplay(); // Setup large image display
         this.setupChatStates(); // Setup chat states
         this.setupAuth(); // Setup Supabase auth
+        // Design context state
+        this.designContext = {
+            selectedFiles: [],
+            pct: 0
+        };
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -148,11 +153,15 @@ class DesignRatingApp {
             this.userSession = data.session || null;
             updateUi(this.userSession);
             if (this.userSession) { this.ensureProfile().catch(()=>{}); }
+            // After auth is ready, initialize design context UI
+            this.initDesignContext().catch(console.error);
         });
         this.supabase.auth.onAuthStateChange((_event, session) => {
             this.userSession = session || null;
             updateUi(this.userSession);
             if (this.userSession) { this.ensureProfile().catch(()=>{}); }
+            // Re-init on auth state change
+            this.initDesignContext().catch(()=>{});
         });
         if (signInBtn) {
             signInBtn.addEventListener('click', async () => {
@@ -244,6 +253,149 @@ class DesignRatingApp {
                 this.userSession = data.session || null;
                 updateUi(this.userSession);
             });
+        }
+    }
+
+    // Initialize pill, modal, and fetch current pct
+    async initDesignContext() {
+        try {
+            const pill = document.getElementById('designContextPill');
+            if (!pill) return;
+            const session = await this.supabase.auth.getUser();
+            const user = session && session.data && session.data.user ? session.data.user : null;
+            if (!user) {
+                pill.style.display = 'none';
+                return;
+            }
+            pill.style.display = 'inline-flex';
+            pill.classList.remove('u-red', 'u-orange', 'u-green');
+            // Wire up modal events once
+            this.setupDesignContextModal();
+
+            const userId = user.id;
+            const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+            const url = `https://${projectRef}.functions.supabase.co/design_context/get?user_id=${encodeURIComponent(userId)}`;
+            let pct = 0;
+            try {
+                const resp = await fetch(url, { headers: { 'accept': 'application/json' } });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const row = data && data.data ? data.data : null;
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                }
+            } catch (_) {}
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+            pill.onclick = () => this.openDesignContextModal();
+        } catch (e) {
+            console.warn('initDesignContext error', e);
+        }
+    }
+
+    updateDesignContextPill(pct) {
+        const pill = document.getElementById('designContextPill');
+        if (!pill) return;
+        const cl = pill.classList;
+        cl.remove('u-red', 'u-orange', 'u-green');
+        pill.textContent = `Design context: ${Math.max(0, Math.min(100, Math.round(pct || 0)))}%`;
+        if (!pct || pct === 0) {
+            cl.add('u-red');
+        } else if (pct > 0 && pct <= 50) {
+            cl.add('u-orange');
+        } else {
+            cl.add('u-green');
+        }
+    }
+
+    setupDesignContextModal() {
+        if (this._designContextModalWired) return; // idempotent
+        this._designContextModalWired = true;
+        const overlay = document.getElementById('designContextModal');
+        const uploadZone = document.getElementById('designContextUploadZone');
+        const input = document.getElementById('designContextFiles');
+        const btnClose = document.getElementById('designContextCloseBtn');
+        const btnCancel = document.getElementById('designContextCancelBtn');
+        const btnAnalyze = document.getElementById('designContextAnalyzeBtn');
+        const errorBox = document.getElementById('designContextError');
+        if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
+
+        const selectFiles = () => input && input.click();
+        uploadZone.addEventListener('click', (e) => { e.preventDefault(); selectFiles(); });
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+            this.designContext.selectedFiles = files;
+        });
+        input.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            this.designContext.selectedFiles = files;
+        });
+
+        const close = () => { overlay.classList.remove('active'); };
+        btnClose.addEventListener('click', close);
+        btnCancel.addEventListener('click', close);
+        btnAnalyze.addEventListener('click', async () => {
+            errorBox && (errorBox.style.display = 'none');
+            try {
+                await this.analyzeDesignContext();
+                close();
+            } catch (err) {
+                if (errorBox) {
+                    errorBox.textContent = err && err.message ? err.message : String(err);
+                    errorBox.style.display = 'block';
+                } else {
+                    alert(err && err.message ? err.message : String(err));
+                }
+            }
+        });
+    }
+
+    openDesignContextModal() {
+        const overlay = document.getElementById('designContextModal');
+        if (overlay) overlay.classList.add('active');
+    }
+
+    async analyzeDesignContext() {
+        const session = await this.supabase.auth.getUser();
+        const user = session && session.data && session.data.user ? session.data.user : null;
+        if (!user) throw new Error('Please sign in first.');
+        const files = this.designContext.selectedFiles || [];
+        if (!files.length) throw new Error('Please select 1–3 images.');
+
+        // Build timestamp folder name YYYYMMDD-HHMM
+        const now = new Date();
+        const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+        const userId = user.id;
+
+        // Upload each file to bucket user_context
+        const storage = this.supabase.storage.from('user_context');
+        const uploadedPaths = [];
+        for (const file of files) {
+            const path = `${userId}/${ts}/${file.name}`;
+            const { error } = await storage.upload(path, file, { upsert: true, cacheControl: '3600' });
+            if (error) throw new Error(`Upload failed for ${file.name}: ${error.message}`);
+            uploadedPaths.push(path);
+        }
+
+        // Call analyze endpoint
+        const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+        const url = `https://${projectRef}.functions.supabase.co/design_context/analyze`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, asset_ids: uploadedPaths })
+        });
+        if (!resp.ok) throw new Error(`Analyze failed (${resp.status})`);
+        const data = await resp.json();
+        if (data && data.ok) {
+            const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
+            this.designContext.pct = pct;
+            this.updateDesignContextPill(pct);
+        } else {
+            throw new Error(data && data.error ? data.error : 'Analyze returned an error');
         }
     }
 
