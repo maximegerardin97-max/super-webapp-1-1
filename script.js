@@ -195,7 +195,8 @@ class DesignRatingApp {
                 const resp = await fetch(url, { headers: { 'accept': 'application/json' } });
                 if (resp.ok) {
                     const data = await resp.json();
-                    if (data && typeof data.context_pct === 'number') pct = Math.round(data.context_pct);
+                    const row = data && data.data ? data.data : null;
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
                 }
             } catch (_) {}
             this.designContext.pct = pct;
@@ -300,7 +301,7 @@ class DesignRatingApp {
         const resp = await fetch(url, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, storage_paths: uploadedPaths })
+            body: JSON.stringify({ user_id: userId, asset_ids: uploadedPaths })
         });
         if (!resp.ok) throw new Error(`Analyze failed (${resp.status})`);
         const data = await resp.json();
