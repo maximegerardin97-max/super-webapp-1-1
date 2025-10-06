@@ -250,6 +250,7 @@ class DesignRatingApp {
         const overlay = document.getElementById('designContextModal');
         const uploadZone = document.getElementById('designContextUploadZone');
         const input = document.getElementById('designContextFiles');
+        const uploadLabel = document.getElementById('designContextUploadLabel');
         const btnClose = document.getElementById('designContextCloseBtn');
         const btnCancel = document.getElementById('designContextCancelBtn');
         const btnAnalyze = document.getElementById('designContextAnalyzeBtn');
@@ -257,7 +258,9 @@ class DesignRatingApp {
         if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
 
         const selectFiles = () => { if (input) { input.value = ''; input.click(); } };
-        uploadZone.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); });
+        const bindClick = (el) => { if (el) el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); }); };
+        bindClick(uploadZone);
+        bindClick(uploadLabel);
         uploadZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFiles(); } });
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('dragover'); });
