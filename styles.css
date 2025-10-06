@@ -1453,7 +1453,7 @@ body {
 
 .large-image-content img {
   display: block;
-  height: 400px;
+  height: 500px;
   max-width: min(70vw, 1080px);
   max-height: calc(80vh - 40px);
   object-fit: contain;
