@@ -87,7 +87,7 @@
 }
 
 .login-input:-internal-autofill-selected {
-    background: transparent !important;
+    background: var(--bg-primary) !important;
     border: none !important;
     border-radius: 40px !important;
     color: white !important;
@@ -136,11 +136,9 @@
     color: var(--text-primary);
     font-weight: 400;
     white-space: nowrap;
-    background: var(--bg-secondary);
-    padding: 8px 12px;
+    background: transparent;
     border-radius: 20px;
-    border: 1px solid var(--border-secondary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: none;
     z-index: 10;
 }
 
