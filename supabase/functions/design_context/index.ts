@@ -149,13 +149,24 @@ async function callGeminiForDesign(asset_ids: string[]): Promise<Partial<DesignS
         ]
       }]
     };
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + GOOGLE_API_KEY, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(jsonIn),
-    });
-    if (!res.ok) return null;
-    const body = await res.json();
+    // Try v1 with stable model list; fall back to v1beta if needed
+    const candidates = [
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-002:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'
+    ];
+    let body: any = null;
+    for (const base of candidates) {
+      const url = base + '?key=' + GOOGLE_API_KEY;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(jsonIn),
+      });
+      if (res.ok) { body = await res.json(); break; }
+    }
+    if (!body) return null;
     const text = body?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     if (!text) return null;
     const jsonStart = text.indexOf('{');
