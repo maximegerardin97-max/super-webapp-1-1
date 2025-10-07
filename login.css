@@ -129,11 +129,12 @@
 
 .check-inbox-label {
     position: absolute;
-    right: 50px;
+    right: 40px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
     color: var(--text-primary);
+    opacity: 0.5;
     font-weight: 400;
     white-space: nowrap;
     background: transparent;
