@@ -46,7 +46,8 @@ class DesignRatingApp {
         // Design context state
         this.designContext = {
             selectedFiles: [],
-            pct: 0
+            pct: 0,
+            contract: ''
         };
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
@@ -234,6 +235,11 @@ class DesignRatingApp {
         const cl = pill.classList;
         cl.remove('u-red', 'u-orange', 'u-green');
         pill.textContent = `Design context: ${Math.max(0, Math.min(100, Math.round(pct || 0)))}%`;
+        // Show contract in tooltip if present
+        try {
+            const tip = (this.designContext && this.designContext.contract) ? String(this.designContext.contract).trim() : '';
+            pill.title = tip || '';
+        } catch (_) { /* noop */ }
         if (!pct || pct === 0) {
             cl.add('u-red');
         } else if (pct > 0 && pct <= 50) {
@@ -343,6 +349,9 @@ class DesignRatingApp {
             const data = await resp.json();
             const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
             this.designContext.pct = pct;
+            if (data && typeof data.contract === 'string') {
+                this.designContext.contract = data.contract;
+            }
             this.updateDesignContextPill(pct);
             return;
         } catch (_) {
