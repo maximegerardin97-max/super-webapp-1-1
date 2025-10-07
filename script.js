@@ -73,7 +73,13 @@ class DesignRatingApp {
             console.warn('Supabase auth not configured');
             return;
         }
-        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        // Singleton Supabase client (prevents multiple GoTrueClient instances)
+        if (!window.__SB_CLIENT__) {
+            window.__SB_CLIENT__ = window.supabase.createClient(this.supabaseUrl, this.supabaseKey, {
+                auth: { storageKey: 'sb-design-context-auth' }
+            });
+        }
+        this.supabase = window.__SB_CLIENT__;
         const emailInput = document.getElementById('authEmail');
         const signInBtn = document.getElementById('signInBtn');
         const signOutBtn = document.getElementById('signOutBtn');
@@ -195,26 +201,18 @@ class DesignRatingApp {
             this.setupDesignContextModal();
 
             const userId = user.id;
+            // Read context directly from DB (no function)
             let pct = 0;
             try {
-                // Simple GET to REST route (no Authorization/header) to avoid preflight
-                const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-                const u = `https://${projectRef}.functions.supabase.co/design-context/get?user_id=${encodeURIComponent(userId)}`;
-                const resp = await fetch(u);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    const row = data && data.data ? data.data : null;
-                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
-                } else {
-                    // Fallback: table read (requires select policy)
-                    const { data: row } = await this.supabase
-                        .from('user_design_style')
-                        .select('context_pct')
-                        .eq('user_id', userId)
-                        .maybeSingle();
-                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                const { data: row, error } = await this.supabase
+                    .from('user_design_style')
+                    .select('context_pct')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+                if (!error && row && typeof row.context_pct === 'number') {
+                    pct = Math.round(row.context_pct);
                 }
-            } catch (_) {}
+            } catch (_) { /* keep pct = 0 */ }
             this.designContext.pct = pct;
             this.updateDesignContextPill(pct);
             pill.onclick = () => this.openDesignContextModal();
@@ -324,32 +322,25 @@ class DesignRatingApp {
             uploadedPaths.push(path);
         }
 
-        // Call REST route with FormData (no headers) to avoid preflight; function uses service role
+        // Upsert directly (no Edge Function). Uses your uds_* RLS policies.
         try {
-            const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
-            const u = `https://${projectRef}.functions.supabase.co/design-context/analyze`;
-            const fd = new FormData();
-            fd.append('user_id', userId);
-            for (const p of uploadedPaths) fd.append('storage_paths[]', p);
-            const resp = await fetch(u, { method: 'POST', body: fd });
-            if (!resp.ok) throw new Error(`analyze http ${resp.status}`);
-            const data = await resp.json();
-            const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
-            this.designContext.pct = pct;
-            this.updateDesignContextPill(pct);
-            return;
-        } catch (_) {
-            // Fallback: client upsert (requires insert/update RLS policies)
             const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
-            const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
-            const { data: row } = await this.supabase
+            const upsert = {
+                user_id: userId,
+                screen_count: uploadedPaths.length,
+                detail_scores: detailScores
+            };
+            const { data: row, error } = await this.supabase
                 .from('user_design_style')
                 .upsert(upsert, { onConflict: 'user_id' })
                 .select('context_pct')
                 .single();
+            if (error) throw error;
             const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
             this.designContext.pct = pct;
             this.updateDesignContextPill(pct);
+        } catch (e) {
+            throw new Error(e.message || String(e));
         }
     }
     // Update connection status indicator
