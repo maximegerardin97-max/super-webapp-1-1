@@ -283,6 +283,17 @@ class DesignRatingApp {
         const errorBox = document.getElementById('designContextError');
         if (!overlay || !uploadZone || !input || !btnClose || !btnCancel || !btnAnalyze) return;
 
+        // Inline status text (created once)
+        let statusLine = document.getElementById('designContextStatus');
+        if (!statusLine) {
+            statusLine = document.createElement('div');
+            statusLine.id = 'designContextStatus';
+            statusLine.style.marginTop = '8px';
+            statusLine.style.fontSize = '12px';
+            statusLine.style.color = 'var(--textSecondary, #888)';
+            if (selectedInfo && selectedInfo.parentNode) selectedInfo.parentNode.insertBefore(statusLine, selectedInfo.nextSibling);
+        }
+
         const selectFiles = () => { if (input) { input.value = ''; try { input.showPicker?.(); } catch (_) {} input.click(); } };
         const bindClick = (el) => { if (el) el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); selectFiles(); }, { passive: false }); };
         bindClick(uploadZone);
@@ -308,21 +319,32 @@ class DesignRatingApp {
         const close = () => { overlay.classList.remove('active'); };
         btnClose.addEventListener('click', close);
         btnCancel.addEventListener('click', close);
-        btnAnalyze.addEventListener('click', async () => {
+        btnAnalyze.addEventListener('click', () => {
             errorBox && (errorBox.style.display = 'none');
             btnAnalyze.classList.add('loading');
-            try {
-                await this.analyzeDesignContext();
-                close();
-            } catch (err) {
-                if (errorBox) {
-                    errorBox.textContent = err && err.message ? err.message : String(err);
-                    errorBox.style.display = 'block';
-                } else {
-                    alert(err && err.message ? err.message : String(err));
-                }
+            btnAnalyze.disabled = true;
+            if (statusLine) {
+                statusLine.textContent = 'Analyzing… you can close this popup; analysis will continue in background.';
             }
-            btnAnalyze.classList.remove('loading');
+            // Kick off analysis non-blocking so closing the popup won’t cancel it
+            this.analyzeDesignContext()
+                .then(() => {
+                    if (statusLine) statusLine.textContent = 'Analysis complete.';
+                    btnAnalyze.classList.remove('loading');
+                    btnAnalyze.disabled = false;
+                    close();
+                })
+                .catch((err) => {
+                    if (errorBox) {
+                        errorBox.textContent = err && err.message ? err.message : String(err);
+                        errorBox.style.display = 'block';
+                    } else {
+                        alert(err && err.message ? err.message : String(err));
+                    }
+                    btnAnalyze.classList.remove('loading');
+                    btnAnalyze.disabled = false;
+                    if (statusLine) statusLine.textContent = '';
+                });
         });
     }
 
