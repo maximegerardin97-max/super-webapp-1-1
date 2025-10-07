@@ -201,16 +201,23 @@ class DesignRatingApp {
             this.setupDesignContextModal();
 
             const userId = user.id;
-            // Read context directly from DB (no function)
+            // Try Edge Function first (service role), then fallback to direct DB
             let pct = 0;
             try {
-                const { data: row, error } = await this.supabase
-                    .from('user_design_style')
-                    .select('context_pct')
-                    .eq('user_id', userId)
-                    .maybeSingle();
-                if (!error && row && typeof row.context_pct === 'number') {
-                    pct = Math.round(row.context_pct);
+                const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+                const u = `https://${projectRef}.functions.supabase.co/design-context/get?user_id=${encodeURIComponent(userId)}`;
+                const resp = await fetch(u);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const row = data && data.data ? data.data : null;
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                } else {
+                    const { data: row } = await this.supabase
+                        .from('user_design_style')
+                        .select('context_pct')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
                 }
             } catch (_) { /* keep pct = 0 */ }
             this.designContext.pct = pct;
@@ -322,25 +329,35 @@ class DesignRatingApp {
             uploadedPaths.push(path);
         }
 
-        // Upsert directly (no Edge Function). Uses your uds_* RLS policies.
+        // Try Edge Function first (service role), fallback to direct DB upsert
         try {
-            const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
-            const upsert = {
-                user_id: userId,
-                screen_count: uploadedPaths.length,
-                detail_scores: detailScores
-            };
-            const { data: row, error } = await this.supabase
-                .from('user_design_style')
-                .upsert(upsert, { onConflict: 'user_id' })
-                .select('context_pct')
-                .single();
-            if (error) throw error;
-            const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
+            const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
+            const u = `https://${projectRef}.functions.supabase.co/design-context/analyze`;
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            for (const p of uploadedPaths) fd.append('storage_paths[]', p);
+            const resp = await fetch(u, { method: 'POST', body: fd });
+            if (!resp.ok) throw new Error(`analyze http ${resp.status}`);
+            const data = await resp.json();
+            const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
             this.designContext.pct = pct;
             this.updateDesignContextPill(pct);
-        } catch (e) {
-            throw new Error(e.message || String(e));
+            return;
+        } catch (_) {
+            try {
+                const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
+                const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
+                const { data: row } = await this.supabase
+                    .from('user_design_style')
+                    .upsert(upsert, { onConflict: 'user_id' })
+                    .select('context_pct')
+                    .single();
+                const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
+                this.designContext.pct = pct;
+                this.updateDesignContextPill(pct);
+            } catch (e) {
+                throw new Error(e.message || String(e));
+            }
         }
     }
     // Update connection status indicator
