@@ -92,7 +92,7 @@
     border-radius: 40px !important;
     color: white !important;
     -webkit-text-fill-color: white !important;
-    -webkit-box-shadow: 0 0 0px 1000px rgba(var(--bg-primary-rgb), 0.0) inset !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-primary) inset !important;
 }
 
 .login-submit-btn {
@@ -130,7 +130,7 @@
 
 .check-inbox-label {
     position: absolute;
-    right: 40px;
+    right: 50px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
