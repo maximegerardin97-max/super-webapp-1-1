@@ -75,10 +75,12 @@ class LoginApp {
 
         try {
             // Send magic link
+            const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
+            const redirectUrl = `${window.location.origin}${basePath}index.html`;
             const { error } = await this.supabase.auth.signInWithOtp({
                 email: email,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/index.html`
+                    emailRedirectTo: redirectUrl
                 }
             });
 
