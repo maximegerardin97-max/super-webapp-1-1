@@ -13,11 +13,48 @@ class LoginApp {
             window.AGENT_CFG.SUPABASE_ANON
         );
 
+        // If returning from a magic link/OAuth, finalize the session first
+        await this.handleAuthRedirect();
+
         // Check if user is already authenticated
         await this.checkAuthState();
 
         // Setup event listeners
         this.setupEventListeners();
+    }
+
+    async handleAuthRedirect() {
+        try {
+            const url = new URL(window.location.href);
+
+            // Case 1: OAuth or code-based redirects (?code=...)
+            const code = url.searchParams.get('code');
+            if (code) {
+                await this.supabase.auth.exchangeCodeForSession(window.location.href);
+                // Clean URL
+                window.history.replaceState({}, document.title, url.pathname);
+                // Go to app
+                window.location.replace('index.html');
+                return true;
+            }
+
+            // Case 2: Magic link with hash tokens (#access_token=...&refresh_token=...)
+            if (url.hash && url.hash.includes('access_token')) {
+                const hashParams = new URLSearchParams(url.hash.replace('#', ''));
+                const access_token = hashParams.get('access_token');
+                const refresh_token = hashParams.get('refresh_token');
+                if (access_token && refresh_token) {
+                    await this.supabase.auth.setSession({ access_token, refresh_token });
+                    // Clean URL fragment
+                    window.history.replaceState({}, document.title, url.pathname);
+                    window.location.replace('index.html');
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.error('Error handling auth redirect:', e);
+        }
+        return false;
     }
 
     async checkAuthState() {
