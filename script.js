@@ -333,10 +333,12 @@ class DesignRatingApp {
         try {
             const projectRef = (new URL(this.supabaseUrl)).host.split('.')[0];
             const u = `https://${projectRef}.functions.supabase.co/design-context/analyze`;
-            const fd = new FormData();
-            fd.append('user_id', userId);
-            for (const p of uploadedPaths) fd.append('storage_paths[]', p);
-            const resp = await fetch(u, { method: 'POST', body: fd });
+            // Send JSON as expected by the Edge Function: storage_paths[] with optional bucket prefix
+            const payload = {
+                user_id: userId,
+                storage_paths: uploadedPaths.map(p => `user_context:${p}`)
+            };
+            const resp = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
             if (!resp.ok) throw new Error(`analyze http ${resp.status}`);
             const data = await resp.json();
             const pct = typeof data.context_pct === 'number' ? Math.round(data.context_pct) : 0;
