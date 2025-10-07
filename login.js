@@ -113,6 +113,7 @@ class LoginApp {
         submitBtn.disabled = true;
         icon.src = './assets/images/icons/icon-check-light.png';
         icon.alt = 'Email sent';
+        icon.classList.remove('loading');
     }
 
     setWaitingState(waiting) {
@@ -129,6 +130,15 @@ class LoginApp {
             submitBtn.disabled = true;
             icon.src = './assets/images/icons/icon-loading.png';
             icon.alt = 'Loading';
+            icon.classList.add('loading');
+            
+            // Add "Check Inbox" label before the icon
+            if (!submitBtn.querySelector('.check-inbox-label')) {
+                const label = document.createElement('span');
+                label.className = 'check-inbox-label';
+                label.textContent = 'Check Inbox';
+                submitBtn.insertBefore(label, icon);
+            }
         } else {
             // Reset to default state
             emailInput.placeholder = 'Enter your email to log in';
@@ -136,6 +146,13 @@ class LoginApp {
             submitBtn.disabled = false;
             icon.src = './assets/images/icons/icon-send.png';
             icon.alt = 'Send';
+            icon.classList.remove('loading');
+            
+            // Remove "Check Inbox" label
+            const label = submitBtn.querySelector('.check-inbox-label');
+            if (label) {
+                label.remove();
+            }
         }
     }
 
