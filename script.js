@@ -49,6 +49,17 @@ class DesignRatingApp {
             pct: 0,
             contract: ''
         };
+        // Helper to build a simple contract string
+        this.buildContractString = (src) => {
+            if (!src || typeof src !== 'object') return '';
+            const parts = [];
+            if (src.bg_mode) parts.push(`${src.bg_mode} UI`);
+            if (src.density) parts.push(`${src.density} density`);
+            if (src.radius) parts.push(`${src.radius} radii`);
+            if (src.shadow) parts.push(`${src.shadow} elevation`);
+            if (src.type_family) parts.push(src.type_family);
+            return parts.join('; ') + (parts.length ? '.' : '');
+        };
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -212,13 +223,22 @@ class DesignRatingApp {
                     const data = await resp.json();
                     const row = data && data.data ? data.data : null;
                     if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                    // Derive contract from row enums if present
+                    if (row) {
+                        const contract = this.buildContractString(row);
+                        if (contract) this.designContext.contract = contract;
+                    }
                 } else {
                     const { data: row } = await this.supabase
                         .from('user_design_style')
-                        .select('context_pct')
+                        .select('context_pct, bg_mode, density, radius, shadow, type_family')
                         .eq('user_id', userId)
                         .maybeSingle();
                     if (row && typeof row.context_pct === 'number') pct = Math.round(row.context_pct);
+                    if (row) {
+                        const contract = this.buildContractString(row);
+                        if (contract) this.designContext.contract = contract;
+                    }
                 }
             } catch (_) { /* keep pct = 0 */ }
             this.designContext.pct = pct;
@@ -344,6 +364,10 @@ class DesignRatingApp {
                 user_id: userId,
                 storage_paths: uploadedPaths.map(p => `user_context:${p}`)
             };
+            // UI loading state on pill
+            const pill = document.getElementById('designContextPill');
+            const previousTitle = pill ? pill.title : '';
+            if (pill) { pill.textContent = 'Analyzing…'; pill.title = 'Analyzing your designs…'; }
             const resp = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
             if (!resp.ok) throw new Error(`analyze http ${resp.status}`);
             const data = await resp.json();
@@ -353,8 +377,12 @@ class DesignRatingApp {
                 this.designContext.contract = data.contract;
             }
             this.updateDesignContextPill(pct);
+            if (pill) { pill.title = this.designContext.contract || previousTitle; }
             return;
         } catch (_) {
+            const pill = document.getElementById('designContextPill');
+            const previousTitle = pill ? pill.title : '';
+            if (pill) { pill.textContent = 'Analyzing…'; pill.title = 'Analyzing your designs…'; }
             try {
                 const detailScores = { screen_count: Math.min(1, uploadedPaths.length) };
                 const upsert = { user_id: userId, screen_count: uploadedPaths.length, detail_scores: detailScores };
@@ -366,7 +394,9 @@ class DesignRatingApp {
                 const pct = row && typeof row.context_pct === 'number' ? Math.round(row.context_pct) : 0;
                 this.designContext.pct = pct;
                 this.updateDesignContextPill(pct);
+                if (pill) { pill.title = previousTitle; }
             } catch (e) {
+                if (pill) { pill.title = previousTitle; }
                 throw new Error(e.message || String(e));
             }
         }
