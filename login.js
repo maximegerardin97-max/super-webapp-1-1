@@ -7,11 +7,15 @@ class LoginApp {
     }
 
     async init() {
-        // Initialize Supabase client
-        this.supabase = window.supabase.createClient(
-            window.AGENT_CFG.SUPABASE_URL, 
-            window.AGENT_CFG.SUPABASE_ANON
-        );
+        // Initialize Supabase client (singleton across app pages)
+        if (!window.__SB_CLIENT__) {
+            window.__SB_CLIENT__ = window.supabase.createClient(
+                window.AGENT_CFG.SUPABASE_URL,
+                window.AGENT_CFG.SUPABASE_ANON,
+                { auth: { storageKey: 'sb-design-context-auth' } }
+            );
+        }
+        this.supabase = window.__SB_CLIENT__;
 
         // If returning from a magic link/OAuth, finalize the session first
         await this.handleAuthRedirect();
