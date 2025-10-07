@@ -495,21 +495,23 @@
     
     <script src="script.js"></script>
     <script>
-        // Check authentication state on page load
+        // Check authentication state on page load using singleton client
         document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Supabase client
-            const supabase = window.supabase.createClient(window.AGENT_CFG.SUPABASE_URL, window.AGENT_CFG.SUPABASE_ANON);
-            
             try {
+                if (!window.__SB_CLIENT__) {
+                    window.__SB_CLIENT__ = window.supabase.createClient(
+                        window.AGENT_CFG.SUPABASE_URL,
+                        window.AGENT_CFG.SUPABASE_ANON,
+                        { auth: { storageKey: 'sb-design-context-auth' } }
+                    );
+                }
+                const supabase = window.__SB_CLIENT__;
                 const { data: { session } } = await supabase.auth.getSession();
-                
                 if (!session || !session.user) {
-                    // User is not authenticated, redirect to login page
                     window.location.href = 'login.html';
                 }
             } catch (error) {
                 console.error('Error checking auth state:', error);
-                // On error, redirect to login page for safety
                 window.location.href = 'login.html';
             }
         });
