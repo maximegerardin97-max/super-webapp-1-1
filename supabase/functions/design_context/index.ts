@@ -128,6 +128,51 @@ async function getDesignSummary(user_id: string) {
   return data as DesignSummary | null;
 }
 
+async function callGeminiForDesign(asset_ids: string[]): Promise<Partial<DesignSummary> | null> {
+  if (!GOOGLE_API_KEY) return null;
+  try {
+    const prompt = `You are a UI design analyst. Given a set of image asset paths (filenames), infer a plausible high-level product design style. Return STRICT JSON with fields: {
+      "bg_mode": one of ["light","dark","auto"],
+      "density": one of ["airy","comfortable","compact"],
+      "radius": one of ["sharp","soft","rounded"],
+      "shadow": one of ["none","subtle","strong"],
+      "casing": one of ["sentence","title","all_caps"],
+      "detail_scores": {"primary_colors": number 0..1, "accent_colors": number 0..1, "bg_mode": number 0..1, "type": number 0..1, "density": number 0..1, "radius": number 0..1, "shadow": number 0..1}
+    }.
+    Only output JSON.`;
+    const jsonIn = {
+      contents: [{
+        role: 'user',
+        parts: [
+          { text: prompt },
+          { text: `assets: ${asset_ids.join(', ')}` },
+        ]
+      }]
+    };
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GOOGLE_API_KEY, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(jsonIn),
+    });
+    if (!res.ok) return null;
+    const body = await res.json();
+    const text = body?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!text) return null;
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) return null;
+    const parsed = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+    const patch: Partial<DesignSummary> = {};
+    const allowedKeys: (keyof DesignSummary)[] = ['bg_mode','density','radius','shadow','casing','detail_scores'];
+    for (const k of allowedKeys) {
+      if (k in parsed) (patch as any)[k] = parsed[k];
+    }
+    return patch;
+  } catch (_e) {
+    return null;
+  }
+}
+
 const corsHeaders: HeadersInit = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -175,6 +220,18 @@ serve(async (req) => {
 
       console.log('telemetry: analyze_started', { user_id, count: asset_ids.length });
       const summary = await analyzeAssets({ user_id, asset_ids });
+      // Optionally enrich with Gemini
+      const gemini = await callGeminiForDesign(asset_ids);
+      if (gemini) {
+        if (gemini.bg_mode) summary.bg_mode = gemini.bg_mode as any;
+        if (gemini.density) summary.density = gemini.density as any;
+        if (gemini.radius) summary.radius = gemini.radius as any;
+        if (gemini.shadow) summary.shadow = gemini.shadow as any;
+        if (gemini.casing) summary.casing = gemini.casing as any;
+        if (gemini.detail_scores && typeof gemini.detail_scores === 'object') {
+          summary.detail_scores = { ...summary.detail_scores, ...gemini.detail_scores } as any;
+        }
+      }
       const upserted = await upsertDesignSummary(summary);
       const contract = buildDesignContract(upserted);
       console.log('telemetry: analyze_success', { user_id, context_pct: upserted.context_pct });
