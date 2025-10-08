@@ -102,18 +102,18 @@
 /* CSS Custom Properties for Light/Dark Theme */
 :root {
   /* Light theme colors */
-  --text-primary: #f5f5f5;
-  --text-secondary: #ffffff;
-  --text-tertiary: #f8f8f8;
-  --text-quaternary: #fafafa;
-  --text-hover: #f8f9ff;
-  --text-active: #f0f4ff;
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f8f8;
+  --bg-quaternary: #fafafa;
+  --bg-hover: #f8f9ff;
+  --bg-active: #f0f4ff;
   
-  --bg-primary: #000000;
-  --bg-secondary: #333333;
-  --bg-tertiary: #666666;
-  --bg-quaternary: #999999;
-  --bg-muted: #8e8e93;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-tertiary: #666666;
+  --text-quaternary: #999999;
+  --text-muted: #8e8e93;
   
   --border-primary: #e0e0e0;
   --border-secondary: #e9ecef;
@@ -477,8 +477,8 @@ body {
 }
 
 .chat-message.assistant-message .message-content {
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  background: #ffffff;
+  color: #000000;
   border-radius: 16px 16px 16px 4px;
 }
 
@@ -1310,8 +1310,8 @@ body {
 }
 
 .assistant-message .message-content { 
-  background: var(--bg-secondary); 
-  color: var(--text-primary); 
+  background: #ffffff; 
+  color: #000000; 
   border: 1px solid var(--border-primary); 
   border-bottom-left-radius: 6px; 
 }
@@ -2011,8 +2011,8 @@ body {
 }
 
 .agent-message .message-content {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #000000;
   border: 1px solid var(--chat-border);
   align-self: flex-start;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -3366,6 +3366,57 @@ body { padding-bottom: 140px; }
   width: 20px;
   height: 20px;
   display: block;
+  opacity: 0.5;
+}
+
+/* Theme-adaptive icons for light mode (use black versions) */
+@media (prefers-color-scheme: light) {
+  .auth-icon-img[src*="icon-send.png"] {
+    content: url('./assets/images/icons/icon-send-blk.png');
+  }
+  .auth-icon-img[src*="icon-img.png"] {
+    content: url('./assets/images/icons/icon-img-dark.png');
+  }
+  .auth-icon-img[src*="icon-logout.png"] {
+    content: url('./assets/images/icons/icon-logout-blk.png');
+  }
+  .auth-icon-img[src*="icon-folder-wht.png"] {
+    content: url('./assets/images/icons/icon-folder-blk.png');
+  }
+  .auth-icon-img[src*="icon-hash.png"] {
+    content: url('./assets/images/icons/icon-hash-blk.png');
+  }
+  .auth-icon-img[src*="icon-close.png"] {
+    content: url('./assets/images/icons/icon-close.png');
+  }
+  .auth-icon-img[src*="icon-linkout-white.png"] {
+    content: url('./assets/images/icons/icon-linkout-blk.png');
+  }
+}
+
+/* Theme-adaptive icons for dark mode (use white versions) */
+@media (prefers-color-scheme: dark) {
+  .auth-icon-img[src*="icon-send.png"] {
+    content: url('./assets/images/icons/icon-send.png');
+  }
+  .auth-icon-img[src*="icon-img.png"] {
+    content: url('./assets/images/icons/icon-img.png');
+  }
+  .auth-icon-img[src*="icon-logout.png"] {
+    content: url('./assets/images/icons/icon-logout.png');
+  }
+  .auth-icon-img[src*="icon-folder-wht.png"] {
+    content: url('./assets/images/icons/icon-folder-wht.png');
+  }
+  .auth-icon-img[src*="icon-hash.png"] {
+    content: url('./assets/images/icons/icon-hash.png');
+  }
+  .auth-icon-img[src*="icon-close.png"] {
+    content: url('./assets/images/icons/icon-close.png');
+  }
+  .auth-icon-img[src*="icon-linkout-white.png"] {
+    content: url('./assets/images/icons/icon-linkout-white.png');
+  }
 }
 
 /* Training Data Button Container */

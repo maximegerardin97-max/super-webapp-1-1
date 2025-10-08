@@ -38,12 +38,26 @@
     font-weight: 300;
     color: var(--text-primary);
     line-height: 1.1;
+    letter-spacing: -0.05em;
 }
 
 .login-logo {
     height: 36px;
     width: auto;
     object-fit: contain;
+}
+
+/* Show black logo in light mode, white logo in dark mode */
+@media (prefers-color-scheme: light) {
+    .login-logo {
+        content: url('./assets/images/SuperLogoBlk.png');
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .login-logo {
+        content: url('./assets/images/SuperLogo.png');
+    }
 }
 
 /* Email Input Container */
@@ -91,8 +105,9 @@
     border: none !important;
     border-radius: 40px !important;
     color: white !important;
-    -webkit-text-fill-color: white !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
     -webkit-box-shadow: 0 0 0px 1000px var(--bg-primary) inset !important;
+    box-shadow: 0 0 0px 1000px var(--bg-primary) inset !important;
 }
 
 .login-submit-btn {
@@ -126,6 +141,32 @@
     width: 20px;
     height: 20px;
     object-fit: contain;
+    opacity: 0.5;
+}
+
+/* Theme-adaptive icons for login page */
+@media (prefers-color-scheme: light) {
+    .login-icon[src*="icon-send.png"] {
+        content: url('./assets/images/icons/icon-send-blk.png');
+    }
+    .login-icon[src*="icon-check-light.png"] {
+        content: url('./assets/images/icons/icon-check-light.png');
+    }
+    .login-icon[src*="icon-loading.png"] {
+        content: url('./assets/images/icons/icon-loading-blk.png');
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .login-icon[src*="icon-send.png"] {
+        content: url('./assets/images/icons/icon-send.png');
+    }
+    .login-icon[src*="icon-check-light.png"] {
+        content: url('./assets/images/icons/icon-check-light.png');
+    }
+    .login-icon[src*="icon-loading.png"] {
+        content: url('./assets/images/icons/icon-loading.png');
+    }
 }
 
 .check-inbox-label {
