@@ -3375,8 +3375,8 @@ body { padding-bottom: 140px; }
   align-items: center;
   justify-content: center;
   background: var(--bg-secondary);
-  border-radius: 50%;
-  padding: 15px;
+  border-radius: 100px;
+  padding: 10px;
   box-shadow: 0 6px 20px var(--shadow-primary);
   z-index: 1000;
   transition: all 0.3s ease;

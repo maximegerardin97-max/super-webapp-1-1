@@ -208,7 +208,6 @@ class DesignRatingApp {
                 return;
             }
             pill.style.display = 'inline-flex';
-            pill.classList.remove('u-red', 'u-orange', 'u-green');
             // Wire up modal events once
             this.setupDesignContextModal();
 
@@ -252,20 +251,13 @@ class DesignRatingApp {
     updateDesignContextPill(pct) {
         const pill = document.getElementById('designContextPill');
         if (!pill) return;
-        const cl = pill.classList;
-        cl.remove('u-red', 'u-orange', 'u-green');
-        pill.textContent = `Design context: ${Math.max(0, Math.min(100, Math.round(pct || 0)))}%`;
+        // Icon-only button - no color states or text content needed
         // Show contract in tooltip if present
         try {
             const tip = (this.designContext && this.designContext.contract) ? String(this.designContext.contract).trim() : '';
-            pill.title = tip || '';
-        } catch (_) { /* noop */ }
-        if (!pct || pct === 0) {
-            cl.add('u-red');
-        } else if (pct > 0 && pct <= 50) {
-            cl.add('u-orange');
-        } else {
-            cl.add('u-green');
+            pill.title = tip || 'View and update your design context';
+        } catch (_) { 
+            pill.title = 'View and update your design context';
         }
     }
 
