@@ -405,7 +405,7 @@ body {
 .chat-message {
   display: flex;
   flex-direction: column;
-  max-width: 96%;
+  max-width: 90%;
   margin-bottom: 4px;
 }
 
@@ -577,11 +577,13 @@ body {
 
 .improvement-header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-content: flex-start;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 16px;
   flex-wrap: wrap; /* allow wrap so buttons go to next line instead of overlapping */
-  row-gap: 6px;
+  row-gap: 20px;
 }
 
 .conversation-header {
@@ -786,7 +788,7 @@ body {
   bottom: 20px;
   right: 20px;
   width: auto;
-  max-width: 40vw;
+  max-width: 35vw;
   background: var(--bg-secondary);
   border-radius: 36px;
   box-shadow: 0 6px 20px var(--shadow-primary);
@@ -1953,28 +1955,7 @@ body {
   color: var(--accent-secondary);
 }
 
-.message-content {
-  font-size: 13px;
-  line-height: 1.4;
-  padding: 8px 12px;
-  border-radius: 12px;
-  max-width: 96%;
-}
 
-.user-message .message-content {
-  background: var(--accent-primary);
-  color: white;
-  align-self: flex-end;
-  margin-left: auto;
-}
-
-.agent-message .message-content {
-  background: #ffffff;
-  color: #000000;
-  border: 1px solid var(--chat-border);
-  align-self: flex-start;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
 
 /* Perplexity Search Results */
 .perplexity-result {
@@ -2939,7 +2920,7 @@ body { padding-bottom: 140px; }
   color: var(--text-primary);
   white-space: pre-wrap;
   transition: color 0.3s ease;
-  max-height: 75vh;
+  max-height: 80vh;
   overflow-y: auto;
 }
 

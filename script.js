@@ -2234,7 +2234,7 @@ class DesignRatingApp {
                             <h3 class="app-container-title">${appName}</h3>
                             <p class="app-container-subtitle">${(realImages && realImages.length) || imageNames.length} screens found</p>
                         </div>
-                        <span class="app-container-toggle"><img src="./assets/images/icons/icon-chevron-down.png" alt="Toggle" class="auth-icon-img"></span>
+                        <span class="app-container-toggle"><img src="./assets/images/icons/icon-chevron-down-wht.png" alt="Toggle" class="auth-icon-img"></span>
                     </div>
                     <div class="app-container-content">
                         <div class="app-images-grid">
