@@ -179,7 +179,7 @@ class LoginApp {
             if (!submitBtn.querySelector('.check-inbox-label')) {
                 const label = document.createElement('span');
                 label.className = 'check-inbox-label';
-                label.textContent = 'Check Inbox';
+                label.textContent = 'Check your emails';
                 submitBtn.insertBefore(label, icon);
             }
         } else {

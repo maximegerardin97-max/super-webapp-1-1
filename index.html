@@ -310,7 +310,7 @@
                                     <h3 class="step-title">Additional context?</h3>
                                 </div>
                                 <div class="step-input-container">
-                                    <input type="text" id="step6Input" placeholder="Ask anything" />
+                                    <textarea id="step6Input" placeholder="Ask anything" rows="3"></textarea>
                                 </div>
                             </div>
                             <button class="step-back-btn" id="step6BackBtn">
@@ -400,12 +400,18 @@
                 <!-- Auth State: Signed In -->
                 <div class="auth-state hidden" id="authStateSignedIn">
                     <span class="user-email" id="userEmailDisplay"></span>
-                    <button id="designContextPill" class="preview-flow-btn" style="display:none;" title="View and update your design context">Context: 0%</button>
                     <button id="signOutBtn" class="IconButton-Wrapper">
                         <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Design Context Button Container -->
+        <div class="training-data-container">
+            <button id="designContextPill" class="context-pill-btn">
+                <img src="./assets/images/icons/icon-folder-wht.png" alt="Design Context" class="auth-icon-img" />
+            </button>
         </div>
         
         <!-- Training Data Button Container -->

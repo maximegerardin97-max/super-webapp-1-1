@@ -827,7 +827,7 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 400px;
+  width: 30vw;
   background: var(--bg-secondary);
   border-radius: 36px;
   box-shadow: 0 6px 20px var(--shadow-primary);
@@ -1109,7 +1109,8 @@ body {
   gap: 0.75rem;
 }
 
-.step-input-container input {
+.step-input-container input,
+.step-input-container textarea {
   flex: 1;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -1118,14 +1119,19 @@ body {
   color: var(--text-primary);
   font-size: 0.9rem;
   outline: none;
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  resize: vertical;
+  min-height: 48px;
 }
 
-.step-input-container input::placeholder {
+.step-input-container input::placeholder,
+.step-input-container textarea::placeholder {
   color: var(--text-quaternary);
 }
 
 /* Override for step input inside content box */
-.step-content-box .step-input-container input {
+.step-content-box .step-input-container input,
+.step-content-box .step-input-container textarea {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
 }
@@ -2371,6 +2377,17 @@ body {
 
 .preview-flow-btn:hover {
     opacity: 0.9;
+}
+
+.context-pill-btn {
+    background:transparent;
+    color: var(--text-primary);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 300;
+    cursor: pointer;
 }
 
 .punchline {
