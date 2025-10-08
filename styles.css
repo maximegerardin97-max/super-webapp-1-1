@@ -102,18 +102,18 @@
 /* CSS Custom Properties for Light/Dark Theme */
 :root {
   /* Light theme colors */
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f8f8;
-  --bg-quaternary: #fafafa;
-  --bg-hover: #f8f9ff;
-  --bg-active: #f0f4ff;
+  --text-primary: #f5f5f5;
+  --text-secondary: #ffffff;
+  --text-tertiary: #f8f8f8;
+  --text-quaternary: #fafafa;
+  --text-hover: #f8f9ff;
+  --text-active: #f0f4ff;
   
-  --text-primary: #000000;
-  --text-secondary: #333333;
-  --text-tertiary: #666666;
-  --text-quaternary: #999999;
-  --text-muted: #8e8e93;
+  --bg-primary: #000000;
+  --bg-secondary: #333333;
+  --bg-tertiary: #666666;
+  --bg-quaternary: #999999;
+  --bg-muted: #8e8e93;
   
   --border-primary: #e0e0e0;
   --border-secondary: #e9ecef;
@@ -1373,7 +1373,7 @@ body {
   box-shadow: 0 6px 20px var(--shadow-primary);
   overflow: hidden;
   transition: all 0.3s ease;
-  display: flex;
+  display: none;
   flex-direction: column;
 }
 

@@ -3275,15 +3275,15 @@ class DesignRatingApp {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
-        const largeImageDisplay = document.getElementById('largeImageDisplay');
-        
-        // Hide large image display when showing conversation list
-        if (largeImageDisplay) {
-            largeImageDisplay.style.display = 'none';
-        }
         
         // Set title for conversation list
         chatResultsTitle.textContent = 'Spaces';
+        
+        // Hide large image display when showing conversation list
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
+        if (largeImageDisplay) {
+            largeImageDisplay.style.display = 'none';
+        }
         
         chatResultsArea.classList.add('show');
         this.setChatState('expanded-state');
@@ -3330,7 +3330,6 @@ class DesignRatingApp {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
-        const largeImageDisplay = document.getElementById('largeImageDisplay');
         
         // Ensure chat results area is shown and set loading state
         chatResultsArea.classList.add('show');
@@ -3418,6 +3417,12 @@ class DesignRatingApp {
         });
         chatResultsContent.innerHTML = html;
         
+        // Show large image display when entering a conversation
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
+        if (largeImageDisplay) {
+            largeImageDisplay.style.display = 'flex';
+        }
+        
         // Apply slide-in animation to the conversation content
         // Use requestAnimationFrame to ensure DOM is updated before animation
         requestAnimationFrame(() => {
@@ -3431,12 +3436,6 @@ class DesignRatingApp {
         
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);
-        
-        // Show large image display when entering a conversation (set at the end to ensure it's not overridden)
-        if (largeImageDisplay) {
-            largeImageDisplay.style.display = 'flex !important';
-            console.log('Setting large-image-display to flex, current display:', largeImageDisplay.style.display);
-        }
         
         // Back handler is now in the header - handled by initChatBackButton
         // No extra design fetch here; image urls in messages will have restored the image already
@@ -3477,7 +3476,6 @@ class DesignRatingApp {
     
     setChatState(state) {
         const floatingChat = document.getElementById('floatingChat');
-        const largeImageDisplay = document.getElementById('largeImageDisplay');
         
         // Remove all state classes
         floatingChat.classList.remove('initial-state', 'initial-state-with-tag', 'expanded-state', 'collapsed-state');
@@ -3486,9 +3484,9 @@ class DesignRatingApp {
         floatingChat.classList.add(state);
         
         // Hide large image display when in initial states
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
         if (largeImageDisplay && (state === 'initial-state' || state === 'initial-state-with-tag')) {
             largeImageDisplay.style.display = 'none';
-            console.log('setChatState hiding large-image-display for state:', state);
         }
     }
     
