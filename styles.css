@@ -1388,14 +1388,13 @@ body {
   width: 100%;
   flex: 1;
   position: relative;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   min-height: 400px;
 }
 
 .large-image-container.has-image {
-  display: flex;
   min-height: unset;
   padding: 0;
 }
