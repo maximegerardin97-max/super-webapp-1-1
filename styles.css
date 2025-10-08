@@ -251,7 +251,7 @@ body {
 
 .app-container-subtitle {
   font-size: 14px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin: 4px 0 0 0;
 }
 
@@ -784,7 +784,7 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 30vw;
+  width: auto;
   background: var(--bg-secondary);
   border-radius: 36px;
   box-shadow: 0 6px 20px var(--shadow-primary);
@@ -1100,7 +1100,7 @@ body {
 }
 
 .chat-image-btn {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   color: var(--text-secondary);
   cursor: pointer;
@@ -1123,7 +1123,7 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 50px;
   padding: 0.75rem;
@@ -1377,7 +1377,6 @@ body {
 
 .upload-prompt {
   text-align: center;
-  color: var(--text-tertiary);
   transition: color 0.3s ease;
 }
 
