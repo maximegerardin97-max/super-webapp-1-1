@@ -3332,11 +3332,6 @@ class DesignRatingApp {
         const chatResultsTitle = document.getElementById('chatResultsTitle');
         const largeImageDisplay = document.getElementById('largeImageDisplay');
         
-        // Show large image display when entering a conversation
-        if (largeImageDisplay) {
-            largeImageDisplay.style.display = 'block';
-        }
-        
         // Ensure chat results area is shown and set loading state
         chatResultsArea.classList.add('show');
         chatResultsTitle.textContent = 'Loading...';
@@ -3437,6 +3432,12 @@ class DesignRatingApp {
         // Set up event listeners for cards (Go deeper buttons and chevron toggles)
         const updatedContainer = this.setupCardEventListeners(chatResultsContent);
         
+        // Show large image display when entering a conversation (set at the end to ensure it's not overridden)
+        if (largeImageDisplay) {
+            largeImageDisplay.style.display = 'flex !important';
+            console.log('Setting large-image-display to flex, current display:', largeImageDisplay.style.display);
+        }
+        
         // Back handler is now in the header - handled by initChatBackButton
         // No extra design fetch here; image urls in messages will have restored the image already
     }
@@ -3487,6 +3488,7 @@ class DesignRatingApp {
         // Hide large image display when in initial states
         if (largeImageDisplay && (state === 'initial-state' || state === 'initial-state-with-tag')) {
             largeImageDisplay.style.display = 'none';
+            console.log('setChatState hiding large-image-display for state:', state);
         }
     }
     
