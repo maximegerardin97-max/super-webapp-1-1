@@ -104,14 +104,14 @@
   /* Dark theme colors - forced at all times */
   --bg-primary: #1c1c1e;
   --bg-secondary: #2c2c2e;
-  --bg-tertiary: #3a3a3c;
+  --bg-tertiary: #fff;
   --bg-quaternary: #48484a;
   --bg-hover: #2c2c2e;
   --bg-active: #3a3a3c;
   
   --text-primary: #ffffff;
   --text-secondary: #f2f2f7;
-  --text-tertiary: #c7c7cc;
+  --text-tertiary: #000;
   --text-quaternary: #8e8e93;
   --text-muted: #636366;
   
@@ -434,8 +434,8 @@ body {
 }
 
 .chat-message.assistant-message .message-content {
-  background: #ffffff;
-  color: #000000;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
   border-radius: 16px 16px 16px 4px;
 }
 
@@ -551,8 +551,8 @@ body {
 
 /* Message Cards - for chat message content */
 .improvement-card {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
   border-radius: 16px 16px 16px 4px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
@@ -2303,7 +2303,7 @@ body {
 }
 
 .flow-inspiration {
-    background: var(--text-primary);
+    background: var(--bg-tertiary);
     padding: 16px;
     border-radius: 16px 16px 16px 4px;
 }
@@ -2312,12 +2312,12 @@ body {
     font-size: 14px;
     font-weight: 400;
     margin-bottom: 4px;
-    color: var(--bg-primary);
+    color: var(--text-tertiary);
 }
 
 .flow-inspiration p {
     font-size: 14px;
-    color: var(--bg-primary);
+    color: var(--text-tertiary);
     margin-bottom: 12px;
 }
 
