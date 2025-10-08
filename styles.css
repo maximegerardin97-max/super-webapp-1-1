@@ -850,7 +850,7 @@ body {
 
 .step-content-box {
   flex: 1;
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-secondary);
   border-radius: 24px;
   padding: 8px;
