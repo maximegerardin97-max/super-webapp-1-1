@@ -47,18 +47,6 @@
     object-fit: contain;
 }
 
-/* Show black logo in light mode, white logo in dark mode */
-@media (prefers-color-scheme: light) {
-    .login-logo {
-        content: url('./assets/images/SuperLogoBlk.png');
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .login-logo {
-        content: url('./assets/images/SuperLogo.png');
-    }
-}
 
 /* Email Input Container */
 .login-input-container {
@@ -144,30 +132,6 @@
     opacity: 0.5;
 }
 
-/* Theme-adaptive icons for login page */
-@media (prefers-color-scheme: light) {
-    .login-icon[src*="icon-send.png"] {
-        content: url('./assets/images/icons/icon-send-blk.png');
-    }
-    .login-icon[src*="icon-check-light.png"] {
-        content: url('./assets/images/icons/icon-check-light.png');
-    }
-    .login-icon[src*="icon-loading.png"] {
-        content: url('./assets/images/icons/icon-loading-blk.png');
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .login-icon[src*="icon-send.png"] {
-        content: url('./assets/images/icons/icon-send.png');
-    }
-    .login-icon[src*="icon-check-light.png"] {
-        content: url('./assets/images/icons/icon-check-light.png');
-    }
-    .login-icon[src*="icon-loading.png"] {
-        content: url('./assets/images/icons/icon-loading.png');
-    }
-}
 
 .check-inbox-label {
     position: absolute;

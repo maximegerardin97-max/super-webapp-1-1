@@ -101,30 +101,30 @@
 
 /* CSS Custom Properties for Light/Dark Theme */
 :root {
-  /* Light theme colors */
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f8f8;
-  --bg-quaternary: #fafafa;
-  --bg-hover: #f8f9ff;
-  --bg-active: #f0f4ff;
+  /* Dark theme colors - forced at all times */
+  --bg-primary: #1c1c1e;
+  --bg-secondary: #2c2c2e;
+  --bg-tertiary: #3a3a3c;
+  --bg-quaternary: #48484a;
+  --bg-hover: #2c2c2e;
+  --bg-active: #3a3a3c;
   
-  --text-primary: #000000;
-  --text-secondary: #333333;
-  --text-tertiary: #666666;
-  --text-quaternary: #999999;
-  --text-muted: #8e8e93;
+  --text-primary: #ffffff;
+  --text-secondary: #f2f2f7;
+  --text-tertiary: #c7c7cc;
+  --text-quaternary: #8e8e93;
+  --text-muted: #636366;
   
-  --border-primary: #e0e0e0;
-  --border-secondary: #e9ecef;
-  --border-tertiary: #f0f0f0;
-  --border-hover: #000000;
+  --border-primary: #38383a;
+  --border-secondary: #48484a;
+  --border-tertiary: #2c2c2e;
+  --border-hover: #ffffff;
   
-  --shadow-primary: rgba(0, 0, 0, 0.04);
-  --shadow-secondary: rgba(0, 0, 0, 0.06);
-  --shadow-tertiary: rgba(0, 0, 0, 0.08);
-  --shadow-hover: rgba(0, 0, 0, 0.1);
-  --shadow-strong: rgba(0, 0, 0, 0.15);
+  --shadow-primary: rgba(0, 0, 0, 0.2);
+  --shadow-secondary: rgba(0, 0, 0, 0.3);
+  --shadow-tertiary: rgba(0, 0, 0, 0.4);
+  --shadow-hover: rgba(0, 0, 0, 0.5);
+  --shadow-strong: rgba(0, 0, 0, 0.6);
   
   --accent-primary: #007AFF;
   --accent-secondary: #34C759;
@@ -134,57 +134,14 @@
   --button-text: #ffffff;
   --button-hover: #333333;
   
-  --input-bg: #ffffff;
-  --input-border: #e0e0e0;
-  --input-placeholder: #999999;
+  --input-bg: #2c2c2e;
+  --input-border: #38383a;
+  --input-placeholder: #8e8e93;
   
-  --chat-bg: #f9f9f9;
-  --chat-border: #e5e5e7;
+  --chat-bg: #1c1c1e;
+  --chat-border: #38383a;
 }
 
-/* Dark theme colors */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1c1c1e;
-    --bg-secondary: #2c2c2e;
-    --bg-tertiary: #3a3a3c;
-    --bg-quaternary: #48484a;
-    --bg-hover: #2c2c2e;
-    --bg-active: #3a3a3c;
-    
-    --text-primary: #ffffff;
-    --text-secondary: #f2f2f7;
-    --text-tertiary: #c7c7cc;
-    --text-quaternary: #8e8e93;
-    --text-muted: #636366;
-    
-    --border-primary: #38383a;
-    --border-secondary: #48484a;
-    --border-tertiary: #2c2c2e;
-    --border-hover: #ffffff;
-    
-    --shadow-primary: rgba(0, 0, 0, 0.2);
-    --shadow-secondary: rgba(0, 0, 0, 0.3);
-    --shadow-tertiary: rgba(0, 0, 0, 0.4);
-    --shadow-hover: rgba(0, 0, 0, 0.5);
-    --shadow-strong: rgba(0, 0, 0, 0.6);
-    
-    --accent-primary: #0a84ff;
-    --accent-secondary: #30d158;
-    --accent-tertiary: #8e8e93;
-    
-    --button-bg: #ffffff;
-    --button-text: #000000;
-    --button-hover: #f2f2f7;
-    
-    --input-bg: #2c2c2e;
-    --input-border: #38383a;
-    --input-placeholder: #8e8e93;
-    
-    --chat-bg: #1c1c1e;
-    --chat-border: #38383a;
-  }
-}
 
 * {
   margin: 0;
@@ -594,8 +551,8 @@ body {
 
 /* Message Cards - for chat message content */
 .improvement-card {
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   border-radius: 16px 16px 16px 4px;
   box-shadow: 0 2px 8px var(--shadow-secondary);
   overflow: hidden;
@@ -604,8 +561,8 @@ body {
 
 /* Conversation Cards - for conversation list items */
 .conversation-card {
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   border-radius: 16px 16px 16px 16px;
   overflow: hidden;
   cursor: pointer;
@@ -614,7 +571,7 @@ body {
 /* 1-line recap (green) */
 .improvement-card--recap { 
   border-color: var(--accent-secondary); 
-  background: var(--text-primary); 
+  background: var(--bg-primary); 
 }
 
 .improvement-header {
@@ -645,7 +602,7 @@ body {
 .improvement-title { 
   font-size: 14px; 
   font-weight: 400; 
-  color: var(--bg-primary);
+  color: var(--text-primary);
   flex: 1 1 auto; 
   margin-right: 40px; 
 }
@@ -653,7 +610,7 @@ body {
 .conversation-title { 
   font-size: 14px; 
   font-weight: 400; 
-  color: var(--bg-primary); 
+  color: var(--text-primary); 
   flex: 1 1 auto; 
   margin-right: 8px; 
   white-space: nowrap;
@@ -702,11 +659,11 @@ body {
 }
 
 .improvement-body { 
-  display: none; 
-  padding: 0 14px 14px 14px; 
-  color: #333333;
-  font-size: 14px; 
-  line-height: 1.5; 
+  display: none;
+  padding: 0 14px 14px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .improvement-card.expanded .improvement-body { 
@@ -2271,7 +2228,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #333333;
+    color: var(--text-primary);
 }
 
 .rec-section p,
@@ -2279,7 +2236,7 @@ body {
 .rec-section ol {
     font-size: 14px;
     line-height: 1.4;
-    color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .rec-section ul,
@@ -3369,55 +3326,6 @@ body { padding-bottom: 140px; }
   opacity: 0.5;
 }
 
-/* Theme-adaptive icons for light mode (use black versions) */
-@media (prefers-color-scheme: light) {
-  .auth-icon-img[src*="icon-send.png"] {
-    content: url('./assets/images/icons/icon-send-blk.png');
-  }
-  .auth-icon-img[src*="icon-img.png"] {
-    content: url('./assets/images/icons/icon-img-dark.png');
-  }
-  .auth-icon-img[src*="icon-logout.png"] {
-    content: url('./assets/images/icons/icon-logout-blk.png');
-  }
-  .auth-icon-img[src*="icon-folder-wht.png"] {
-    content: url('./assets/images/icons/icon-folder-blk.png');
-  }
-  .auth-icon-img[src*="icon-hash.png"] {
-    content: url('./assets/images/icons/icon-hash-blk.png');
-  }
-  .auth-icon-img[src*="icon-close.png"] {
-    content: url('./assets/images/icons/icon-close.png');
-  }
-  .auth-icon-img[src*="icon-linkout-white.png"] {
-    content: url('./assets/images/icons/icon-linkout-blk.png');
-  }
-}
-
-/* Theme-adaptive icons for dark mode (use white versions) */
-@media (prefers-color-scheme: dark) {
-  .auth-icon-img[src*="icon-send.png"] {
-    content: url('./assets/images/icons/icon-send.png');
-  }
-  .auth-icon-img[src*="icon-img.png"] {
-    content: url('./assets/images/icons/icon-img.png');
-  }
-  .auth-icon-img[src*="icon-logout.png"] {
-    content: url('./assets/images/icons/icon-logout.png');
-  }
-  .auth-icon-img[src*="icon-folder-wht.png"] {
-    content: url('./assets/images/icons/icon-folder-wht.png');
-  }
-  .auth-icon-img[src*="icon-hash.png"] {
-    content: url('./assets/images/icons/icon-hash.png');
-  }
-  .auth-icon-img[src*="icon-close.png"] {
-    content: url('./assets/images/icons/icon-close.png');
-  }
-  .auth-icon-img[src*="icon-linkout-white.png"] {
-    content: url('./assets/images/icons/icon-linkout-white.png');
-  }
-}
 
 /* Training Data Button Container */
 .training-data-container {
