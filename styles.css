@@ -602,7 +602,7 @@ body {
 .improvement-title { 
   font-size: 14px; 
   font-weight: 400; 
-  color: var(--text-primary);
+  color: var(--text-tertiary);
   flex: 1 1 auto; 
   margin-right: 40px; 
 }
@@ -2228,7 +2228,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--text-primary);
+    color: var(--text-tertiary);
 }
 
 .rec-section p,
@@ -2236,7 +2236,7 @@ body {
 .rec-section ol {
     font-size: 14px;
     line-height: 1.4;
-    color: var(--text-primary);
+    color: var(--text-tertiary);
 }
 
 .rec-section ul,
