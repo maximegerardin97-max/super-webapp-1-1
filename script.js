@@ -3275,6 +3275,12 @@ class DesignRatingApp {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
+        
+        // Hide large image display when showing conversation list
+        if (largeImageDisplay) {
+            largeImageDisplay.style.display = 'none';
+        }
         
         // Set title for conversation list
         chatResultsTitle.textContent = 'Spaces';
@@ -3324,6 +3330,12 @@ class DesignRatingApp {
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
+        
+        // Show large image display when entering a conversation
+        if (largeImageDisplay) {
+            largeImageDisplay.style.display = 'block';
+        }
         
         // Ensure chat results area is shown and set loading state
         chatResultsArea.classList.add('show');
@@ -3464,12 +3476,18 @@ class DesignRatingApp {
     
     setChatState(state) {
         const floatingChat = document.getElementById('floatingChat');
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
         
         // Remove all state classes
         floatingChat.classList.remove('initial-state', 'initial-state-with-tag', 'expanded-state', 'collapsed-state');
         
         // Add the new state class
         floatingChat.classList.add(state);
+        
+        // Hide large image display when in initial states
+        if (largeImageDisplay && (state === 'initial-state' || state === 'initial-state-with-tag')) {
+            largeImageDisplay.style.display = 'none';
+        }
     }
     
     toggleMainChat() {
