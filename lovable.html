@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lovable Design Review - AI Assistant</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon/favicon-dark.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="./assets/images/favicon/favicon-dark@2x.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="./assets/images/favicon/favicon-dark@4x.png">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <button class="lovable-top-bar" id="upgradeBtn" title="Upgrade to Pro">
+        <div class="lovable-usage-info">
+            <div class="lovable-usage-bar">
+                <div class="usage-bar-fill" id="usageBarFill" style="width: 0%"></div>
+            </div>
+            <div class="lovable-usage-text" id="usageText">0/3 free prompts used</div>
+        </div>
+        <div class="lovable-upgrade-icon">
+            <img src="./assets/images/icons/icon-expand-wht.png" alt="Upgrade" class="auth-icon-img" />
+        </div>
+    </button>
+
+    <div class="lovable-container">
+        <!-- Screen 1: Input -->
+        <div class="lovable-screen active" id="inputScreen">
+            <div class="lovable-input-container">
+                <!-- Logo -->
+                <img src="./assets/images/love/FireMonoGram.png" alt="Logo" class="lovable-logo" />
+                
+                <!-- Header -->
+                <div class="lovable-header">
+                    <h1 class="lovable-title">Make it<br> more Lovable</h1>
+                </div>
+
+                <!-- Input Section -->
+                <div class="lovable-input-section">
+                    <!-- Step 1: URL Input -->
+                    <div class="url-input-group" id="urlStep">
+                        <input type="url" id="siteUrl" class="url-display-input" placeholder="yoursite.lovable.dev"/>
+                        <button class="url-action-btn" id="urlSendBtn" title="Send URL">
+                            <img src="./assets/images/icons/icon-send.png" alt="Send URL" class="auth-icon-img" />
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Tags Selection (replaces URL input) -->
+                    <div class="url-input-group" id="tagsStep" style="display: none;">
+                        <div class="lovable-areas">
+                            <button class="lovable-area-btn" data-area="ux">UX</button>
+                            <button class="lovable-area-btn" data-area="ui">UI</button>
+                            <button class="lovable-area-btn" data-area="copy">Copy</button>
+                            <button class="lovable-area-btn" data-area="styling">Styling</button>
+                        </div>
+                        <button class="url-action-btn" id="tagsSendBtn" title="Send Tags" disabled>
+                            <img src="./assets/images/icons/icon-send.png" alt="Send Tags" class="auth-icon-img" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Results -->
+        <div class="lovable-screen" id="resultsScreen">
+            <div class="lovable-results-container">
+                <!-- Logo -->
+                <img src="./assets/images/love/FireMonoGram.png" alt="Logo" class="lovable-logo" />
+                
+                <!-- Product Summary Section -->
+                <div class="lovable-product-summary">
+                    <div class="lovable-url-display">
+                        <div class="url-input-group">
+                            <input type="text" id="displayedUrl" class="url-display-input" readonly />
+                            <button class="url-action-btn" id="refreshBtn" title="Refresh">
+                                <img src="./assets/images/icons/icon-close.png" alt="Refresh" class="auth-icon-img" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lovable-screenshots-section">
+                        <div class="screenshots-scroll">
+                            <div class="screenshot-placeholder">
+                                <div class="screenshot-content">
+                                    <div class="screenshot-page-name">Home</div>
+                                    <button class="screenshot-expand-btn">
+                                        <img src="./assets/images/icons/icon-expand-wht.png" alt="Expand" class="auth-icon-img" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="screenshot-placeholder">
+                                <div class="screenshot-content">
+                                    <div class="screenshot-page-name">About</div>
+                                    <button class="screenshot-expand-btn">
+                                        <img src="./assets/images/icons/icon-expand-wht.png" alt="Expand" class="auth-icon-img" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="screenshot-placeholder">
+                                <div class="screenshot-content">
+                                    <div class="screenshot-page-name">Contact</div>
+                                    <button class="screenshot-expand-btn">
+                                        <img src="./assets/images/icons/icon-expand-wht.png" alt="Expand" class="auth-icon-img" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="screenshot-placeholder">
+                                <div class="screenshot-content">
+                                    <div class="screenshot-page-name">Test</div>
+                                    <button class="screenshot-expand-btn">
+                                        <img src="./assets/images/icons/icon-expand-wht.png" alt="Expand" class="auth-icon-img" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="screenshot-placeholder">
+                                <div class="screenshot-content">
+                                    <div class="screenshot-page-name">Test</div>
+                                    <button class="screenshot-expand-btn">
+                                        <img src="./assets/images/icons/icon-expand-wht.png" alt="Expand" class="auth-icon-img" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations Section -->
+                <div class="lovable-recommendations">
+                    <div class="recommendations-scroll" id="improvementsContainer">
+                        <!-- Cards will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Action Section -->
+                <div class="lovable-action-section">
+                    <button class="lovable-generate-btn" id="generateBtn">
+                        <div class="generate-btn-pattern"></div>
+                        <span>Generate Prompt</span>
+                    </button>
+                    <div class="action-usage-info">
+                        <div class="usage-widget">
+                            <div class="usage-bar-mini">
+                                <div class="usage-bar-fill-mini" id="usageBarFillMini" style="width: 0%"></div>
+                            </div>
+                            <span class="usage-text-mini" id="usageTextMini">0/3 tokens left</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Generated Prompt -->
+        <div class="lovable-screen" id="promptScreen">
+            <div class="lovable-results-container">
+                <!-- Logo -->
+                <img src="./assets/images/love/FireMonoGram.png" alt="Logo" class="lovable-logo" />
+                
+                <!-- Prompt Section -->
+                <div class="lovable-product-summary">
+                    <div class="url-input-group">
+                        <textarea 
+                            id="generatedPrompt" 
+                            class="lovable-prompt-textarea" 
+                            readonly
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <!-- Actions Section -->
+                <div class="lovable-action-section">
+                    
+                    <div class="lovable-prompt-actions">
+                        <div class="url-input-refresh">
+                            <button class="url-action-btn" id="improveAgainBtn" title="Improve again">
+                                <img src="./assets/images/icons/icon-refresh-wht.png" alt="Improve again" class="auth-icon-img" />
+                                <span style="margin-left: 6px;">Improve again</span>
+                            </button>
+                        </div>
+                        <button class="lovable-generate-btn" id="copyBtn">
+                            <img src="./assets/images/icons/icon-clipboard-black.png" alt="Copy" class="auth-icon-img" />
+                            Copy to Clipboard
+                        </button>
+                        <div class="action-usage-info">
+                            <div class="usage-widget">
+                                <div class="usage-bar-mini">
+                                    <div class="usage-bar-fill-mini" id="usageBarFillMiniPrompt" style="width: 0%"></div>
+                                </div>
+                                <span class="usage-text-mini" id="usageTextMiniPrompt">0/3 tokens left</span>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paywall Modal -->
+    <div class="lovable-paywall-overlay" id="paywallModal">
+        <!-- Logo -->
+        <img src="./assets/images/love/FireMonoGram.png" alt="Logo" class="lovable-logo" />
+            
+        <!-- Header -->
+        <div class="lovable-header">
+            <h1 class="lovable-title">Unleash the power<br>of Lovable</h1>
+        </div>
+
+
+        <div class="lovable-paywall-container">
+            <!-- Features Section -->
+            <div class="lovable-product-summary">
+                <div class="lovable-paywall-features">
+                    <div class="feature-item">
+                        
+                        <span>Unlimited Credits</span>
+                        <div class="feature-check">
+                            <img src="./assets/images/icons/icon-check-light.png" alt="Check" class="auth-icon-img" />
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        
+                        <span>Advanced Insights</span>
+                        <div class="feature-check">
+                            <img src="./assets/images/icons/icon-check-light.png" alt="Check" class="auth-icon-img" />
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        
+                        <span>Design Brain Memory</span>
+                        <div class="feature-check">
+                            <img src="./assets/images/icons/icon-check-light.png" alt="Check" class="auth-icon-img" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Plan Toggle -->
+            <div class="lovable-action-section">
+                <div class="lovable-paywall-toggle">
+                    <button class="plan-toggle-btn" data-plan="monthly" id="monthlyToggle">Monthly $8/mo</button>
+                    <button class="plan-toggle-btn active" data-plan="yearly" id="yearlyToggle">Yearly $6/mo</button>
+                </div>
+                
+                <!-- Upgrade Button -->
+                <button class="lovable-generate-btn" id="upgradeNowBtn">
+                    <div class="generate-btn-pattern"></div>
+                    <span id="upgradeButtonText">Upgrade for $6/mo</span>
+                </button>
+                
+                <!-- Usage Info -->
+                <div class="action-usage-info">
+                    <div class="usage-widget">
+                        <div class="usage-bar-mini">
+                            <div class="usage-bar-fill-mini" id="usageBarFillMiniPaywall" style="width: 0%"></div>
+                        </div>
+                        <span class="usage-text-mini" id="usageTextMiniPaywall">0/3 free tokens used</span>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+        <!-- Close Button -->
+        <button class="lovable-paywall-close" id="paywallCloseBtn">
+            <span>Close</span>
+        </button>
+    </div>
+
+    <script src="lovable.js"></script>
+</body>
+</html>
+

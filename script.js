@@ -3104,6 +3104,9 @@ class DesignRatingApp {
         // Training Data Modal
         this.initTrainingDataModal();
         
+        // Lovable Review Link
+        this.initLovableReviewLink();
+        
         // Chat Results Toggle
         this.initChatResultsToggle();
         
@@ -5049,6 +5052,16 @@ Product: E-commerce App | Industry: Retail | Platform: Web
             folderUploadZone.classList.remove('dragover');
             this.handleFolderUpload(e.dataTransfer.files);
         });
+    }
+
+    initLovableReviewLink() {
+        const lovableReviewLink = document.getElementById('lovableReviewLink');
+        if (lovableReviewLink) {
+            lovableReviewLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'lovable.html';
+            });
+        }
     }
 
     async handleFolderUpload(files) {
