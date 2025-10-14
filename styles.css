@@ -4032,6 +4032,19 @@ body { padding-bottom: 140px; }
   animation: circlesReset 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+@keyframes circlesGenerate {
+  from {
+    top: 90%;
+  }
+  to {
+    top: 80%;
+  }
+}
+
+.lovable-bg-circles.generate-animation {
+  animation: circlesGenerate 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
 .lovable-bg-circle {
   position: absolute;
   border-radius: 50%;

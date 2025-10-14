@@ -430,6 +430,13 @@ function generatePrompt() {
         return;
     }
     
+    // Trigger circles generate animation
+    const bgCircles = document.querySelector('.lovable-bg-circles');
+    if (bgCircles) {
+        bgCircles.classList.remove('reset-animation');
+        bgCircles.classList.add('generate-animation');
+    }
+    
     const activeImprovements = state.improvements.filter(
         imp => !state.dismissedIds.includes(imp.id)
     );
