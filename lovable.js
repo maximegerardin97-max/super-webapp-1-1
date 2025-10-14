@@ -319,6 +319,12 @@ function validateUrl() {
     
     state.url = urlValue;
     
+    // Trigger second circle animation immediately when URL is validated
+    const bgCircles = document.querySelector('.lovable-bg-circles');
+    if (bgCircles) {
+        bgCircles.classList.add('second-animation');
+    }
+    
     // Hide URL step and show tags step
     urlStep.style.display = 'none';
     tagsStep.style.display = 'flex';
@@ -343,6 +349,13 @@ function analyzeSite() {
             state.improvements.push(...mockImprovements[area]);
         }
     });
+    
+    // Trigger circles reset animation when tags are processed
+    const bgCircles = document.querySelector('.lovable-bg-circles');
+    if (bgCircles) {
+        bgCircles.classList.remove('second-animation');
+        bgCircles.classList.add('reset-animation');
+    }
     
     // Reset dismissed
     state.dismissedIds = [];

@@ -3965,22 +3965,133 @@ body { padding-bottom: 140px; }
   justify-content: center;
   padding: 40px;
   padding-top: 40px;
-  background: url('./assets/images/love/BackgroundBig.jpg') center/cover no-repeat;
-  min-height: 100vh;
-  backdrop-filter: blur(1px) saturate(180%);
-  -webkit-backdrop-filter: blur(1px) saturate(180%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Complex Background Circles */
+.lovable-bg-circles {
+  position: absolute;
+  top: 90%;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  animation: circlesMoveUp 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.lovable-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('./assets/images/BgNoise.png');
+  background-size: cover;
+  background-repeat: repeat;
+  background-position: center;
+  opacity: 0.6;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@keyframes circlesMoveUp {
+  from {
+    top: 90%;
+  }
+  to {
+    top: 75%;
+  }
+}
+
+@keyframes circlesMoveUpMore {
+  from {
+    top: 75%;
+  }
+  to {
+    top: 55%;
+  }
+}
+
+.lovable-bg-circles.second-animation {
+  animation: circlesMoveUpMore 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes circlesReset {
+  from {
+    top: 55%;
+  }
+  to {
+    top: 90%;
+  }
+}
+
+.lovable-bg-circles.reset-animation {
+  animation: circlesReset 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.lovable-bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.lovable-bg-circle-1 {
+  width: 90vh;
+  height: 70vh;
+  background: radial-gradient(circle, #FFC300 50%, #FF6A00 95%);
+  filter: blur(20px);
+  z-index: 4;
+}
+
+.lovable-bg-circle-2 {
+  width: 120vh;
+  height: 90vh;
+  background: radial-gradient(circle, #F44900 40%, #FF6A00 95%);
+  filter: blur(50px);
+  z-index: 3;
+}
+
+.lovable-bg-circle-3 {
+  width: 150vh;
+  height: 130vh;
+  background: #F44900;
+  filter: blur(80px);
+  opacity: 0.2
+  ;
+  z-index: 2;
+}
+
+.lovable-bg-circle-4 {
+  width: 180vh;
+  height: 180vh;
+  background: #2D2D2D;
+  filter: blur(100px);
+  z-index: 1;
 }
 
 /* Screens */
 .lovable-screen {
   display: none;
   width: 100%;
+  position: relative;
+  z-index: 10;
   max-width: 800px;
   margin: 0 auto;
+  opacity: 0;
+  transform: translateY(-50px);
+  transition: opacity 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3s, 
+              transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 3s;
 }
 
 .lovable-screen.active {
   display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Content */
