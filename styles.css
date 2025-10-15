@@ -652,6 +652,7 @@ body {
   color: var(--bg-primary);
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 .go-deeper-btn:hover { 
   transform: translateY(-1px);
@@ -659,6 +660,34 @@ body {
 .go-deeper-btn img {
   width: 24px;
   height: 24px;
+}
+
+/* Hover label for go-deeper-btn */
+.go-deeper-btn::after {
+  content: "More";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.go-deeper-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .improvement-body { 
@@ -4459,7 +4488,7 @@ body { padding-bottom: 140px; }
 .improvement-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-tertiary);
   margin: 0;
   flex: 1;
 }
