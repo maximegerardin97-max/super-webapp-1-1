@@ -197,7 +197,7 @@ body {
   width: 292px; /* fixed rail */
   min-width: 292px;
   max-width: 292px;
-  display: none; /* Hidden by default */
+  display: block; /* Visible by default */
 }
 
 .command-images-section.visible {
@@ -1333,7 +1333,7 @@ body {
   box-shadow: 0 6px 20px var(--shadow-primary);
   overflow: hidden;
   transition: all 0.3s ease;
-  display: none;
+  display: flex;
   flex-direction: column;
 }
 

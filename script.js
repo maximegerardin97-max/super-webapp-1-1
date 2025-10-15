@@ -35,6 +35,24 @@ class DesignRatingApp {
         
         
         this.init();
+        
+        // Test: Create a mock command images section for testing
+        setTimeout(() => {
+            this.testCommandImages();
+        }, 2000);
+    }
+    
+    // Test method to verify command images display
+    testCommandImages() {
+        const mockImages = [
+            { screenName: "Duolingo iOS Onboarding", imageUrl: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTU5NWU3Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzY2NiI+RHVvbGluZ28gT25ib2FyZGluZzwvdGV4dD4KPC9zdmc+" },
+            { screenName: "Duolingo Sign Up Flow", imageUrl: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTU5NWU3Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzY2NiI+U2lnbiBVcCBGbG93PC90ZXh0Pgo8L3N2Zz4=" }
+        ];
+        
+        const mockImageNames = ["Duolingo iOS Onboarding", "Duolingo Sign Up Flow"];
+        
+        console.log("Testing command images display...");
+        this.displayCommandImages("Duolingo", mockImageNames, mockImages, true);
     }
     
     init() {
@@ -2152,8 +2170,8 @@ class DesignRatingApp {
             realImages
         };
         
-        // Create the images section but keep it hidden
-        this.displayCommandImages(appName, imageNames, realImages, false);
+        // Create the images section and make it visible
+        this.displayCommandImages(appName, imageNames, realImages, true);
     }
 
     // Toggle command images visibility
@@ -2189,7 +2207,7 @@ class DesignRatingApp {
     }
 
     // Display command images in analysis area
-    displayCommandImages(appName, imageNames, realImages = [], visible = false) {
+    displayCommandImages(appName, imageNames, realImages = [], visible = true) {
         const analysisArea = document.querySelector('.analysis-area');
         if (!analysisArea) return;
 
