@@ -35,24 +35,6 @@ class DesignRatingApp {
         
         
         this.init();
-        
-        // Test: Create a mock command images section for testing
-        setTimeout(() => {
-            this.testCommandImages();
-        }, 2000);
-    }
-    
-    // Test method to verify command images display
-    testCommandImages() {
-        const mockImages = [
-            { screenName: "Duolingo iOS Onboarding", imageUrl: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTU5NWU3Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzY2NiI+RHVvbGluZ28gT25ib2FyZGluZzwvdGV4dD4KPC9zdmc+" },
-            { screenName: "Duolingo Sign Up Flow", imageUrl: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTU5NWU3Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzY2NiI+U2lnbiBVcCBGbG93PC90ZXh0Pgo8L3N2Zz4=" }
-        ];
-        
-        const mockImageNames = ["Duolingo iOS Onboarding", "Duolingo Sign Up Flow"];
-        
-        console.log("Testing command images display...");
-        this.displayCommandImages("Duolingo", mockImageNames, mockImages, true);
     }
     
     init() {
@@ -3804,21 +3786,72 @@ class DesignRatingApp {
             if (item.type.startsWith('image/')) {
                 const file = item.getAsFile();
                 if (file) {
-                    // Find the most recent card and first empty zone for paste
-                    const mostRecentCardId = this.currentCardId;
-                    const cardData = this.cardData.get(mostRecentCardId);
+                    // Process the pasted image in the large image display
+                    this.handleLargeImageUpload(file);
                     
-                    // Find first empty zone
-                    for (let i = 1; i <= 3; i++) {
-                        if (!cardData.uploadedImages[i]) {
-                            this.processFiles([file], mostRecentCardId, i);
-                            break;
+                    // Auto-focus the chat input to start the flow
+                    setTimeout(() => {
+                        const mainChatInput = document.getElementById('mainChatInput');
+                        if (mainChatInput) {
+                            mainChatInput.focus();
                         }
-                    }
+                    }, 100);
+                    
+                    // Show a brief visual feedback
+                    this.showPasteFeedback();
                 }
                 break;
             }
         }
+    }
+    
+    showPasteFeedback() {
+        // Create a temporary toast notification
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        toast.textContent = 'Image pasted! Continue in chat below.';
+        
+        // Add animation keyframes if not already present
+        if (!document.getElementById('paste-feedback-styles')) {
+            const style = document.createElement('style');
+            style.id = 'paste-feedback-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(toast);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
     }
     
     processFiles(files, cardId, zoneId) {
