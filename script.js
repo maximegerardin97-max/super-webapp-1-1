@@ -35,6 +35,29 @@ class DesignRatingApp {
         
         
         this.init();
+        this.handleUrlParameters();
+    }
+    
+    handleUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('conversation');
+        const message = urlParams.get('message');
+        
+        if (conversationId) {
+            // Open the specified conversation
+            setTimeout(() => {
+                this.openConversation(conversationId);
+            }, 500);
+        } else if (message) {
+            // Start a new conversation with the message
+            setTimeout(() => {
+                const chatInput = document.getElementById('mainChatInput');
+                if (chatInput) {
+                    chatInput.value = decodeURIComponent(message);
+                    chatInput.focus();
+                }
+            }, 500);
+        }
     }
     
     init() {
@@ -43,7 +66,6 @@ class DesignRatingApp {
         this.setupLargeImageDisplay(); // Setup large image display
         this.setupChatStates(); // Setup chat states
         this.setupAuth(); // Setup Supabase auth
-        this.handleUrlParameters(); // Handle navigation from conversations view
         // Design context state
         this.designContext = {
             selectedFiles: [],
@@ -61,31 +83,6 @@ class DesignRatingApp {
             if (src.type_family) parts.push(src.type_family);
             return parts.join('; ') + (parts.length ? '.' : '');
         };
-    }
-
-    handleUrlParameters() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const conversationId = urlParams.get('conversation');
-        const message = urlParams.get('message');
-
-        // Clean up URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        if (conversationId) {
-            // Open existing conversation
-            setTimeout(() => {
-                this.openConversation(conversationId);
-            }, 1000); // Wait for auth to complete
-        } else if (message) {
-            // Start new conversation with message
-            setTimeout(() => {
-                const mainChatInput = document.getElementById('mainChatInput');
-                if (mainChatInput) {
-                    mainChatInput.value = decodeURIComponent(message);
-                    mainChatInput.focus();
-                }
-            }, 1000); // Wait for auth to complete
-        }
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -3266,11 +3263,11 @@ class DesignRatingApp {
             this.sendMainChatMessage();
         });
         
-        // Show history on button click
+        // Show history on button click - redirect to conversations view
         if (historyBtn) {
             historyBtn.addEventListener('click', () => {
                 console.log('History button clicked');
-                this.showMainChatHistory();
+                window.location.href = 'conversations.html';
             });
         } else {
             console.log('History button not found');
@@ -3332,8 +3329,51 @@ class DesignRatingApp {
     }
 
     async renderConversationList() {
-        // Navigate to the dedicated conversations view
-        window.location.href = 'conversations.html';
+        const chatResultsArea = document.getElementById('chatResultsArea');
+        const chatResultsContent = document.getElementById('chatResultsContent');
+        const chatResultsTitle = document.getElementById('chatResultsTitle');
+        
+        // Set title for conversation list
+        chatResultsTitle.textContent = 'Spaces';
+        
+        chatResultsArea.classList.add('show');
+        this.setChatState('conversation-list-state');
+        chatResultsContent.innerHTML = `<div class="message-content" id="convLoading">Loading conversations…</div>`;
+        const list = await this.fetchConversationsForUser();
+        this.conversationsList = Array.isArray(list) ? list : [];
+        // Group by date (YYYY-MM-DD)
+        const byDate = {};
+        for (const c of this.conversationsList) {
+            const d = new Date(c.created_at);
+            const key = isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleDateString();
+            if (!byDate[key]) byDate[key] = [];
+            byDate[key].push(c);
+        }
+        const sections = Object.keys(byDate).map(dateKey => {
+            const itemsHtml = byDate[dateKey].map(c => {
+                const created = new Date(c.created_at);
+                const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
+                const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
+                return `
+                <div class=\"conversation-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"conversation-header\">\n                        <div class=\"conversation-title\">${this.escapeHtml(title)}</div>\n                    </div>\n                </div>`;
+            }).join('');
+            return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
+        }).join('');
+        // Hide chat results area if no conversations
+        if (!sections) {
+            chatResultsArea.classList.remove('show');
+            return;
+        }
+        
+        chatResultsContent.innerHTML = `
+            <div class="cards-stack">${sections}</div>
+        `;
+        chatResultsContent.addEventListener('click', async (e) => {
+            const item = e.target.closest('[data-role="open-conv"]');
+            if (!item) return;
+            const id = item.getAttribute('data-id');
+            await this.openConversation(id);
+        }, { once: true });
     }
 
     async openConversation(conversationId) {
@@ -4953,7 +4993,7 @@ Product: E-commerce App | Industry: Retail | Platform: Web
         
         if (chatBackBtn) {
             chatBackBtn.addEventListener('click', () => {
-                this.renderConversationList();
+                window.location.href = 'conversations.html';
             });
         }
     }

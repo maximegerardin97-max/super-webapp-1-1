@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversations - SUPER</title>
+    <title>Conversations - Design Canvas</title>
     
     <!-- Favicon for dark mode only -->
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon/favicon-dark.png">
@@ -34,16 +34,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 </head>
 <body>
-    <!-- Conversations List View -->
-    <div class="conversations-view">
-        <!-- Top Header -->
+    <!-- Main Container -->
+    <div class="conversations-container">
+        <!-- Header -->
         <header class="conversations-header">
             <!-- Logo -->
             <div class="conversations-logo">
-                <span class="logo-text">SUPER</span>
+                <img src="./assets/images/SuperLogo.png" alt="SUPER" class="logo-img" />
             </div>
             
-            <!-- User Info Component -->
+            <!-- User Account Component -->
             <div class="user-account-component">
                 <!-- Connection Status Indicator -->
                 <div class="connection-status" id="connectionStatus" title="Connected">
@@ -73,30 +73,30 @@
 
         <!-- Main Content -->
         <main class="conversations-main">
-            <!-- Simple Title -->
+            <!-- Title -->
             <h1 class="conversations-title">What are you working on today?</h1>
             
-            <!-- Centered Conversations List -->
-            <div class="conversations-container">
-                <div class="conversations-card">
-                    <!-- Header -->
-                    <div class="conversations-card-header">
-                        <h2 class="conversations-card-title">Your Conversations</h2>
+            <!-- Conversations List Container -->
+            <div class="conversations-list-container">
+                <div class="conversations-list-card">
+                    <div class="conversations-list-header">
+                        <h2 class="conversations-list-title">Your Conversations</h2>
                     </div>
                     
-                    <!-- Conversations List -->
-                    <div class="conversations-list" id="conversationsList">
-                        <div class="conversations-loading">Loading conversations...</div>
+                    <div class="conversations-list-content" id="conversationsListContent">
+                        <div class="conversations-loading">
+                            <div class="loading-text">Loading conversations...</div>
+                        </div>
                     </div>
                     
-                    <!-- Input Field to Start New Conversation -->
-                    <div class="conversations-input-container">
-                        <button class="conversations-image-btn" id="conversationsImageBtn" title="Upload image">
-                            <img src="./assets/images/icons/icon-img.png" alt="Upload" class="auth-icon-img" />
-                        </button>
-                        <div class="conversations-input-wrapper">
-                            <input type="text" id="conversationsInput" placeholder="Something new" />
-                            <button class="conversations-send-btn" id="conversationsSendBtn">
+                    <!-- New Conversation Input -->
+                    <div class="new-conversation-input-container">
+                        <div class="new-conversation-input-wrapper">
+                            <button class="conversation-image-btn" id="conversationImageBtn" title="Upload image">
+                                <img src="./assets/images/icons/icon-img.png" alt="Image" class="auth-icon-img" />
+                            </button>
+                            <input type="text" id="newConversationInput" class="new-conversation-input" placeholder="Something new" />
+                            <button class="conversation-send-btn" id="newConversationSendBtn" title="Start conversation">
                                 <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
                             </button>
                         </div>
@@ -105,7 +105,7 @@
             </div>
         </main>
     </div>
-
+    
     <script src="conversations.js"></script>
     <script>
         // Check authentication state on page load
