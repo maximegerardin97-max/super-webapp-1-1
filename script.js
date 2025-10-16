@@ -3290,15 +3290,8 @@ class DesignRatingApp {
             floatingChat.style.display = 'none';
         });
         
-        // Initialize chat in initial state and show conversation list after auth resolves
+        // Initialize chat in initial state - don't show conversation list by default
         this.setChatState('initial-state');
-        try {
-            if (this.supabase) {
-                this.supabase.auth.getSession().then(() => this.renderConversationList()).catch(() => this.renderConversationList());
-            } else {
-                this.renderConversationList();
-            }
-        } catch (_) { this.renderConversationList(); }
         
     }
 
@@ -3435,6 +3428,7 @@ class DesignRatingApp {
         (messages || []).forEach((m) => {
             const role = (m.role && typeof m.role === 'string') ? m.role : (m.author || 'assistant');
             let content = extractText(m.content);
+            
             // Collect all image urls, show them, and strip from text
             const urls = [];
             let match;
@@ -3447,27 +3441,38 @@ class DesignRatingApp {
                 content = content.replace(url, '[User design]');
             });
             content = (content || '').trim();
-            // If assistant message contains COMMAND formula, process inspirations for old conversations
-            if (role === 'assistant' && this.containsCommandFormula(content)) {
-                try { this.processCommandImagesFromMessage(content, true); } catch {}
-            }
+            
             if (!content) return;
             
             if (role === 'assistant') {
-                // Try to parse as screen analysis for cards
-                const screenAnalysis = this.parseScreenAnalysis(content);
-                if (screenAnalysis.hasScreenAnalysis) {
-                    // Create a temporary div to render cards
-                    const tempDiv = document.createElement('div');
-                    this.displayScreenAnalysis(screenAnalysis, tempDiv);
-                    html += tempDiv.innerHTML;
-                } else {
-                    // Fallback to regular message
-                    html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+                // Process assistant messages through the same pipeline as new messages
+                // This ensures cards, command images, and other rich content are properly displayed
+                try {
+                    // Process command images if present
+                    if (this.containsCommandFormula(content)) {
+                        this.processCommandImagesFromMessage(content, true);
+                    }
+                    
+                    // Try to parse as screen analysis for cards
+                    const screenAnalysis = this.parseScreenAnalysis(content);
+                    if (screenAnalysis.hasScreenAnalysis) {
+                        // Create a temporary div to render cards
+                        const tempDiv = document.createElement('div');
+                        this.displayScreenAnalysis(screenAnalysis, tempDiv);
+                        html += tempDiv.innerHTML;
+                    } else {
+                        // Process as regular message but ensure it goes through the same pipeline
+                        const messageDiv = this.createMessageElement(content, 'assistant');
+                        html += messageDiv.outerHTML;
+                    }
+                } catch (error) {
+                    console.warn('Error processing historical assistant message:', error);
+                    // Fallback to simple message display
+                    html += `\n            <div class="chat-message assistant-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
                 }
             } else {
                 // User messages stay as regular bubbles
-                html += `\n            <div class="chat-message ${role === 'user' ? 'user-message' : 'assistant-message'}">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
+                html += `\n            <div class="chat-message user-message">\n                <div class="message-content">${this.escapeHtml(content)}</div>\n            </div>`;
             }
         });
         chatResultsContent.innerHTML = html;
