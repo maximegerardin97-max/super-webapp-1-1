@@ -35,6 +35,66 @@ class DesignRatingApp {
         
         
         this.init();
+        
+        // Handle URL parameters from conversations view
+        this.handleUrlParameters();
+    }
+    
+    handleUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+        const imageData = urlParams.get('imageData');
+        const imageName = urlParams.get('imageName');
+        
+        if (message) {
+            // Set the message in the chat input
+            setTimeout(() => {
+                const mainChatInput = document.getElementById('mainChatInput');
+                if (mainChatInput) {
+                    mainChatInput.value = message;
+                }
+                
+                // Handle image data if provided
+                if (imageData && imageName) {
+                    this.uploadedImageData = {
+                        dataUrl: imageData,
+                        filename: imageName
+                    };
+                    this.displayLargeImageFromDataUrl(imageData, imageName);
+                }
+                
+                // Auto-focus and trigger analysis
+                if (mainChatInput) {
+                    mainChatInput.focus();
+                    // Trigger analysis after a short delay
+                    setTimeout(() => {
+                        this.triggerAnalysis(message);
+                    }, 500);
+                }
+            }, 1000);
+        }
+    }
+    
+    displayLargeImageFromDataUrl(dataUrl, filename) {
+        const largeImagePlaceholder = document.querySelector('.large-image-placeholder');
+        const largeImageContent = document.getElementById('largeImageContent');
+        const largeImage = document.getElementById('largeImage');
+        const largeImageDisplay = document.getElementById('largeImageDisplay');
+        const largeImageContainer = document.querySelector('.large-image-container');
+
+        // Hide placeholder and show image
+        if (largeImagePlaceholder) largeImagePlaceholder.classList.add('hidden');
+        if (largeImageContent) largeImageContent.classList.remove('hidden');
+
+        // Update display classes
+        if (largeImageDisplay) largeImageDisplay.classList.add('has-image');
+        if (largeImageContainer) largeImageContainer.classList.add('has-image');
+        
+        // Set image source
+        if (largeImage) {
+            largeImage.src = dataUrl;
+            largeImage.alt = filename;
+        }
     }
     
     init() {

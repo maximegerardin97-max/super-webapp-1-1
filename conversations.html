@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversations - SUPER</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon/favicon-dark.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="./assets/images/favicon/favicon-dark@2x.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="./assets/images/favicon/favicon-dark@4x.png">
+    
+    <link rel="stylesheet" href="styles.css">
+    <script>
+    window.AGENT_CFG = {
+    CHAT_URL: 'https://iiolvvdnzrfcffudwocp.functions.supabase.co/llm-proxy-auth',
+    SUPABASE_URL: 'https://iiolvvdnzrfcffudwocp.supabase.co',
+    SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2x2dmRuenJmY2ZmdWR3b2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MjE4MDAsImV4cCI6MjA3MzA5NzgwMH0.2-e8Scn26fqsR11h-g4avH8MWybwLTtcf3fCN9qAgVw'
+    };
+    </script>
+    <!-- Optional local override; guard 404 on Pages -->
+    <script>
+    (function(){
+      var s = document.createElement('script');
+      s.src = 'env.local.js';
+      s.defer = true;
+      s.onerror = function(){ console.info('env.local.js not found (ok on Pages)'); };
+      document.currentScript.parentNode.insertBefore(s, document.currentScript.nextSibling);
+    })();
+    </script>
+    <!-- Supabase client for auth (Browser UMD build) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
+</head>
+<body>
+    <!-- Conversations View Container -->
+    <div class="conversations-container">
+        <!-- Top Header -->
+        <div class="conversations-header">
+            <!-- Logo -->
+            <div class="conversations-logo">
+                <img src="./assets/images/SuperLogo.png" alt="SUPER" class="logo-img" />
+            </div>
+            
+            <!-- User Info -->
+            <div class="conversations-user-info">
+                <div class="connection-status" id="connectionStatus" title="Connected">
+                    <div class="status-dot"></div>
+                </div>
+                <span class="user-email" id="userEmailDisplay"></span>
+                <button id="signOutBtn" class="IconButton-Wrapper">
+                    <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="conversations-main">
+            <!-- Title -->
+            <h1 class="conversations-title">What are you working on today?</h1>
+            
+            <!-- Input Container -->
+            <div class="conversations-input-container">
+                <div class="chat-input-container">
+                    <button class="chat-image-btn" id="conversationsImageBtn" title="Upload image">
+                        <img src="./assets/images/icons/icon-img.png" alt="Upload" class="auth-icon-img" />
+                    </button>
+                    <div class="chat-input-wrapper">
+                        <input type="text" id="conversationsInput" placeholder="Something new" />
+                        <button class="chat-send-btn" id="conversationsSendBtn">
+                            <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="conversations.js"></script>
+    <script>
+        // Check authentication state on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                if (!window.__SB_CLIENT__) {
+                    window.__SB_CLIENT__ = window.supabase.createClient(
+                        window.AGENT_CFG.SUPABASE_URL,
+                        window.AGENT_CFG.SUPABASE_ANON,
+                        { auth: { storageKey: 'sb-design-context-auth' } }
+                    );
+                }
+                const supabase = window.__SB_CLIENT__;
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session || !session.user) {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error checking auth state:', error);
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

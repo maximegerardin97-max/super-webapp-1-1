@@ -159,6 +159,64 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Conversations View Styles */
+.conversations-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.conversations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.conversations-logo .logo-img {
+  height: 32px;
+  width: auto;
+}
+
+.conversations-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.conversations-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 40px;
+}
+
+.conversations-title {
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.conversations-input-container {
+  width: 100%;
+  max-width: 600px;
+}
+
+.conversations-input-container .chat-input-container {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px var(--shadow-primary);
+}
+
 /* Main Container - Zoomed Out Layout */
 .main-container {
   display: flex;
@@ -3201,6 +3259,27 @@ body { padding-bottom: 140px; }
     min-height: 150px;
     max-height: 250px;
   }
+}
+
+/* Navigation Link */
+.nav-link-container {
+  margin-bottom: 16px;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.nav-link:hover {
+  color: var(--accent-primary);
+  background: var(--bg-secondary);
 }
 
 /* User Account Component */
