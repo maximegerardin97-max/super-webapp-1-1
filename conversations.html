@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversations - SUPER</title>
     
-    <!-- Favicon -->
+    <!-- Favicon for dark mode only -->
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon/favicon-dark.png">
     <link rel="icon" type="image/png" sizes="64x64" href="./assets/images/favicon/favicon-dark@2x.png">
     <link rel="icon" type="image/png" sizes="128x128" href="./assets/images/favicon/favicon-dark@4x.png">
     
+    <!-- Fallback favicon -->
+    <link rel="icon" type="image/png" href="./assets/images/favicon/favicon-dark.png">
     <link rel="stylesheet" href="styles.css">
     <script>
     window.AGENT_CFG = {
@@ -32,49 +34,78 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.js"></script>
 </head>
 <body>
-    <!-- Conversations View Container -->
-    <div class="conversations-container">
+    <!-- Conversations List View -->
+    <div class="conversations-view">
         <!-- Top Header -->
-        <div class="conversations-header">
+        <header class="conversations-header">
             <!-- Logo -->
             <div class="conversations-logo">
-                <img src="./assets/images/SuperLogo.png" alt="SUPER" class="logo-img" />
+                <span class="logo-text">SUPER</span>
             </div>
             
-            <!-- User Info -->
-            <div class="conversations-user-info">
+            <!-- User Info Component -->
+            <div class="user-account-component">
+                <!-- Connection Status Indicator -->
                 <div class="connection-status" id="connectionStatus" title="Connected">
                     <div class="status-dot"></div>
                 </div>
-                <span class="user-email" id="userEmailDisplay"></span>
-                <button id="signOutBtn" class="IconButton-Wrapper">
-                    <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
-                </button>
-            </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="conversations-main">
-            <!-- Title -->
-            <h1 class="conversations-title">What are you working on today?</h1>
-            
-            <!-- Input Container -->
-            <div class="conversations-input-container">
-                <div class="chat-input-container">
-                    <button class="chat-image-btn" id="conversationsImageBtn" title="Upload image">
-                        <img src="./assets/images/icons/icon-img.png" alt="Upload" class="auth-icon-img" />
-                    </button>
-                    <div class="chat-input-wrapper">
-                        <input type="text" id="conversationsInput" placeholder="Something new" />
-                        <button class="chat-send-btn" id="conversationsSendBtn">
+                
+                <!-- User Account Section -->
+                <div class="user-account-section" id="userAccountSection">
+                    <!-- Auth State: Not Signed In -->
+                    <div class="auth-state" id="authStateSignedOut">
+                        <input id="authEmail" type="email" placeholder="enter@your.email" class="auth-email-input" />
+                        <button id="signInBtn" class="IconButton-Wrapper" title="Sign in">
                             <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                        </button>
+                    </div>
+                    
+                    <!-- Auth State: Signed In -->
+                    <div class="auth-state hidden" id="authStateSignedIn">
+                        <span class="user-email" id="userEmailDisplay"></span>
+                        <button id="signOutBtn" class="IconButton-Wrapper">
+                            <img src="./assets/images/icons/icon-logout.png" alt="LogOut" class="auth-icon-img" />
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="conversations-main">
+            <!-- Simple Title -->
+            <h1 class="conversations-title">What are you working on today?</h1>
+            
+            <!-- Centered Conversations List -->
+            <div class="conversations-container">
+                <div class="conversations-card">
+                    <!-- Header -->
+                    <div class="conversations-card-header">
+                        <h2 class="conversations-card-title">Your Conversations</h2>
+                    </div>
+                    
+                    <!-- Conversations List -->
+                    <div class="conversations-list" id="conversationsList">
+                        <div class="conversations-loading">Loading conversations...</div>
+                    </div>
+                    
+                    <!-- Input Field to Start New Conversation -->
+                    <div class="conversations-input-container">
+                        <button class="conversations-image-btn" id="conversationsImageBtn" title="Upload image">
+                            <img src="./assets/images/icons/icon-img.png" alt="Upload" class="auth-icon-img" />
+                        </button>
+                        <div class="conversations-input-wrapper">
+                            <input type="text" id="conversationsInput" placeholder="Something new" />
+                            <button class="conversations-send-btn" id="conversationsSendBtn">
+                                <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-    
+
     <script src="conversations.js"></script>
     <script>
         // Check authentication state on page load

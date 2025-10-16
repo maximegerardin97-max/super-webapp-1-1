@@ -35,66 +35,6 @@ class DesignRatingApp {
         
         
         this.init();
-        
-        // Handle URL parameters from conversations view
-        this.handleUrlParameters();
-    }
-    
-    handleUrlParameters() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const message = urlParams.get('message');
-        const imageData = urlParams.get('imageData');
-        const imageName = urlParams.get('imageName');
-        
-        if (message) {
-            // Set the message in the chat input
-            setTimeout(() => {
-                const mainChatInput = document.getElementById('mainChatInput');
-                if (mainChatInput) {
-                    mainChatInput.value = message;
-                }
-                
-                // Handle image data if provided
-                if (imageData && imageName) {
-                    this.uploadedImageData = {
-                        dataUrl: imageData,
-                        filename: imageName
-                    };
-                    this.displayLargeImageFromDataUrl(imageData, imageName);
-                }
-                
-                // Auto-focus and trigger analysis
-                if (mainChatInput) {
-                    mainChatInput.focus();
-                    // Trigger analysis after a short delay
-                    setTimeout(() => {
-                        this.triggerAnalysis(message);
-                    }, 500);
-                }
-            }, 1000);
-        }
-    }
-    
-    displayLargeImageFromDataUrl(dataUrl, filename) {
-        const largeImagePlaceholder = document.querySelector('.large-image-placeholder');
-        const largeImageContent = document.getElementById('largeImageContent');
-        const largeImage = document.getElementById('largeImage');
-        const largeImageDisplay = document.getElementById('largeImageDisplay');
-        const largeImageContainer = document.querySelector('.large-image-container');
-
-        // Hide placeholder and show image
-        if (largeImagePlaceholder) largeImagePlaceholder.classList.add('hidden');
-        if (largeImageContent) largeImageContent.classList.remove('hidden');
-
-        // Update display classes
-        if (largeImageDisplay) largeImageDisplay.classList.add('has-image');
-        if (largeImageContainer) largeImageContainer.classList.add('has-image');
-        
-        // Set image source
-        if (largeImage) {
-            largeImage.src = dataUrl;
-            largeImage.alt = filename;
-        }
     }
     
     init() {
@@ -103,6 +43,7 @@ class DesignRatingApp {
         this.setupLargeImageDisplay(); // Setup large image display
         this.setupChatStates(); // Setup chat states
         this.setupAuth(); // Setup Supabase auth
+        this.handleUrlParameters(); // Handle navigation from conversations view
         // Design context state
         this.designContext = {
             selectedFiles: [],
@@ -120,6 +61,31 @@ class DesignRatingApp {
             if (src.type_family) parts.push(src.type_family);
             return parts.join('; ') + (parts.length ? '.' : '');
         };
+    }
+
+    handleUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('conversation');
+        const message = urlParams.get('message');
+
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        if (conversationId) {
+            // Open existing conversation
+            setTimeout(() => {
+                this.openConversation(conversationId);
+            }, 1000); // Wait for auth to complete
+        } else if (message) {
+            // Start new conversation with message
+            setTimeout(() => {
+                const mainChatInput = document.getElementById('mainChatInput');
+                if (mainChatInput) {
+                    mainChatInput.value = decodeURIComponent(message);
+                    mainChatInput.focus();
+                }
+            }, 1000); // Wait for auth to complete
+        }
         // Load shared settings on start
         this.loadSharedSettings().then((s) => {
             if (s) {
@@ -3366,51 +3332,8 @@ class DesignRatingApp {
     }
 
     async renderConversationList() {
-        const chatResultsArea = document.getElementById('chatResultsArea');
-        const chatResultsContent = document.getElementById('chatResultsContent');
-        const chatResultsTitle = document.getElementById('chatResultsTitle');
-        
-        // Set title for conversation list
-        chatResultsTitle.textContent = 'Spaces';
-        
-        chatResultsArea.classList.add('show');
-        this.setChatState('conversation-list-state');
-        chatResultsContent.innerHTML = `<div class="message-content" id="convLoading">Loading conversations…</div>`;
-        const list = await this.fetchConversationsForUser();
-        this.conversationsList = Array.isArray(list) ? list : [];
-        // Group by date (YYYY-MM-DD)
-        const byDate = {};
-        for (const c of this.conversationsList) {
-            const d = new Date(c.created_at);
-            const key = isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleDateString();
-            if (!byDate[key]) byDate[key] = [];
-            byDate[key].push(c);
-        }
-        const sections = Object.keys(byDate).map(dateKey => {
-            const itemsHtml = byDate[dateKey].map(c => {
-                const created = new Date(c.created_at);
-                const fallbackTitle = isNaN(created.getTime()) ? 'Conversation' : created.toLocaleString();
-                const title = (c.title && c.title !== 'New conversation') ? c.title : fallbackTitle;
-                return `
-                <div class=\"conversation-card\" data-role=\"open-conv\" data-id=\"${c.id}\">\n                    <div class=\"conversation-header\">\n                        <div class=\"conversation-title\">${this.escapeHtml(title)}</div>\n                    </div>\n                </div>`;
-            }).join('');
-            return `<div class=\"message-content\"><strong>${this.escapeHtml(dateKey)}</strong></div>${itemsHtml}`;
-        }).join('');
-        // Hide chat results area if no conversations
-        if (!sections) {
-            chatResultsArea.classList.remove('show');
-            return;
-        }
-        
-        chatResultsContent.innerHTML = `
-            <div class="cards-stack">${sections}</div>
-        `;
-        chatResultsContent.addEventListener('click', async (e) => {
-            const item = e.target.closest('[data-role="open-conv"]');
-            if (!item) return;
-            const id = item.getAttribute('data-id');
-            await this.openConversation(id);
-        }, { once: true });
+        // Navigate to the dedicated conversations view
+        window.location.href = 'conversations.html';
     }
 
     async openConversation(conversationId) {

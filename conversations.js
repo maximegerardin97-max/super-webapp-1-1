@@ -1,8 +1,8 @@
-// Conversations View JavaScript
+// Conversations List View JavaScript
 class ConversationsApp {
     constructor() {
         this.supabase = null;
-        this.uploadedImageData = null;
+        this.conversationsList = [];
         this.init();
     }
 
@@ -22,30 +22,91 @@ class ConversationsApp {
         
         // Setup event listeners
         this.setupEventListeners();
+        
+        // Load conversations
+        await this.loadConversations();
     }
 
     setupAuth() {
+        const emailInput = document.getElementById('authEmail');
+        const signInBtn = document.getElementById('signInBtn');
         const signOutBtn = document.getElementById('signOutBtn');
+        const authStateSignedOut = document.getElementById('authStateSignedOut');
+        const authStateSignedIn = document.getElementById('authStateSignedIn');
         const userEmailDisplay = document.getElementById('userEmailDisplay');
         const connectionStatus = document.getElementById('connectionStatus');
         
-        // Get current user and update UI
-        this.supabase.auth.getSession().then(({ data }) => {
-            const session = data.session;
-            if (session && session.user) {
-                if (userEmailDisplay) userEmailDisplay.textContent = session.user.email || 'Signed in';
+        const updateUi = (session) => {
+            const user = session && session.user ? session.user : null;
+            if (user) {
+                // Show signed in state
+                if (authStateSignedOut) authStateSignedOut.classList.add('hidden');
+                if (authStateSignedIn) authStateSignedIn.classList.remove('hidden');
+                if (userEmailDisplay) userEmailDisplay.textContent = user.email || 'Signed in';
+                // Update connection status to connected
                 if (connectionStatus) {
                     connectionStatus.classList.remove('error', 'disconnected');
                     connectionStatus.title = 'Connected';
                 }
+            } else {
+                // Show signed out state
+                if (authStateSignedOut) authStateSignedOut.classList.remove('hidden');
+                if (authStateSignedIn) authStateSignedIn.classList.add('hidden');
+                // Update connection status to disconnected
+                if (connectionStatus) {
+                    connectionStatus.classList.add('disconnected');
+                    connectionStatus.classList.remove('error');
+                    connectionStatus.title = 'Not connected';
+                }
+            }
+        };
+
+        this.supabase.auth.getSession().then(({ data }) => {
+            updateUi(data.session);
+        });
+
+        this.supabase.auth.onAuthStateChange((event, session) => {
+            updateUi(session);
+            if (event === 'SIGNED_OUT') {
+                window.location.href = 'login.html';
             }
         });
 
-        // Handle sign out
+        if (signInBtn) {
+            signInBtn.addEventListener('click', async () => {
+                const email = emailInput && emailInput.value ? emailInput.value.trim() : '';
+                const valid = /.+@.+\..+/.test(email);
+                if (!valid) {
+                    alert('Please enter a valid email address');
+                    return;
+                }
+                try {
+                    signInBtn.disabled = true;
+                    signInBtn.textContent = 'Sending…';
+
+                    const { error } = await this.supabase.auth.signInWithOtp({
+                        email,
+                        options: {
+                            emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+                        }
+                    });
+                    if (error) throw error;
+
+                    alert(`Magic link sent to ${email}. Check your inbox.`);
+                    signInBtn.textContent = 'Sign in';
+                    signInBtn.disabled = false;
+                } catch (e) {
+                    console.error(e);
+                    alert('Sign-in failed: ' + (e && e.message ? e.message : String(e)));
+                    signInBtn.disabled = false;
+                    signInBtn.textContent = 'Sign in';
+                }
+            });
+        }
+
         if (signOutBtn) {
             signOutBtn.addEventListener('click', async () => {
                 await this.supabase.auth.signOut();
-                window.location.href = 'login.html';
             });
         }
     }
@@ -71,116 +132,163 @@ class ConversationsApp {
             });
         }
 
-        // Image upload button
+        // Image button click (placeholder for future functionality)
         if (conversationsImageBtn) {
             conversationsImageBtn.addEventListener('click', () => {
-                this.triggerImageUpload();
+                // TODO: Handle image upload for new conversation
+                console.log('Image upload for new conversation');
             });
         }
-
-        // Global paste listener for images
-        document.addEventListener('paste', (e) => this.handlePaste(e));
     }
 
-    async startNewConversation() {
-        const conversationsInput = document.getElementById('conversationsInput');
-        const message = conversationsInput ? conversationsInput.value.trim() : '';
-        
-        if (!message) return;
+    async loadConversations() {
+        const conversationsList = document.getElementById('conversationsList');
+        if (!conversationsList) return;
 
-        // Clear input
-        if (conversationsInput) conversationsInput.value = '';
+        try {
+            // Show loading state
+            conversationsList.innerHTML = '<div class="conversations-loading">Loading conversations...</div>';
 
-        // Navigate to main app with the message
-        const params = new URLSearchParams();
-        params.set('message', message);
-        
-        // Include image data if available
-        if (this.uploadedImageData) {
-            params.set('imageData', this.uploadedImageData.dataUrl);
-            params.set('imageName', this.uploadedImageData.filename);
+            // Fetch conversations
+            const conversations = await this.fetchConversationsForUser();
+            this.conversationsList = Array.isArray(conversations) ? conversations : [];
+
+            // Render conversations
+            this.renderConversations();
+        } catch (error) {
+            console.error('Error loading conversations:', error);
+            conversationsList.innerHTML = '<div class="conversations-loading">Error loading conversations</div>';
         }
-        
-        window.location.href = `index.html?${params.toString()}`;
     }
 
-    triggerImageUpload() {
-        // Create a hidden file input
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.style.display = 'none';
-        
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.handleImageUpload(file);
-            }
-        });
-        
-        document.body.appendChild(fileInput);
-        fileInput.click();
-        document.body.removeChild(fileInput);
-    }
-
-    handleImageUpload(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.uploadedImageData = {
-                dataUrl: e.target.result,
-                filename: file.name
-            };
+    async fetchConversationsForUser() {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const user = await this.getCurrentUser();
+            if (!user) return [];
             
-            // Show visual feedback
-            this.showImageFeedback(file.name);
-        };
-        reader.readAsDataURL(file);
+            const url = `${window.AGENT_CFG.SUPABASE_URL}/rest/v1/conversations?select=id,title,created_at&user_id=eq.${encodeURIComponent(user.id)}&order=created_at.desc`;
+            const resp = await fetch(url, {
+                headers: { ...authHeader, 'Content-Type': 'application/json' }
+            });
+            if (!resp.ok) return [];
+            return await resp.json();
+        } catch (_) { return []; }
     }
 
-    handlePaste(e) {
-        const items = e.clipboardData.items;
+    renderConversations() {
+        const conversationsList = document.getElementById('conversationsList');
+        if (!conversationsList) return;
+
+        if (this.conversationsList.length === 0) {
+            conversationsList.innerHTML = '<div class="conversations-loading">No conversations yet</div>';
+            return;
+        }
+
+        // Group conversations by date
+        const byDate = {};
+        for (const c of this.conversationsList) {
+            const d = new Date(c.created_at);
+            const key = this.formatDateGroup(d);
+            if (!byDate[key]) byDate[key] = [];
+            byDate[key].push(c);
+        }
+
+        // Render grouped conversations
+        let html = '';
+        const dateOrder = ['Today', 'Yesterday'];
         
-        for (let item of items) {
-            if (item.type.startsWith('image/')) {
-                const file = item.getAsFile();
-                if (file) {
-                    this.handleImageUpload(file);
+        // Add specific date groups first
+        for (const dateKey of dateOrder) {
+            if (byDate[dateKey]) {
+                html += `<div class="conversations-date-group">
+                    <div class="conversations-date-label">${dateKey}</div>
+                    <div class="conversations-date-items">`;
+                
+                for (const conv of byDate[dateKey]) {
+                    html += this.renderConversationItem(conv);
                 }
-                break;
+                
+                html += '</div></div>';
+                delete byDate[dateKey];
             }
+        }
+
+        // Add remaining dates
+        for (const [dateKey, conversations] of Object.entries(byDate)) {
+            html += `<div class="conversations-date-group">
+                <div class="conversations-date-label">${dateKey}</div>
+                <div class="conversations-date-items">`;
+            
+            for (const conv of conversations) {
+                html += this.renderConversationItem(conv);
+            }
+            
+            html += '</div></div>';
+        }
+
+        conversationsList.innerHTML = html;
+
+        // Add click handlers
+        conversationsList.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const id = item.getAttribute('data-id');
+                this.openConversation(id);
+            });
+        });
+    }
+
+    renderConversationItem(conversation) {
+        const title = conversation.title || 'Untitled Conversation';
+        return `
+            <div class="conversation-item" data-id="${conversation.id}">
+                <span class="conversation-title">${title}</span>
+            </div>
+        `;
+    }
+
+    formatDateGroup(date) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const convDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        if (convDate.getTime() === today.getTime()) return 'Today';
+        if (convDate.getTime() === yesterday.getTime()) return 'Yesterday';
+        
+        return date.toLocaleDateString('en-US', { 
+            day: 'numeric', 
+            month: 'short' 
+        });
+    }
+
+    openConversation(conversationId) {
+        // Navigate to main app with conversation ID
+        window.location.href = `index.html?conversation=${conversationId}`;
+    }
+
+    startNewConversation() {
+        const input = document.getElementById('conversationsInput');
+        const message = input ? input.value.trim() : '';
+        
+        if (message) {
+            // Navigate to main app with the message
+            const encodedMessage = encodeURIComponent(message);
+            window.location.href = `index.html?message=${encodedMessage}`;
+        } else {
+            // Navigate to main app without message
+            window.location.href = 'index.html';
         }
     }
 
-    showImageFeedback(filename) {
-        // Create a temporary toast notification
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--accent-primary);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideInRight 0.3s ease-out;
-        `;
-        toast.textContent = `Image ready: ${filename}`;
-        
-        document.body.appendChild(toast);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
+    async getAuthHeader() {
+        const { data: { session } } = await this.supabase.auth.getSession();
+        return session ? { Authorization: `Bearer ${session.access_token}` } : {};
+    }
+
+    async getCurrentUser() {
+        const { data: { user } } = await this.supabase.auth.getUser();
+        return user;
     }
 }
 
