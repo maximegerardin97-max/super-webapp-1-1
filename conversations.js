@@ -14,7 +14,30 @@ class ConversationsApp {
     init() {
         this.setupAuth();
         this.setupEventListeners();
+        this.setupDarkModeSupport();
         this.loadConversations();
+    }
+    
+    setupDarkModeSupport() {
+        // Force dark mode for conversations view
+        document.documentElement.setAttribute('data-theme', 'dark');
+        
+        // Check if the browser supports prefers-color-scheme
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            // Function to handle theme changes (though we're forcing dark mode)
+            const handleThemeChange = (e) => {
+                // Always force dark mode for conversations view
+                console.log('Conversations view: forcing dark mode');
+            };
+            
+            // Listen for theme changes
+            mediaQuery.addEventListener('change', handleThemeChange);
+            
+            // Initial theme check
+            handleThemeChange(mediaQuery);
+        }
     }
 
     setupAuth() {

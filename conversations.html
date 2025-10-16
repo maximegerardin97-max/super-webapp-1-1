@@ -13,6 +13,31 @@
     <!-- Fallback favicon -->
     <link rel="icon" type="image/png" href="./assets/images/favicon/favicon-dark.png">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Force dark mode for conversations view */
+        :root {
+            /* Dark mode color variables */
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #262626;
+            --bg-quaternary: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-tertiary: #999999;
+            --text-quaternary: #666666;
+            --border-primary: #333333;
+            --border-secondary: #404040;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --shadow-primary: rgba(0, 0, 0, 0.3);
+            --shadow-secondary: rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+    </style>
     <script>
     window.AGENT_CFG = {
     CHAT_URL: 'https://iiolvvdnzrfcffudwocp.functions.supabase.co/llm-proxy-auth',
