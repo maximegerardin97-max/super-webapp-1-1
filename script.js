@@ -3282,14 +3282,8 @@ class DesignRatingApp {
         // Set title for conversation list
         chatResultsTitle.textContent = 'Spaces';
         
-        // Hide large image display when showing conversation list
-        const largeImageDisplay = document.getElementById('largeImageDisplay');
-        if (largeImageDisplay) {
-            largeImageDisplay.style.display = 'none';
-        }
-        
         chatResultsArea.classList.add('show');
-        this.setChatState('expanded-state');
+        this.setChatState('conversation-list-state');
         chatResultsContent.innerHTML = `<div class="message-content" id="convLoading">Loading conversations…</div>`;
         const list = await this.fetchConversationsForUser();
         this.conversationsList = Array.isArray(list) ? list : [];
@@ -3481,15 +3475,21 @@ class DesignRatingApp {
         const floatingChat = document.getElementById('floatingChat');
         
         // Remove all state classes
-        floatingChat.classList.remove('initial-state', 'initial-state-with-tag', 'expanded-state', 'collapsed-state');
+        floatingChat.classList.remove('initial-state', 'initial-state-with-tag', 'expanded-state', 'collapsed-state', 'conversation-list-state');
         
         // Add the new state class
         floatingChat.classList.add(state);
         
-        // Hide large image display when in initial states
+        // Handle large image display visibility based on state
         const largeImageDisplay = document.getElementById('largeImageDisplay');
-        if (largeImageDisplay && (state === 'initial-state' || state === 'initial-state-with-tag')) {
-            largeImageDisplay.style.display = 'none';
+        if (largeImageDisplay) {
+            if (state === 'initial-state' || state === 'initial-state-with-tag' || state === 'conversation-list-state') {
+                // Hide large image display when in initial states or conversation list
+                largeImageDisplay.style.display = 'none';
+            } else {
+                // Show large image display for conversation states (expanded-state, collapsed-state)
+                largeImageDisplay.style.display = 'flex';
+            }
         }
     }
     
