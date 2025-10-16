@@ -2716,8 +2716,39 @@ class DesignRatingApp {
         return messageDiv; // Return the message element for potential updates
     }
 
+    clearAnalysisCards() {
+        // Clear all existing analysis cards from the DOM
+        const analysisArea = document.querySelector('.analysis-area');
+        if (!analysisArea) return;
+        
+        // Remove feedback cards (analysis results)
+        const feedbackCards = analysisArea.querySelectorAll('.feedback-card');
+        feedbackCards.forEach(card => card.remove());
+        
+        // Remove command images sections (reference screens)
+        const commandSections = analysisArea.querySelectorAll('.command-images-section');
+        commandSections.forEach(section => section.remove());
+        
+        // Clear any other analysis-related content
+        const inspirationsCard = document.getElementById('inspirationsCard');
+        if (inspirationsCard) {
+            inspirationsCard.style.display = 'none';
+        }
+        
+        // Clear the inspirations content
+        const inspirationsContent = document.getElementById('inspirationsContent');
+        if (inspirationsContent) {
+            inspirationsContent.innerHTML = '<div class="placeholder-text">We\'ll suggest relevant flows here.</div>';
+        }
+        
+        console.log('Analysis cards cleared for new conversation');
+    }
+
     async triggerAnalysis(message) {
         try {
+            // Clear any existing analysis cards before starting new conversation
+            this.clearAnalysisCards();
+            
             // Show loading message as agent bubble
             const loadingMessage = this.addMessageToChat('Analyzing your request...', 'assistant', true);
             
@@ -3324,6 +3355,10 @@ class DesignRatingApp {
 
     async openConversation(conversationId) {
         this.currentConversationId = conversationId;
+        
+        // Clear any existing analysis cards when opening a conversation
+        this.clearAnalysisCards();
+        
         const chatResultsArea = document.getElementById('chatResultsArea');
         const chatResultsContent = document.getElementById('chatResultsContent');
         const chatResultsTitle = document.getElementById('chatResultsTitle');
