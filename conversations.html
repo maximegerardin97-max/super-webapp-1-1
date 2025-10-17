@@ -116,21 +116,14 @@
                     
                     <!-- New Conversation Input -->
                     <div class="new-conversation-input-container">
-                        <div class="new-conversation-input-wrapper">
-                            <button class="conversation-image-btn" id="conversationImageBtn" title="Upload image">
-                                <img src="./assets/images/icons/icon-img.png" alt="Image" class="auth-icon-img" />
-                            </button>
-                            <input type="text" id="newConversationInput" class="new-conversation-input" placeholder="Something new" />
-                            <button class="conversation-send-btn" id="newConversationSendBtn" title="Start conversation">
-                                <img src="./assets/images/icons/icon-send.png" alt="Send" class="auth-icon-img" />
-                            </button>
-                        </div>
+                        <div id="chatInputContainer"></div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
     
+    <script src="chat-input.js"></script>
     <script src="conversations.js"></script>
     <script>
         // Check authentication state on page load

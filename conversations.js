@@ -7,6 +7,7 @@ class ConversationsApp {
         this.supabase = null;
         this.userSession = null;
         this.conversationsList = [];
+        this.chatInputComponent = null;
         
         this.init();
     }
@@ -15,7 +16,66 @@ class ConversationsApp {
         this.setupAuth();
         this.setupEventListeners();
         this.setupDarkModeSupport();
+        this.initializeChatInput();
         this.loadConversations();
+    }
+    
+    initializeChatInput() {
+        const container = document.getElementById('chatInputContainer');
+        if (container && window.ChatInputComponent) {
+            this.chatInputComponent = new ChatInputComponent(container, {
+                context: 'conversations',
+                onComplete: (data) => this.handleChatInputComplete(data),
+                onImageUpload: () => this.handleImageUpload()
+            });
+        }
+    }
+    
+    handleChatInputComplete(data) {
+        console.log('Chat input completed with data:', data);
+        
+        // Build the message from the collected data
+        let message = data.initialMessage || '';
+        
+        if (data.productType) {
+            message += ` Product type: ${data.productType}`;
+        }
+        if (data.industry) {
+            message += `, Industry: ${data.industry}`;
+        }
+        if (data.improvement) {
+            message += `, Improve: ${data.improvement}`;
+        }
+        if (data.optimization) {
+            message += `, Optimize for: ${data.optimization}`;
+        }
+        if (data.context) {
+            message += `, Context: ${data.context}`;
+        }
+        
+        // Create new conversation and redirect to main app
+        this.createConversationAndRedirect(message);
+    }
+    
+    handleImageUpload() {
+        // Redirect to main app for image upload
+        this.redirectToMainApp();
+    }
+    
+    async createConversationAndRedirect(message) {
+        try {
+            const conversationId = await this.createConversation(message);
+            if (conversationId) {
+                // Redirect to main app with conversation context
+                window.location.href = `index.html?conversation=${conversationId}&message=${encodeURIComponent(message)}`;
+            } else {
+                // Fallback to main app
+                this.redirectToMainApp();
+            }
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+            this.redirectToMainApp();
+        }
     }
     
     setupDarkModeSupport() {
@@ -142,32 +202,8 @@ class ConversationsApp {
     }
 
     setupEventListeners() {
-        const newConversationInput = document.getElementById('newConversationInput');
-        const newConversationSendBtn = document.getElementById('newConversationSendBtn');
-        const conversationImageBtn = document.getElementById('conversationImageBtn');
-
-        // Send button click
-        if (newConversationSendBtn) {
-            newConversationSendBtn.addEventListener('click', () => {
-                this.startNewConversation();
-            });
-        }
-
-        // Enter key press
-        if (newConversationInput) {
-            newConversationInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.startNewConversation();
-                }
-            });
-        }
-
-        // Image button click
-        if (conversationImageBtn) {
-            conversationImageBtn.addEventListener('click', () => {
-                this.redirectToMainApp();
-            });
-        }
+        // Event listeners are now handled by the ChatInputComponent
+        // No additional setup needed here
     }
 
     async loadConversations() {
@@ -313,31 +349,6 @@ class ConversationsApp {
         return `${day} ${month}`;
     }
 
-    async startNewConversation() {
-        const input = document.getElementById('newConversationInput');
-        const message = input ? input.value.trim() : '';
-        
-        if (!message) {
-            // If no message, just redirect to main app
-            this.redirectToMainApp();
-            return;
-        }
-
-        // Create new conversation and redirect to main app with the message
-        try {
-            const conversationId = await this.createConversation(message);
-            if (conversationId) {
-                // Redirect to main app with conversation context
-                window.location.href = `index.html?conversation=${conversationId}&message=${encodeURIComponent(message)}`;
-            } else {
-                // Fallback to main app
-                this.redirectToMainApp();
-            }
-        } catch (error) {
-            console.error('Error creating conversation:', error);
-            this.redirectToMainApp();
-        }
-    }
 
     async createConversation(title) {
         try {
