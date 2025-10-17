@@ -34,24 +34,8 @@ class ConversationsApp {
     handleChatInputComplete(data) {
         console.log('Chat input completed with data:', data);
         
-        // Build the message from the collected data
-        let message = data.initialMessage || '';
-        
-        if (data.productType) {
-            message += ` Product type: ${data.productType}`;
-        }
-        if (data.industry) {
-            message += `, Industry: ${data.industry}`;
-        }
-        if (data.improvement) {
-            message += `, Improve: ${data.improvement}`;
-        }
-        if (data.optimization) {
-            message += `, Optimize for: ${data.optimization}`;
-        }
-        if (data.context) {
-            message += `, Context: ${data.context}`;
-        }
+        // Use the message directly from the component
+        const message = data.message || '';
         
         // Create new conversation and redirect to main app
         this.createConversationAndRedirect(message);
