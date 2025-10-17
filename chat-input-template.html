@@ -14,6 +14,10 @@
   display: block;
 }
 
+.chat-step.hidden {
+  display: none;
+}
+
 .chat-input-container {
   display: flex;
   align-items: center;
@@ -82,7 +86,59 @@
   color: var(--text-tertiary);
 }
 
-.step-header {
+/* Step Layout Styles */
+.step-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.step-upload-section {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chat-image-close-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.chat-image-close-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+.chat-image-close-btn svg {
+  width: 12px;
+  height: 12px;
+  color: var(--text-secondary);
+}
+
+.step-content-box {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-content-left {
+  flex: 1;
+}
+
+.step-header-inline {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -97,7 +153,8 @@
   flex: 1;
 }
 
-.step-back-btn {
+.step-back-btn,
+.step-next-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -109,62 +166,69 @@
   justify-content: center;
 }
 
-.step-back-btn:hover {
+.step-back-btn:hover,
+.step-next-btn:hover {
   background: var(--bg-tertiary);
 }
 
-.step-back-btn .auth-icon-img {
+.step-back-btn svg,
+.step-next-btn svg {
   width: 16px;
   height: 16px;
-  opacity: 0.7;
+  color: var(--text-secondary);
 }
 
 .step-options {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
 }
 
-.step-option {
+.option-tag {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: left;
-  width: 100%;
+  white-space: nowrap;
 }
 
-.step-option:hover {
+.option-tag:hover {
   background: var(--bg-tertiary);
   border-color: var(--accent-primary);
 }
 
-.step-option.selected {
+.option-tag.selected {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: white;
 }
 
-.step-option-text {
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
+.step-progress-bar {
+  width: 100%;
+  height: 2px;
+  background: var(--bg-tertiary);
+  border-radius: 1px;
+  overflow: hidden;
 }
 
-.step-option-description {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin: 4px 0 0 0;
+.progress-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  transition: width 0.3s ease;
+  width: 0%;
 }
 
-.step-option.selected .step-option-description {
-  color: rgba(255, 255, 255, 0.8);
+/* Step 3 specific styles */
+.step3-input-container {
+  margin-top: 12px;
 }
 
-.step-input {
+.step3-input {
   width: 100%;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -174,57 +238,88 @@
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
-  margin-top: 12px;
+  resize: vertical;
+  min-height: 60px;
 }
 
-.step-input:focus {
+.step3-input:focus {
   border-color: var(--accent-primary);
 }
 
-.step-input::placeholder {
+.step3-input::placeholder {
   color: var(--text-tertiary);
 }
 
-.step-actions {
+/* Step 6 specific styles */
+.step6-input-container {
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: border-color 0.2s ease;
 }
 
-.step-action-btn {
+.step6-input-container:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.step6-input {
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  padding: 0;
+}
+
+.step6-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.step6-send-btn {
   background: var(--accent-primary);
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 8px 12px;
   color: white;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.step-action-btn:hover {
+.step6-send-btn:hover {
   background: #2563eb;
 }
 
-.step-action-btn:disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-tertiary);
-  cursor: not-allowed;
+.step6-send-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
-.step-action-btn.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+/* Drag and drop styles */
+.drag-over {
+  border-color: var(--accent-primary) !important;
+  background: var(--bg-tertiary) !important;
 }
 
-.step-action-btn.secondary:hover {
-  background: var(--bg-tertiary);
+/* Hidden file input */
+.hidden {
+  display: none;
 }
 </style>
 
 <div class="chat-input-component">
+  <!-- Hidden file input for image uploads -->
+  <input type="file" id="chatImageUpload" accept="image/*" class="hidden">
+  
   <!-- Step 0: Initial Input -->
   <div class="chat-step active" id="chatStep0" data-step="0">
     <div class="chat-input-container">
@@ -239,147 +334,254 @@
       </div>
     </div>
   </div>
-
-  <!-- Step 1: Product Type Selection -->
-  <div class="chat-step" id="chatStep1" data-step="1">
-    <div class="step-header">
-      <button class="step-back-btn" id="step1BackBtn">
-        <img src="./assets/images/icons/icon-arrow-left.png" alt="Back" class="auth-icon-img" />
-      </button>
-      <h3 class="step-title">What type of product are you working on?</h3>
+  
+  <!-- Step 2: Product Type -->
+  <div class="chat-step hidden" id="chatStep2" data-step="2">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep2" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step2ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <button class="step-back-btn" id="step2BackBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+              </svg>
+            </button>
+            <h3 class="step-title">Product type?</h3>
+          </div>
+          <div class="step-options">
+            <button class="option-tag" data-value="mobile">Mobile</button>
+            <button class="option-tag" data-value="webapp">Web</button>
+            <button class="option-tag" data-value="ecommerce">Ecommerce</button>
+          </div>
+        </div>
+        <button class="step-next-btn" id="step2NextBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="step-options">
-      <button class="step-option" data-value="webapp">
-        <p class="step-option-text">Web App</p>
-        <p class="step-option-description">Web-based applications and platforms</p>
-      </button>
-      <button class="step-option" data-value="mobile">
-        <p class="step-option-text">Mobile App</p>
-        <p class="step-option-description">iOS and Android applications</p>
-      </button>
-      <button class="step-option" data-value="desktop">
-        <p class="step-option-text">Desktop App</p>
-        <p class="step-option-description">Windows, Mac, and Linux applications</p>
-      </button>
-      <button class="step-option" data-value="other">
-        <p class="step-option-text">Other</p>
-        <p class="step-option-description">Specify in the next step</p>
-      </button>
-    </div>
-  </div>
-
-  <!-- Step 2: Industry Selection -->
-  <div class="chat-step" id="chatStep2" data-step="2">
-    <div class="step-header">
-      <button class="step-back-btn" id="step2BackBtn">
-        <img src="./assets/images/icons/icon-arrow-left.png" alt="Back" class="auth-icon-img" />
-      </button>
-      <h3 class="step-title">What industry is this for?</h3>
-    </div>
-    <div class="step-options">
-      <button class="step-option" data-value="productivity">
-        <p class="step-option-text">Productivity</p>
-        <p class="step-option-description">Tools for work and efficiency</p>
-      </button>
-      <button class="step-option" data-value="ecommerce">
-        <p class="step-option-text">E-commerce</p>
-        <p class="step-option-description">Online shopping and retail</p>
-      </button>
-      <button class="step-option" data-value="education">
-        <p class="step-option-text">Education</p>
-        <p class="step-option-description">Learning and training platforms</p>
-      </button>
-      <button class="step-option" data-value="healthcare">
-        <p class="step-option-text">Healthcare</p>
-        <p class="step-option-description">Medical and wellness applications</p>
-      </button>
-      <button class="step-option" data-value="finance">
-        <p class="step-option-text">Finance</p>
-        <p class="step-option-description">Banking and financial services</p>
-      </button>
-      <button class="step-option" data-value="entertainment">
-        <p class="step-option-text">Entertainment</p>
-        <p class="step-option-description">Media and gaming platforms</p>
-      </button>
-      <button class="step-option" data-value="other">
-        <p class="step-option-text">Other</p>
-        <p class="step-option-description">Specify in the next step</p>
-      </button>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step2ProgressFill"></div>
     </div>
   </div>
-
-  <!-- Step 3: Improvement Focus -->
-  <div class="chat-step" id="chatStep3" data-step="3">
-    <div class="step-header">
-      <button class="step-back-btn" id="step3BackBtn">
-        <img src="./assets/images/icons/icon-arrow-left.png" alt="Back" class="auth-icon-img" />
-      </button>
-      <h3 class="step-title">What would you like to improve?</h3>
+  
+  <!-- Step 3: Industry Selection -->
+  <div class="chat-step hidden" id="chatStep3" data-step="3">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep3" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step3ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <h3 class="step-title">Industry?</h3>
+          </div>
+          <div class="step-options">
+            <button class="option-tag" data-value="fintech">Fintech</button>
+            <button class="option-tag" data-value="healthcare">Healthcare</button>
+            <button class="option-tag" data-value="ecommerce">E-commerce</button>
+            <button class="option-tag" data-value="education">Education</button>
+            <button class="option-tag" data-value="social">Social Media</button>
+            <button class="option-tag" data-value="productivity">Productivity</button>
+            <button class="option-tag" data-value="gaming">Gaming</button>
+            <button class="option-tag" data-value="other">Other</button>
+          </div>
+        </div>
+        <button class="step-back-btn" id="step3BackBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        <button class="step-next-btn" id="step3NextBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="step-options">
-      <button class="step-option" data-value="product">
-        <p class="step-option-text">Product</p>
-        <p class="step-option-description">Features, functionality, and user experience</p>
-      </button>
-      <button class="step-option" data-value="design">
-        <p class="step-option-text">Design</p>
-        <p class="step-option-description">Visual design and user interface</p>
-      </button>
-      <button class="step-option" data-value="performance">
-        <p class="step-option-text">Performance</p>
-        <p class="step-option-description">Speed, efficiency, and optimization</p>
-      </button>
-      <button class="step-option" data-value="conversion">
-        <p class="step-option-text">Conversion</p>
-        <p class="step-option-description">User engagement and business metrics</p>
-      </button>
-      <button class="step-option" data-value="accessibility">
-        <p class="step-option-text">Accessibility</p>
-        <p class="step-option-description">Inclusive design and usability</p>
-      </button>
-    </div>
-  </div>
-
-  <!-- Step 4: Optimization Target -->
-  <div class="chat-step" id="chatStep4" data-step="4">
-    <div class="step-header">
-      <button class="step-back-btn" id="step4BackBtn">
-        <img src="./assets/images/icons/icon-arrow-left.png" alt="Back" class="auth-icon-img" />
-      </button>
-      <h3 class="step-title">Optimize for:</h3>
-    </div>
-    <div class="step-options">
-      <button class="step-option" data-value="users">
-        <p class="step-option-text">Users</p>
-        <p class="step-option-description">End-user experience and satisfaction</p>
-      </button>
-      <button class="step-option" data-value="business">
-        <p class="step-option-text">Business</p>
-        <p class="step-option-description">Revenue, growth, and business goals</p>
-      </button>
-      <button class="step-option" data-value="development">
-        <p class="step-option-text">Development</p>
-        <p class="step-option-description">Code quality and maintainability</p>
-      </button>
-      <button class="step-option" data-value="marketing">
-        <p class="step-option-text">Marketing</p>
-        <p class="step-option-description">Brand awareness and user acquisition</p>
-      </button>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step3ProgressFill"></div>
     </div>
   </div>
-
-  <!-- Step 5: Additional Context -->
-  <div class="chat-step" id="chatStep5" data-step="5">
-    <div class="step-header">
-      <button class="step-back-btn" id="step5BackBtn">
-        <img src="./assets/images/icons/icon-arrow-left.png" alt="Back" class="auth-icon-img" />
-      </button>
-      <h3 class="step-title">Any additional context?</h3>
+  
+  <!-- Step 4: Improvement Focus -->
+  <div class="chat-step hidden" id="chatStep4" data-step="4">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep4" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step4ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <h3 class="step-title">What would you like to improve?</h3>
+          </div>
+          <div class="step-options">
+            <button class="option-tag" data-value="product">Product</button>
+            <button class="option-tag" data-value="design">Design</button>
+            <button class="option-tag" data-value="performance">Performance</button>
+            <button class="option-tag" data-value="conversion">Conversion</button>
+            <button class="option-tag" data-value="accessibility">Accessibility</button>
+          </div>
+        </div>
+        <button class="step-back-btn" id="step4BackBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        <button class="step-next-btn" id="step4NextBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <textarea class="step-input" id="contextInput" placeholder="Share any specific requirements, constraints, or goals..." rows="3"></textarea>
-    <div class="step-actions">
-      <button class="step-action-btn secondary" id="skipContextBtn">Skip</button>
-      <button class="step-action-btn" id="continueContextBtn">Continue</button>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step4ProgressFill"></div>
+    </div>
+  </div>
+  
+  <!-- Step 5: Optimization Target -->
+  <div class="chat-step hidden" id="chatStep5" data-step="5">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep5" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step5ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <h3 class="step-title">Optimize for:</h3>
+          </div>
+          <div class="step-options">
+            <button class="option-tag" data-value="users">Users</button>
+            <button class="option-tag" data-value="business">Business</button>
+            <button class="option-tag" data-value="development">Development</button>
+            <button class="option-tag" data-value="marketing">Marketing</button>
+          </div>
+        </div>
+        <button class="step-back-btn" id="step5BackBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        <button class="step-next-btn" id="step5NextBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step5ProgressFill"></div>
+    </div>
+  </div>
+  
+  <!-- Step 6: Final Message -->
+  <div class="chat-step hidden" id="chatStep6" data-step="6">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep6" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step6ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <h3 class="step-title">Any additional context?</h3>
+          </div>
+          <div class="step3-input-container">
+            <textarea class="step3-input" id="step3Input" placeholder="Share any specific requirements, constraints, or goals..."></textarea>
+          </div>
+        </div>
+        <button class="step-back-btn" id="step6BackBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+        <button class="step-next-btn" id="step6NextBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step6ProgressFill"></div>
+    </div>
+  </div>
+  
+  <!-- Step 7: Send Message -->
+  <div class="chat-step hidden" id="chatStep7" data-step="7">
+    <div class="step-layout">
+      <div class="step-upload-section">
+        <button class="chat-image-btn selected" id="chatImageBtnStep7" title="Uploaded image">
+          <img src="./assets/images/icons/icon-img.png" alt="Send" class="auth-icon-img" />
+        </button>
+        <button class="chat-image-close-btn floating" id="step7ImageCloseBtn" title="Remove image">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="step-content-box">
+        <div class="step-content-left">
+          <div class="step-header-inline">
+            <h3 class="step-title">Ready to send?</h3>
+          </div>
+          <div class="step6-input-container">
+            <input type="text" class="step6-input" id="step6Input" placeholder="Final message (optional)" />
+            <button class="step6-send-btn" id="step6SendBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button class="step-back-btn" id="step7BackBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="step-progress-bar">
+      <div class="progress-fill" id="step7ProgressFill" style="width: 100%;"></div>
     </div>
   </div>
 </div>
