@@ -257,6 +257,85 @@ class ConversationsApp {
                 this.handleNewConversation();
             });
         }
+        
+        // Conversation item clicks and delete buttons
+        this.setupConversationItemListeners();
+    }
+    
+    setupConversationItemListeners() {
+        const content = document.getElementById('conversationsListContent');
+        if (!content) return;
+        
+        // Handle conversation item clicks (open conversation)
+        content.addEventListener('click', (e) => {
+            const conversationItem = e.target.closest('.conversation-item');
+            const deleteBtn = e.target.closest('.conversation-delete-btn');
+            
+            if (deleteBtn) {
+                // Handle delete button click
+                e.stopPropagation();
+                const conversationId = deleteBtn.getAttribute('data-conversation-id');
+                this.handleDeleteConversation(conversationId);
+            } else if (conversationItem) {
+                // Handle conversation item click (open conversation)
+                const conversationId = conversationItem.getAttribute('data-conversation-id');
+                this.openConversation(conversationId);
+            }
+        });
+    }
+    
+    openConversation(conversationId) {
+        // Redirect to main app with the conversation
+        window.location.href = `index.html?conversation=${conversationId}`;
+    }
+    
+    async handleDeleteConversation(conversationId) {
+        // Show confirmation dialog
+        const confirmed = confirm('Are you sure you want to delete this conversation? This action cannot be undone.');
+        if (!confirmed) return;
+        
+        try {
+            await this.deleteConversation(conversationId);
+            // Refresh the conversations list
+            await this.loadConversations();
+        } catch (error) {
+            console.error('Error deleting conversation:', error);
+            alert('Failed to delete conversation. Please try again.');
+        }
+    }
+    
+    async deleteConversation(conversationId) {
+        const authHeader = await this.getAuthHeader();
+        const user = await this.getCurrentUser();
+        if (!user) throw new Error('User not authenticated');
+        
+        // First, delete all messages in the conversation
+        const messagesResp = await fetch(`${this.supabaseUrl}/rest/v1/messages?conversation_id=eq.${encodeURIComponent(conversationId)}`, {
+            method: 'DELETE',
+            headers: {
+                ...authHeader,
+                'apikey': this.supabaseKey
+            }
+        });
+        
+        if (!messagesResp.ok) {
+            console.error('Failed to delete messages');
+        }
+        
+        // Then, delete the conversation itself
+        const conversationResp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?id=eq.${encodeURIComponent(conversationId)}`, {
+            method: 'DELETE',
+            headers: {
+                ...authHeader,
+                'apikey': this.supabaseKey
+            }
+        });
+        
+        if (!conversationResp.ok) {
+            throw new Error('Failed to delete conversation');
+        }
+        
+        console.log('Conversation deleted successfully');
     }
 
     async loadConversations() {
@@ -362,6 +441,9 @@ class ConversationsApp {
             html += `
                 <div class="conversation-item" data-conversation-id="${conversation.id}">
                     <div class="conversation-title">${this.escapeHtml(title)}</div>
+                    <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
+                        <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
+                    </button>
                 </div>
             `;
         }

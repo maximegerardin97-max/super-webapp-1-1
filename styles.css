@@ -67,8 +67,8 @@
 .new-conversation-btn {
   background: var(--bg-tertiary);
   border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 12px 16px;
   color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 400;
@@ -81,7 +81,7 @@
 }
 
 .new-conversation-btn:hover {
-  background: #2563eb;
+  background: var(--bg-active);
   transform: translateY(-1px);
 }
 
@@ -137,10 +137,47 @@
   text-align: left;
   width: 100%;
   border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .conversation-item:hover {
   background: var(--bg-tertiary);
+}
+
+.conversation-item:hover .conversation-delete-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+.conversation-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conversation-delete-btn:hover {
+  background: var(--bg-hover);
+}
+
+.conversation-delete-btn .auth-icon-img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.conversation-delete-btn:hover .auth-icon-img {
+  opacity: 1;
 }
 
 .conversation-title {
