@@ -285,17 +285,7 @@ class ConversationsApp {
                 // Handle rename button click
                 e.stopPropagation();
                 const conversationId = renameBtn.getAttribute('data-conversation-id');
-                
-                if (renameBtn.classList.contains('confirm-mode')) {
-                    // If in confirm mode, save the title
-                    const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
-                    if (editElement) {
-                        this.saveConversationTitle(conversationId, editElement.value);
-                    }
-                } else {
-                    // If in edit mode, start editing
-                    this.handleRenameConversation(conversationId);
-                }
+                this.handleRenameConversation(conversationId);
             } else if (titleEdit || titleContainer) {
                 // Handle title edit input or container click (don't open conversation)
                 e.stopPropagation();
@@ -352,22 +342,14 @@ class ConversationsApp {
     handleRenameConversation(conversationId) {
         const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
         const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
-        const renameBtn = document.querySelector(`.conversation-rename-btn[data-conversation-id="${conversationId}"]`);
         
-        if (!titleElement || !editElement || !renameBtn) return;
+        if (!titleElement || !editElement) return;
         
         // Hide title, show edit input
         titleElement.classList.add('hidden');
         editElement.classList.remove('hidden');
         editElement.focus();
         editElement.select();
-        
-        // Change edit button to confirmation button
-        const img = renameBtn.querySelector('img');
-        img.src = './assets/images/icons/icon-check-light.png';
-        img.alt = 'Confirm';
-        renameBtn.title = 'Confirm rename';
-        renameBtn.classList.add('confirm-mode');
     }
     
     async saveConversationTitle(conversationId, newTitle) {
@@ -382,21 +364,11 @@ class ConversationsApp {
             // Update the UI
             const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
             const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
-            const renameBtn = document.querySelector(`.conversation-rename-btn[data-conversation-id="${conversationId}"]`);
             
             if (titleElement && editElement) {
                 titleElement.textContent = newTitle.trim();
                 titleElement.classList.remove('hidden');
                 editElement.classList.add('hidden');
-            }
-            
-            if (renameBtn) {
-                // Reset button back to edit mode
-                const img = renameBtn.querySelector('img');
-                img.src = './assets/images/icons/icon-edit-wht.png';
-                img.alt = 'Rename';
-                renameBtn.title = 'Rename conversation';
-                renameBtn.classList.remove('confirm-mode');
             }
         } catch (error) {
             console.error('Error updating conversation title:', error);
@@ -408,22 +380,12 @@ class ConversationsApp {
     cancelRenameConversation(conversationId) {
         const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
         const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
-        const renameBtn = document.querySelector(`.conversation-rename-btn[data-conversation-id="${conversationId}"]`);
         
         if (titleElement && editElement) {
             // Reset edit input to original title
             editElement.value = titleElement.textContent;
             titleElement.classList.remove('hidden');
             editElement.classList.add('hidden');
-        }
-        
-        if (renameBtn) {
-            // Reset button back to edit mode
-            const img = renameBtn.querySelector('img');
-            img.src = './assets/images/icons/icon-edit-wht.png';
-            img.alt = 'Rename';
-            renameBtn.title = 'Rename conversation';
-            renameBtn.classList.remove('confirm-mode');
         }
     }
     
@@ -602,7 +564,7 @@ class ConversationsApp {
                     </div>
                     <div class="conversation-actions">
                         <button class="conversation-rename-btn" data-conversation-id="${conversation.id}" title="Rename conversation">
-                            <img src="./assets/images/icons/icon-edit-wht.png" alt="Rename" class="auth-icon-img" />
+                            <img src="./assets/images/icons/icon-pen-wht.png" alt="Rename" class="auth-icon-img" />
                         </button>
                         <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
                             <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
