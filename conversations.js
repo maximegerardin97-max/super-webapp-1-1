@@ -16,35 +16,12 @@ class ConversationsApp {
         this.setupAuth();
         this.setupEventListeners();
         this.setupDarkModeSupport();
-        this.initializeChatInput();
         this.loadConversations();
     }
     
-    initializeChatInput() {
-        const container = document.getElementById('chatInputContainer');
-        if (container && window.ChatInputComponent) {
-            this.chatInputComponent = new ChatInputComponent(container, {
-                context: 'conversations',
-                onComplete: (data) => this.handleChatInputComplete(data),
-                onImageUpload: () => this.handleImageUpload()
-            });
-        }
-    }
-    
-    handleChatInputComplete(data) {
-        console.log('Chat input completed with data:', data);
-        
-        // Use the message directly from the component
-        const message = data.message || '';
-        const imageData = data.imageData || null;
-        
-        // Create new conversation and redirect to main app
-        this.createConversationAndRedirect(message, imageData);
-    }
-    
-    handleImageUpload() {
-        // Don't redirect immediately - let the component handle the image and continue with the flow
-        console.log('Image uploaded, continuing with step flow');
+    handleNewConversation() {
+        // Redirect to main app to start a new conversation
+        window.location.href = 'index.html';
     }
     
     async createConversationAndRedirect(message, imageData = null) {
@@ -273,8 +250,13 @@ class ConversationsApp {
     }
 
     setupEventListeners() {
-        // Event listeners are now handled by the ChatInputComponent
-        // No additional setup needed here
+        // New conversation button
+        const newConversationBtn = document.getElementById('newConversationBtn');
+        if (newConversationBtn) {
+            newConversationBtn.addEventListener('click', () => {
+                this.handleNewConversation();
+            });
+        }
     }
 
     async loadConversations() {

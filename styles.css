@@ -57,8 +57,38 @@
 }
 
 .conversations-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px;
   border-bottom: none;
+}
+
+.new-conversation-btn {
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.new-conversation-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.new-conversation-btn .auth-icon-img {
+  width: 16px;
+  height: 16px;
+  opacity: 1;
 }
 
 .conversations-list-title {
