@@ -24,6 +24,32 @@ class ConversationsApp {
         window.location.href = 'index.html';
     }
     
+    async handleTestUpdate() {
+        try {
+            // Get the first conversation to test with
+            if (this.conversationsList.length === 0) {
+                alert('No conversations available to test with. Please create a conversation first.');
+                return;
+            }
+            
+            const firstConversation = this.conversationsList[0];
+            const newTitle = prompt('Enter new title for testing:', firstConversation.title + ' (Updated)');
+            
+            if (!newTitle) return;
+            
+            console.log('Testing UPDATE with conversation:', firstConversation.id);
+            await this.testUpdateConversation(firstConversation.id, newTitle);
+            
+            alert('UPDATE test successful! Check console for details.');
+            
+            // Refresh the conversations list to see the change
+            await this.loadConversations();
+        } catch (error) {
+            console.error('UPDATE test failed:', error);
+            alert('UPDATE test failed: ' + error.message);
+        }
+    }
+    
     async createConversationAndRedirect(message, imageData = null) {
         try {
             const conversationId = await this.createConversation(message);
@@ -255,6 +281,14 @@ class ConversationsApp {
         if (newConversationBtn) {
             newConversationBtn.addEventListener('click', () => {
                 this.handleNewConversation();
+            });
+        }
+        
+        // Test UPDATE button
+        const testUpdateBtn = document.getElementById('testUpdateBtn');
+        if (testUpdateBtn) {
+            testUpdateBtn.addEventListener('click', () => {
+                this.handleTestUpdate();
             });
         }
         
@@ -512,6 +546,47 @@ class ConversationsApp {
         } catch (error) {
             console.error('Error creating conversation:', error);
             return null;
+        }
+    }
+
+    // Test method to check if we have UPDATE permissions
+    async testUpdateConversation(conversationId, newTitle) {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const user = await this.getCurrentUser();
+            if (!user) throw new Error('User not authenticated');
+
+            console.log('Testing UPDATE permissions for conversation:', conversationId);
+            console.log('New title:', newTitle);
+            console.log('Auth header:', authHeader);
+
+            const payload = {
+                title: newTitle
+            };
+
+            const resp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?id=eq.${encodeURIComponent(conversationId)}`, {
+                method: 'PATCH',
+                headers: {
+                    ...authHeader,
+                    'apikey': this.supabaseKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            console.log('UPDATE response:', resp.status, resp.statusText);
+            if (!resp.ok) {
+                const errorText = await resp.text();
+                console.error('UPDATE failed:', errorText);
+                throw new Error(`UPDATE failed: ${resp.status} ${resp.statusText} - ${errorText}`);
+            }
+
+            const data = await resp.json();
+            console.log('UPDATE successful:', data);
+            return data;
+        } catch (error) {
+            console.error('Error testing UPDATE:', error);
+            throw error;
         }
     }
 
