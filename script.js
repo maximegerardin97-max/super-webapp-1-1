@@ -41,7 +41,6 @@ class DesignRatingApp {
     handleUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
         const conversationId = urlParams.get('conversation');
-        const message = urlParams.get('message');
         const hasImage = urlParams.get('hasImage');
         
         if (conversationId) {
@@ -49,19 +48,12 @@ class DesignRatingApp {
             setTimeout(() => {
                 this.openConversation(conversationId);
             }, 500);
-        } else if (message) {
-            // Start a new conversation with the message
+        }
+        
+        // If there's image data from the conversations page, load it
+        if (hasImage === 'true') {
             setTimeout(() => {
-                const chatInput = document.getElementById('mainChatInput');
-                if (chatInput) {
-                    chatInput.value = decodeURIComponent(message);
-                    chatInput.focus();
-                }
-                
-                // If there's image data from the conversations page, load it
-                if (hasImage === 'true') {
-                    this.loadPendingImageData();
-                }
+                this.loadPendingImageData();
             }, 500);
         }
     }

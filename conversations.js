@@ -51,12 +51,14 @@ class ConversationsApp {
         try {
             const conversationId = await this.createConversation(message);
             if (conversationId) {
-                // Build redirect URL with conversation and message
-                let redirectUrl = `index.html?conversation=${conversationId}&message=${encodeURIComponent(message)}`;
+                // Send the message to the agent to start the conversation
+                await this.sendMessageToAgent(conversationId, message, imageData);
                 
-                // If there's image data, we need to store it temporarily and pass a reference
+                // Build redirect URL with only conversation ID (message is now in the conversation)
+                let redirectUrl = `index.html?conversation=${conversationId}`;
+                
+                // If there's image data, store it for the main app to display
                 if (imageData) {
-                    // Store image data in sessionStorage for the main app to pick up
                     sessionStorage.setItem('pendingImageData', JSON.stringify(imageData));
                     redirectUrl += '&hasImage=true';
                 }
@@ -70,6 +72,80 @@ class ConversationsApp {
         } catch (error) {
             console.error('Error creating conversation:', error);
             this.redirectToMainApp();
+        }
+    }
+    
+    async sendMessageToAgent(conversationId, message, imageData = null) {
+        try {
+            const authHeader = await this.getAuthHeader();
+            const user = await this.getCurrentUser();
+            if (!user) return;
+
+            // Prepare the message payload
+            const messagePayload = {
+                conversation_id: conversationId,
+                user_id: user.id,
+                content: message,
+                role: 'user',
+                created_at: new Date().toISOString()
+            };
+
+            // Add image data if available
+            if (imageData) {
+                messagePayload.image_data = imageData;
+            }
+
+            // Insert the user message into the conversation
+            const messageResp = await fetch(`${this.supabaseUrl}/rest/v1/messages`, {
+                method: 'POST',
+                headers: {
+                    ...authHeader,
+                    'apikey': this.supabaseKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messagePayload)
+            });
+
+            if (!messageResp.ok) {
+                console.error('Failed to add message to conversation');
+                return;
+            }
+
+            // Now send to the agent for processing
+            await this.triggerAgentResponse(conversationId, message, imageData);
+            
+        } catch (error) {
+            console.error('Error sending message to agent:', error);
+        }
+    }
+    
+    async triggerAgentResponse(conversationId, message, imageData = null) {
+        try {
+            const authHeader = await this.getAuthHeader();
+            
+            // Prepare the agent request payload
+            const agentPayload = {
+                conversation_id: conversationId,
+                message: message,
+                imageData: imageData
+            };
+
+            // Send to the agent endpoint
+            const agentResp = await fetch(`${this.supabaseUrl}/functions/v1/llm-proxy-auth`, {
+                method: 'POST',
+                headers: {
+                    ...authHeader,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(agentPayload)
+            });
+
+            if (!agentResp.ok) {
+                console.error('Failed to get agent response');
+            }
+            
+        } catch (error) {
+            console.error('Error triggering agent response:', error);
         }
     }
     
