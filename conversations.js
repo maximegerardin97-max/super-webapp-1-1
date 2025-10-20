@@ -393,7 +393,7 @@ class ConversationsApp {
             if (renameBtn) {
                 // Reset button back to edit mode
                 const img = renameBtn.querySelector('img');
-                img.src = './assets/images/icons/icon-pen-wht.png';
+                img.src = './assets/images/icons/icon-edit-wht.png';
                 img.alt = 'Rename';
                 renameBtn.title = 'Rename conversation';
                 renameBtn.classList.remove('confirm-mode');
@@ -420,7 +420,7 @@ class ConversationsApp {
         if (renameBtn) {
             // Reset button back to edit mode
             const img = renameBtn.querySelector('img');
-            img.src = './assets/images/icons/icon-pen-wht.png';
+            img.src = './assets/images/icons/icon-edit-wht.png';
             img.alt = 'Rename';
             renameBtn.title = 'Rename conversation';
             renameBtn.classList.remove('confirm-mode');
@@ -602,7 +602,7 @@ class ConversationsApp {
                     </div>
                     <div class="conversation-actions">
                         <button class="conversation-rename-btn" data-conversation-id="${conversation.id}" title="Rename conversation">
-                            <img src="./assets/images/icons/icon-pen-wht.png" alt="Rename" class="auth-icon-img" />
+                            <img src="./assets/images/icons/icon-edit-wht.png" alt="Rename" class="auth-icon-img" />
                         </button>
                         <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
                             <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
