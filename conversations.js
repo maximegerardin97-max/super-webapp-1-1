@@ -36,22 +36,33 @@ class ConversationsApp {
         
         // Use the message directly from the component
         const message = data.message || '';
+        const imageData = data.imageData || null;
         
         // Create new conversation and redirect to main app
-        this.createConversationAndRedirect(message);
+        this.createConversationAndRedirect(message, imageData);
     }
     
     handleImageUpload() {
-        // Redirect to main app for image upload
-        this.redirectToMainApp();
+        // Don't redirect immediately - let the component handle the image and continue with the flow
+        console.log('Image uploaded, continuing with step flow');
     }
     
-    async createConversationAndRedirect(message) {
+    async createConversationAndRedirect(message, imageData = null) {
         try {
             const conversationId = await this.createConversation(message);
             if (conversationId) {
+                // Build redirect URL with conversation and message
+                let redirectUrl = `index.html?conversation=${conversationId}&message=${encodeURIComponent(message)}`;
+                
+                // If there's image data, we need to store it temporarily and pass a reference
+                if (imageData) {
+                    // Store image data in sessionStorage for the main app to pick up
+                    sessionStorage.setItem('pendingImageData', JSON.stringify(imageData));
+                    redirectUrl += '&hasImage=true';
+                }
+                
                 // Redirect to main app with conversation context
-                window.location.href = `index.html?conversation=${conversationId}&message=${encodeURIComponent(message)}`;
+                window.location.href = redirectUrl;
             } else {
                 // Fallback to main app
                 this.redirectToMainApp();

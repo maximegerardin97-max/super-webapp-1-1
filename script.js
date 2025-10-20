@@ -42,6 +42,7 @@ class DesignRatingApp {
         const urlParams = new URLSearchParams(window.location.search);
         const conversationId = urlParams.get('conversation');
         const message = urlParams.get('message');
+        const hasImage = urlParams.get('hasImage');
         
         if (conversationId) {
             // Open the specified conversation
@@ -56,7 +57,35 @@ class DesignRatingApp {
                     chatInput.value = decodeURIComponent(message);
                     chatInput.focus();
                 }
+                
+                // If there's image data from the conversations page, load it
+                if (hasImage === 'true') {
+                    this.loadPendingImageData();
+                }
             }, 500);
+        }
+    }
+    
+    loadPendingImageData() {
+        try {
+            const imageDataStr = sessionStorage.getItem('pendingImageData');
+            if (imageDataStr) {
+                const imageData = JSON.parse(imageDataStr);
+                
+                // Store the image data
+                this.uploadedImageData = imageData;
+                this.userDesignImageData = { ...imageData };
+                
+                // Display the image in the large image area
+                this.displayLargeImage(imageData.dataUrl, imageData.filename);
+                
+                // Clear the session storage
+                sessionStorage.removeItem('pendingImageData');
+                
+                console.log('Loaded pending image data:', imageData.filename);
+            }
+        } catch (error) {
+            console.error('Error loading pending image data:', error);
         }
     }
     
