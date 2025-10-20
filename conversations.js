@@ -274,6 +274,7 @@ class ConversationsApp {
             const deleteBtn = e.target.closest('.conversation-delete-btn');
             const renameBtn = e.target.closest('.conversation-rename-btn');
             const titleEdit = e.target.closest('.conversation-title-edit');
+            const titleContainer = e.target.closest('.conversation-title-container');
             
             if (deleteBtn) {
                 // Handle delete button click
@@ -285,8 +286,8 @@ class ConversationsApp {
                 e.stopPropagation();
                 const conversationId = renameBtn.getAttribute('data-conversation-id');
                 this.handleRenameConversation(conversationId);
-            } else if (titleEdit) {
-                // Handle title edit input click (don't open conversation)
+            } else if (titleEdit || titleContainer) {
+                // Handle title edit input or container click (don't open conversation)
                 e.stopPropagation();
             } else if (conversationItem) {
                 // Handle conversation item click (open conversation)
@@ -563,7 +564,7 @@ class ConversationsApp {
                     </div>
                     <div class="conversation-actions">
                         <button class="conversation-rename-btn" data-conversation-id="${conversation.id}" title="Rename conversation">
-                            <img src="./assets/images/icons/icon-edit-wht.png" alt="Rename" class="auth-icon-img" />
+                            <img src="./assets/images/icons/icon-pen-wht.png" alt="Rename" class="auth-icon-img" />
                         </button>
                         <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
                             <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
