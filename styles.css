@@ -146,38 +146,14 @@
   background: var(--bg-tertiary);
 }
 
-.conversation-item:hover .conversation-delete-btn {
+.conversation-item:hover .conversation-actions {
   opacity: 1;
   visibility: visible;
 }
 
-.conversation-delete-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  opacity: 0;
-  visibility: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.conversation-delete-btn:hover {
-  background: var(--bg-hover);
-}
-
-.conversation-delete-btn .auth-icon-img {
-  width: 16px;
-  height: 16px;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.conversation-delete-btn:hover .auth-icon-img {
-  opacity: 1;
+.conversation-title-container {
+  flex: 1;
+  min-width: 0;
 }
 
 .conversation-title {
@@ -188,6 +164,64 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.conversation-title-edit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: 100%;
+  outline: none;
+}
+
+.conversation-title-edit:focus {
+  border-color: var(--accent-primary);
+}
+
+.conversation-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.conversation-rename-btn,
+.conversation-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conversation-rename-btn:hover {
+  background: var(--bg-hover);
+}
+
+.conversation-delete-btn:hover {
+  background: #dc2626;
+}
+
+.conversation-rename-btn .auth-icon-img,
+.conversation-delete-btn .auth-icon-img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.conversation-rename-btn:hover .auth-icon-img,
+.conversation-delete-btn:hover .auth-icon-img {
+  opacity: 1;
 }
 
 .conversations-empty {

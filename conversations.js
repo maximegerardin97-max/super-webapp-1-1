@@ -24,31 +24,6 @@ class ConversationsApp {
         window.location.href = 'index.html';
     }
     
-    async handleTestUpdate() {
-        try {
-            // Get the first conversation to test with
-            if (this.conversationsList.length === 0) {
-                alert('No conversations available to test with. Please create a conversation first.');
-                return;
-            }
-            
-            const firstConversation = this.conversationsList[0];
-            const newTitle = prompt('Enter new title for testing:', firstConversation.title + ' (Updated)');
-            
-            if (!newTitle) return;
-            
-            console.log('Testing UPDATE with conversation:', firstConversation.id);
-            await this.testUpdateConversation(firstConversation.id, newTitle);
-            
-            alert('UPDATE test successful! Check console for details.');
-            
-            // Refresh the conversations list to see the change
-            await this.loadConversations();
-        } catch (error) {
-            console.error('UPDATE test failed:', error);
-            alert('UPDATE test failed: ' + error.message);
-        }
-    }
     
     async createConversationAndRedirect(message, imageData = null) {
         try {
@@ -284,13 +259,6 @@ class ConversationsApp {
             });
         }
         
-        // Test UPDATE button
-        const testUpdateBtn = document.getElementById('testUpdateBtn');
-        if (testUpdateBtn) {
-            testUpdateBtn.addEventListener('click', () => {
-                this.handleTestUpdate();
-            });
-        }
         
         // Conversation item clicks and delete buttons
         this.setupConversationItemListeners();
@@ -304,18 +272,50 @@ class ConversationsApp {
         content.addEventListener('click', (e) => {
             const conversationItem = e.target.closest('.conversation-item');
             const deleteBtn = e.target.closest('.conversation-delete-btn');
+            const renameBtn = e.target.closest('.conversation-rename-btn');
+            const titleEdit = e.target.closest('.conversation-title-edit');
             
             if (deleteBtn) {
                 // Handle delete button click
                 e.stopPropagation();
                 const conversationId = deleteBtn.getAttribute('data-conversation-id');
                 this.handleDeleteConversation(conversationId);
+            } else if (renameBtn) {
+                // Handle rename button click
+                e.stopPropagation();
+                const conversationId = renameBtn.getAttribute('data-conversation-id');
+                this.handleRenameConversation(conversationId);
+            } else if (titleEdit) {
+                // Handle title edit input click (don't open conversation)
+                e.stopPropagation();
             } else if (conversationItem) {
                 // Handle conversation item click (open conversation)
                 const conversationId = conversationItem.getAttribute('data-conversation-id');
                 this.openConversation(conversationId);
             }
         });
+        
+        // Handle title edit input events
+        content.addEventListener('keydown', (e) => {
+            if (e.target.classList.contains('conversation-title-edit')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const conversationId = e.target.getAttribute('data-conversation-id');
+                    this.saveConversationTitle(conversationId, e.target.value);
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.cancelRenameConversation(e.target.getAttribute('data-conversation-id'));
+                }
+            }
+        });
+        
+        // Handle title edit blur (click outside)
+        content.addEventListener('blur', (e) => {
+            if (e.target.classList.contains('conversation-title-edit')) {
+                const conversationId = e.target.getAttribute('data-conversation-id');
+                this.saveConversationTitle(conversationId, e.target.value);
+            }
+        }, true);
     }
     
     openConversation(conversationId) {
@@ -336,6 +336,89 @@ class ConversationsApp {
             console.error('Error deleting conversation:', error);
             alert('Failed to delete conversation. Please try again.');
         }
+    }
+    
+    handleRenameConversation(conversationId) {
+        const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
+        const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
+        
+        if (!titleElement || !editElement) return;
+        
+        // Hide title, show edit input
+        titleElement.classList.add('hidden');
+        editElement.classList.remove('hidden');
+        editElement.focus();
+        editElement.select();
+    }
+    
+    async saveConversationTitle(conversationId, newTitle) {
+        if (!newTitle || newTitle.trim() === '') {
+            this.cancelRenameConversation(conversationId);
+            return;
+        }
+        
+        try {
+            await this.updateConversationTitle(conversationId, newTitle.trim());
+            
+            // Update the UI
+            const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
+            const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
+            
+            if (titleElement && editElement) {
+                titleElement.textContent = newTitle.trim();
+                titleElement.classList.remove('hidden');
+                editElement.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error updating conversation title:', error);
+            alert('Failed to update conversation title. Please try again.');
+            this.cancelRenameConversation(conversationId);
+        }
+    }
+    
+    cancelRenameConversation(conversationId) {
+        const titleElement = document.querySelector(`.conversation-title[data-conversation-id="${conversationId}"]`);
+        const editElement = document.querySelector(`.conversation-title-edit[data-conversation-id="${conversationId}"]`);
+        
+        if (titleElement && editElement) {
+            // Reset edit input to original title
+            editElement.value = titleElement.textContent;
+            titleElement.classList.remove('hidden');
+            editElement.classList.add('hidden');
+        }
+    }
+    
+    async updateConversationTitle(conversationId, newTitle) {
+        const authHeader = await this.getAuthHeader();
+        const user = await this.getCurrentUser();
+        if (!user) throw new Error('User not authenticated');
+        
+        const payload = {
+            title: newTitle
+        };
+        
+        const resp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?id=eq.${encodeURIComponent(conversationId)}`, {
+            method: 'PATCH',
+            headers: {
+                ...authHeader,
+                'apikey': this.supabaseKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            throw new Error(`Failed to update conversation: ${resp.status} ${resp.statusText} - ${errorText}`);
+        }
+        
+        // Handle 204 No Content response (successful update with no content)
+        if (resp.status === 204) {
+            return { success: true };
+        }
+        
+        // For other successful responses, try to parse JSON
+        return await resp.json();
     }
     
     async deleteConversation(conversationId) {
@@ -474,10 +557,18 @@ class ConversationsApp {
             const title = conversation.title || 'New Conversation';
             html += `
                 <div class="conversation-item" data-conversation-id="${conversation.id}">
-                    <div class="conversation-title">${this.escapeHtml(title)}</div>
-                    <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
-                        <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
-                    </button>
+                    <div class="conversation-title-container">
+                        <div class="conversation-title" data-conversation-id="${conversation.id}">${this.escapeHtml(title)}</div>
+                        <input class="conversation-title-edit hidden" data-conversation-id="${conversation.id}" value="${this.escapeHtml(title)}" />
+                    </div>
+                    <div class="conversation-actions">
+                        <button class="conversation-rename-btn" data-conversation-id="${conversation.id}" title="Rename conversation">
+                            <img src="./assets/images/icons/icon-edit-wht.png" alt="Rename" class="auth-icon-img" />
+                        </button>
+                        <button class="conversation-delete-btn" data-conversation-id="${conversation.id}" title="Delete conversation">
+                            <img src="./assets/images/icons/icon-trash-wht.png" alt="Delete" class="auth-icon-img" />
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -549,46 +640,6 @@ class ConversationsApp {
         }
     }
 
-    // Test method to check if we have UPDATE permissions
-    async testUpdateConversation(conversationId, newTitle) {
-        try {
-            const authHeader = await this.getAuthHeader();
-            const user = await this.getCurrentUser();
-            if (!user) throw new Error('User not authenticated');
-
-            console.log('Testing UPDATE permissions for conversation:', conversationId);
-            console.log('New title:', newTitle);
-            console.log('Auth header:', authHeader);
-
-            const payload = {
-                title: newTitle
-            };
-
-            const resp = await fetch(`${this.supabaseUrl}/rest/v1/conversations?id=eq.${encodeURIComponent(conversationId)}`, {
-                method: 'PATCH',
-                headers: {
-                    ...authHeader,
-                    'apikey': this.supabaseKey,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            console.log('UPDATE response:', resp.status, resp.statusText);
-            if (!resp.ok) {
-                const errorText = await resp.text();
-                console.error('UPDATE failed:', errorText);
-                throw new Error(`UPDATE failed: ${resp.status} ${resp.statusText} - ${errorText}`);
-            }
-
-            const data = await resp.json();
-            console.log('UPDATE successful:', data);
-            return data;
-        } catch (error) {
-            console.error('Error testing UPDATE:', error);
-            throw error;
-        }
-    }
 
     openConversation(conversationId) {
         // Redirect to main app with conversation context
