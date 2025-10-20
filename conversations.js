@@ -16,32 +16,17 @@ class ConversationsApp {
         this.setupAuth();
         this.setupEventListeners();
         this.setupDarkModeSupport();
-        // Initialize chat input after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            this.initializeChatInput();
-        }, 100);
+        this.initializeChatInput();
         this.loadConversations();
     }
     
     initializeChatInput() {
         const container = document.getElementById('chatInputContainer');
-        console.log('Initializing chat input component...', { container, ChatInputComponent: window.ChatInputComponent });
-        
         if (container && window.ChatInputComponent) {
-            try {
-                this.chatInputComponent = new ChatInputComponent(container, {
-                    context: 'conversations',
-                    onComplete: (data) => this.handleChatInputComplete(data),
-                    onImageUpload: () => this.handleImageUpload()
-                });
-                console.log('Chat input component initialized successfully');
-            } catch (error) {
-                console.error('Error initializing chat input component:', error);
-            }
-        } else {
-            console.error('Missing requirements for chat input component:', { 
-                container: !!container, 
-                ChatInputComponent: !!window.ChatInputComponent 
+            this.chatInputComponent = new ChatInputComponent(container, {
+                context: 'conversations',
+                onComplete: (data) => this.handleChatInputComplete(data),
+                onImageUpload: () => this.handleImageUpload()
             });
         }
     }
